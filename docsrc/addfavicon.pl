@@ -1,0 +1,1 @@
+s/<\/head>/<link rel=\"shortcut icon\" href=\"\$relpath\^favicon.ico\" type=\"image\/x-icon\" \/> \n$&/g
