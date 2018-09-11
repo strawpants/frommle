@@ -30,6 +30,8 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 #set the name of the library to be build
 set(FROMMLELIB "Frommle")
+
+set(FROMMLEPYLIB "pyFrommle")
 set(FROMMLELIBMAJORVERSION 0)
 set(FROMMLELIBMINORVERSION 1)
 
@@ -54,6 +56,8 @@ if( ${USE_MPI} )
     add_definitions(-DUSE_MPI)
 endif( ${USE_MPI} )
 
+
+include_directories(${CMAKE_SOURCE_DIR})
 #find prerequisites (BLAS & LAPACK)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -93,7 +97,10 @@ set(FROMMLE_LIB_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 enable_testing()
 
 #directory with c++ source code
-#add_subdirectory(src/cpp)
+add_subdirectory(src/cpp)
+
+#add directory with python wrappers for C++
+add_subdirectory(src/pywrap)
 
 #Directory with documentation (Using Doxygen)
 add_subdirectory(docsrc)

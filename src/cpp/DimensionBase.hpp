@@ -39,7 +39,6 @@ namespace frommle {
  */
 class DimensionBase {
 public:
-	virtual DimensionBase(){}
 	virtual ~DimensionBase() {
 	}
 	virtual std::string dType() const=0;

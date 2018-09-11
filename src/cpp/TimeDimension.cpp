@@ -1,5 +1,5 @@
 /*! \file
- \brief Definition file for the TimeDimension class
+ \brief Implementation file for the TimeDimension class
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -17,29 +17,15 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#ifndef SRC_CPP_TIMEDIMENSION_HPP_
-#define SRC_CPP_TIMEDIMENSION_HPP_
-#include <chrono>
-#include <vector>
-#include "src/cpp/DimensionBase.hpp"
 
+
+#include "src/cpp/TimeDimension.hpp"
 
 namespace frommle{
 
-/*! \brief Holds a vector of time stamps (possibly irregular)
- * The TimeDimension is essentially a vector with time stamps. Internally it stores a vector of std::chrono::time_point
- * This can then be converted to different kinds of time formats
- */
-class TimeDimension: public DimensionBase {
-public:
-	using timepoint=std::chrono::time_point<std::chrono::steady_clock>;
-	TimeDimension();
+/* default constructor */
+    TimeDimension::TimeDimension() {
 
-	inline size_t size()const{return TimeVec_.size();}
-private:
-	std::vector<timepoint> TimeVec_={};
-};
+    }
 
 }
-
-#endif /*SRC_CPP_TIMEDIMENSION_HPP_*/
