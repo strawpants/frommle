@@ -95,12 +95,13 @@ set(FROMMLE_LIB_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
 #setup testing
 enable_testing()
+#add_subdirectory(tests)
 
 #directory with c++ source code
-add_subdirectory(src/cpp)
+add_subdirectory(src)
 
-#add directory with python wrappers for C++
-add_subdirectory(src/pywrap)
+#add directory with python and C++ wrappers
+add_subdirectory(python)
 
 #Directory with documentation (Using Doxygen)
 add_subdirectory(docsrc)
