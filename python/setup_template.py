@@ -1,6 +1,6 @@
 #template for setup.py where cmake may substitute some project variables
 import setuptools
-from setuptools import Extension
+from setuptools import Extension,find_packages
 
 with open("${CMAKE_SOURCE_DIR}/README.md", "r") as fh:
     long_description = fh.read()
@@ -12,19 +12,18 @@ setuptools.setup(
     description="Python interface to the geodetic Earth Science toolbox frommle",
     long_description=long_description,
     url="https://wobbly.earth/frommle",
-    packages=['core'],
-    classifiers=(
-        "Programming Language :: Python :: 3",
+    packages=find_packages("${CMAKE_CURRENT_SOURCE_DIR}"),
+    package_dir={"":"${CMAKE_CURRENT_SOURCE_DIR}"},
+    classifiers=["Programming Language :: Python :: 3",
         "Programming Language :: C++",
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         "Operating System :: POSIX :: Linux",
         "Topic :: Scientific/Engineering",
-        "Development Status :: 1 - Planning",
-    ),
+        "Development Status :: 1 - Planning"],
     ext_modules=[
-        Extension("_core", sources=["core/dimBindings.cpp"],
-                  library_dirs=["${Boost_LIBRARY_DIRS}"],
-                  libraries = ["${Boost_python_LIBRARY}"],
-                  include_dirs=["${Boost_INCLUDE}"])
+        Extension("_core", sources=["${CXXPYWRAPS}"],
+                  library_dirs=["${Boost_LIBRARY_DIR_RELEASE}"],
+                  libraries = ["boost_python3","boost_system"],
+                  include_dirs=["${Boost_INCLUDE_DIR}"])
     ],
 )
