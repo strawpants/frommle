@@ -19,7 +19,7 @@
  */
 
 
-#include "src/cpp/TimeDimension.hpp"
+#include "src/core/TimeDimension.hpp"
 
 namespace frommle{
 

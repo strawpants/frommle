@@ -21,7 +21,7 @@
 #define SRC_CPP_TIMEDIMENSION_HPP_
 #include <chrono>
 #include <vector>
-#include "src/cpp/DimensionBase.hpp"
+#include "src/core/DimensionBase.hpp"
 
 
 namespace frommle{
