@@ -16,11 +16,11 @@ if (PYTHON)
     add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ${SETUP_PY} bdist_wheel
        COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS ${PYDEPS} ${CXXPYWRAPS})
 
-       add_custom_target(python DEPENDS ${TSTAMP} ${PYDEPS} ${CXXPYWRAPS} ${FROMMLELIB} )
+    add_custom_target(python DEPENDS ${TSTAMP} ${PYDEPS} ${CXXPYWRAPS} ${FROMMLELIB} )
 
-    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} develop --user )")
+    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install )")
 
    #also make sure the correct folders are clean up upon make clean
-   set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "build" "dist" "setup.py")
+   set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "build" "dist" )
  endif()
 
