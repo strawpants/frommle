@@ -1,13 +1,17 @@
-Software Design Documentation {#SDD}
+Developer documentation
+***********************
+
+Software Design Documentation 
 =============================
 This section describes the general idea and workings of the Frommle software.
  
  
- #### C++ coding style
+ C++ coding style
+ ---------------------
  Within **Frommle** boost and templates are heavily used and encouraged. Furthermore, the C+11 standard is adhered to. 
  Concerning coding practices the following is used:
  * Tabs instead of spaces
- * [K & R indentation style](https://en.wikipedia.org/wiki/Indentation_style#K.26R). I don't have a particular preference but this one seems ok and widely implemented in automatic formatters (e.g. vim, eclipse, etc.).
+ * `K & R indentation style <https://en.wikipedia.org/wiki/Indentation_style#K.26R)>`_. I don't have a particular preference but this one seems ok and widely implemented in automatic formatters (e.g. vim, eclipse, etc.).
  * in-source documentation using Doxygen
  * C++ header files end with `*.hpp`
  * C++ implementation files end with `*.cpp` 
@@ -21,3 +25,11 @@ This section describes the general idea and workings of the Frommle software.
  * Namespaces are all lowercase
 
  #### Documentating style for C++ Classes
+
+Python
+======
+
+
+C++
+===
+

@@ -103,7 +103,7 @@ add_subdirectory(src)
 #add directory with python and C++ wrappers
 add_subdirectory(python)
 
-#Directory with documentation (Using Doxygen)
+#Directory with documentation (Using Doxygen and Sphinx)
 add_subdirectory(docsrc)
 
 

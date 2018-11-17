@@ -21,7 +21,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
         "Development Status :: 1 - Planning"],
     ext_modules=[
-        Extension("_core", sources=["${CXXPYWRAPS}"],
+        Extension("frommle._core", sources=["${CXXPYWRAPS}"],
                   library_dirs=["${Boost_LIBRARY_DIR_RELEASE}"],
                   libraries = ["boost_python3","boost_system"],
                   include_dirs=["${Boost_INCLUDE_DIR}"])
