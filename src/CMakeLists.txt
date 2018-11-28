@@ -4,5 +4,14 @@ LIST(APPEND COREOBJS core/TimeDimension.cpp)
 
 LIST(APPEND SHHEADERS sh/SHDimension.hpp )
 
-add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} )
+
+if (PYTHON)
+    #add python wrapper routines
+    list(APPEND CXXPYWRAPS pybindings/dimBindings.cpp)
+    list(APPEND CXXPYWRAPS pybindings/SHDimensionBindings.cpp)
+endif()
+
+add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${CXXPYWRAPS}  )
+target_include_directories(${FROMMLELIB} PUBLIC ${Boost_INCLUDE_DIR} )
 #set_target_properties(${FROMMLELIB} PROPERTIES PUBLIC_HEADER ${COREHEADERS})
+

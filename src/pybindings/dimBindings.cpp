@@ -2,16 +2,16 @@
 
 using namespace std;
 
-void say_hello(const char* name) {
+    void say_hello(const char* name) {
     cout << "Hello " <<  name << "!\n";
-}
+    }
 
 
-#include <boost/python/module.hpp>
-#include <boost/python/def.hpp>
+
+#include <boost/python.hpp>
 using namespace boost::python;
 
-BOOST_PYTHON_MODULE(_core)
-{
+void pyexport_core(){
+
     def("say_hello", say_hello);
 }

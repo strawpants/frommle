@@ -57,6 +57,12 @@ if( ${USE_MPI} )
 endif( ${USE_MPI} )
 
 
+# see if python3 is installed
+find_program(PYTHON "python3")
+if (PYTHON)
+   execute_process(COMMAND python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR})
 #find prerequisites (BLAS & LAPACK)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
@@ -69,7 +75,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 find_package(Boost REQUIRED COMPONENTS system python ${WITH_BOOST_MPI})
 
 #add Boost include path
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
 
 #find the hdf5 library
 #find_package(HDF5 REQUIRED COMPONENTS CXX)
@@ -91,6 +97,7 @@ include_directories(${Boost_INCLUDE_DIR})
 set(FROMMLE_HEADER_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 #define some PATHS to essential components of the package
 set(FROMMLE_LIB_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/lib)
+
 
 
 #setup testing

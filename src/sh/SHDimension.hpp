@@ -21,7 +21,7 @@
 
  */
 
-#include "../core/DimensionBase.hpp"
+#include "src/core/DimensionBase.hpp"
 
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP
@@ -29,14 +29,16 @@
 namespace frommle{
     namespace sh{
 
+        enum trig {C=0,S=1};
+
+        struct nmt{int n; int m; trig t; };
+
         /*! brief
          *
          *
          */
         class SHDimension: public frommle::DimensionBase {
         public:
-            enum trig {C=0,S=1};
-            struct nmt{int n; int m; trig t; };
             using frommle::DimensionBase::index;
             SHDimension(const int nmaxin){
                 nmax_=nmaxin;
@@ -47,7 +49,7 @@ namespace frommle{
              *
              */
             index operator[](const nmt & in)const{
-                index idx=in.n+in.m+in.t;
+                index idx=(in.n*(in.n+1))/2+in.m+1+in.t*size();
                 return idx;
             }
 

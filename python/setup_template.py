@@ -2,6 +2,13 @@
 import setuptools
 from setuptools import Extension,find_packages
 
+# def splitWrappers(instr):
+#     #returns a list of all *cpp from the given cmake string
+#     cppfiles=[]
+#     for cpp in instr.split(";"):
+#         cppfiles.append(cpp)
+#     return cppfiles
+
 with open("${CMAKE_SOURCE_DIR}/README.md", "r") as fh:
     long_description = fh.read()
 
@@ -21,9 +28,10 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
         "Development Status :: 1 - Planning"],
     ext_modules=[
-        Extension("frommle._core", sources=["${CXXPYWRAPS}"],
+        Extension("frommle._cpp", sources=["${CXXPYCOLLECTOR}"],
                   library_dirs=["${Boost_LIBRARY_DIR_RELEASE}"],
-                  libraries = ["boost_python3","boost_system"],
-                  include_dirs=["${Boost_INCLUDE_DIR}"])
+                  libraries = ["${FROMMLELIB}","boost_python3","boost_system"],
+                  include_dirs=["${Boost_INCLUDE_DIR}","${CMAKE_SOURCE_DIR}"],
+                  runtime_library_dirs = ["${PROJECT_BINARY_DIR}/lib"])
     ],
 )
