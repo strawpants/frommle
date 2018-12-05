@@ -64,7 +64,9 @@ namespace frommle{
             }
 
             //Index function to get a specific function from n,m,trig
-
+//            static index nmt(const int n, const int m, const trig cs ){
+//                return
+//            }
             //Iterator over most cache localized sequence of degrees,order, trig
 
         protected:
