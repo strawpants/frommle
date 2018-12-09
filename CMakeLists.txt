@@ -30,8 +30,8 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 #set the name of the library to be build
 set(FROMMLELIB "Frommle")
+set(FROMMLEPYLIB "Frommle-pybind")
 
-set(FROMMLEPYLIB "pyFrommle")
 set(FROMMLELIBMAJORVERSION 0)
 set(FROMMLELIBMINORVERSION 1)
 
@@ -63,7 +63,7 @@ if (PYTHON)
    execute_process(COMMAND python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/src)
 #find prerequisites (BLAS & LAPACK)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -72,7 +72,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 #We need the boost library for various things (e.g. timing and dates)
 #find_package(Boost REQUIRED COMPONENTS system chrono program_options date_time serialization ${WITH_BOOST_MPI} iostreams)
-find_package(Boost REQUIRED COMPONENTS system python ${WITH_BOOST_MPI})
+find_package(Boost REQUIRED COMPONENTS system python unit_test_framework ${WITH_BOOST_MPI})
 
 #add Boost include path
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
@@ -102,7 +102,7 @@ set(FROMMLE_LIB_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
 #setup testing
 enable_testing()
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 #directory with c++ source code
 add_subdirectory(src)

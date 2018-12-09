@@ -6,7 +6,7 @@ if(DOXYGEN_FOUND)
 	add_custom_target(doxy ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	    COMMENT "Extracting Frommle XML documentation from the C++ using Doxygen" VERBATIM
 )
-
+    set_target_properties(doxy PROPERTIES EXCLUDE_FROM_ALL TRUE)
 	
 ####Cosmetic tweaks to add a favicon to the header. This section may be commented out when it give rise to problems
 	#add_custom_command(OUTPUT header.html COMMAND ${DOXYGEN_EXECUTABLE} -w html header.html footer.html stylesheet.html
@@ -35,6 +35,7 @@ if (SPHINX_FOUND)
 	    COMMENT "Extracting Frommle documentation using sphinx" VERBATIM
 )
     add_dependencies(doc doxy)
+    set_target_properties(doc PROPERTIES EXCLUDE_FROM_ALL TRUE)
 else()
     MESSAGE("Skipping Sphinx Document generation")
 endif()

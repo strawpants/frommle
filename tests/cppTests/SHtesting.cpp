@@ -1,5 +1,5 @@
 /*! \file
- \brief Computation of (associated) Legendre functions
+ \brief Testing main for routines in the sh module of the toolbox
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -21,32 +21,35 @@
 
  */
 
-#include "core/DimensionBase.hpp"
+#define BOOST_TEST_MODULE SHtesting
+#include <boost/test/included/unit_test.hpp>
+#include "sh/Legendre_nm_naive.hpp"
 #include <math.h>
-#include <vector>
-
-#ifndef FROMMLE_SHDIMENSION_HPP
-#define FROMMLE_SHDIMENSION_HPP
-
-namespace frommle{
-    namespace sh{
-        class Legendre_nm_naive{
-        public:
-            Legendre_nm_naive(const int nmax);
-            ~Legendre_nm_naive();
-
-            std::vector<std::vector<double>> operator()(const double costheta)const;
-            std::vector<double> d1at(const double costheta)const;
-        private:
-            int nmax_=0;
-            std::vector<double> wnn_={};
-            std::vector<std::vector<double>> wnm_ = {};
-            static int inm(const int n, const int m);
-        };
+#include <iomanip>
+using namespace frommle::sh;
 
 
-    }
+double P52(double theta) {
+    double sc = sqrt(242550.0 / 860160);
+    return sc * (2 * cos(theta) + cos(3 * theta) - 3 * cos(5 * theta));
 }
 
 
-#endif //FROMMLE_SHDIMENSION_HPP
+BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
+{
+    const double d2r=std::atan(1.0)*4/180;
+    Legendre_nm_naive Pnm(1000);
+
+    double theta;
+    int nsteps=180/0.25;
+    double dt=180.0/nsteps;
+
+    BOOST_TEST_MESSAGE("Testing associated Legendre polynomials against analytical P52 solution");
+    for(int i=0;i<=nsteps+1;i++){
+        theta=dt*i*d2r;
+        auto pout=Pnm(cos(theta));
+        BOOST_TEST(pout[5][2]==P52(theta));
+    }
+
+}
+

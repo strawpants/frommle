@@ -21,7 +21,7 @@
 
  */
 
-#include "src/core/DimensionBase.hpp"
+#include "core/DimensionBase.hpp"
 
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP

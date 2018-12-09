@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/python.hpp>
 using namespace boost::python;
-#include <src/sh/SHDimension.hpp>
+#include "sh/SHDimension.hpp"
 
 using namespace frommle;
 

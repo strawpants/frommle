@@ -19,9 +19,9 @@
 
  Created by Roelof Rietbroek, 2018
 
- *//
+ */
 
-#include "src/sh/Legendre_nm_naive.hpp"
+#include "sh/Legendre_nm_naive.hpp"
 #include <math.h>
 namespace frommle {
     namespace sh {
@@ -48,60 +48,65 @@ namespace frommle {
 
             for (int n = 1; n <= nmax_; ++n) {
                 for (int m = 0; m < n; ++m) {
-                    wnm_[n][m] = sqrt((2 * n + 1) / (n + m) * (2 * n - 1) / (n - m));
+                    wnm_[n][m] = sqrt((2 * n + 1.0) / (n + m) * (2 * n - 1.0) / (n - m));
                 }
             }
 
         }
 
-        std::vector<double> Legendre_nm_naive::operator()(const double costheta) const {
+        std::vector<std::vector<double>> Legendre_nm_naive::operator()(const double costheta) const {
 //            assert(costheta >= -1 and costheta <=1);
-            index nsize=Legendre_nm_naive::inm(nmax_,nmax_);
-            std::vector<double> Pnm;
-            Pnm.reserve(nsize);
-            for (auto & pii:Pnm){
-                pii=0;
+            auto nsize=Legendre_nm_naive::inm(nmax_,nmax_);
+            std::vector<std::vector<double>> Pnm(nmax_+1);
+            for(auto & el:Pnm){
+                el=std::vector<double>(nmax_+1);
+                std::fill(el.begin(),el.end(),0);
             }
 
-            double sinTheta=std::sqrt(1-pow(costheta,2);
+
+            double sinTheta=std::sqrt(1-pow(costheta,2));
 
             double numericStabilityFactor=1e-280;
             //set the diagonal to the numerics factor
             for (int n=0;n<nmax_+1;++n){
-                Pnm[inm(n,n)]=numericStabilityFactor;
+                Pnm[n][n]=numericStabilityFactor;
             }
 
 
             //Compute 'off-diagonal' elements per order (i.e. where n=m+1)
-            for(int m=0;m<nmax_+1;++m){
+            for(int m=0;m<nmax_;++m){
                 int n=m+1;
-                Pnm[inm(n,m)]=wnm_[n][m]*costheta*Pnm[inm(m,m)];
+                Pnm[n][m]=wnm_[n][m]*costheta*Pnm[m][m];
 
             }
 
-            for(int n =0; n<nmax_+1;++n){
-                for(int m=n+2;m<nmax_+1;++m) {
-                     Pnm[inm(n,m)]=wnm_[n][m]*(costheta*Pnm[inm(n-1,m)]-Pnm[inm(n-2,m)]/wnm_[n-1][m]);
+            for(int m =0; m<nmax_+1;++m){
+                for(int n=m+2;n<nmax_+1;++n) {
+                     Pnm[n][m]=wnm_[n][m]*(costheta*Pnm[n-1][m]-Pnm[n-2][m]/wnm_[n-1][m]);
                 }
             }
 
             //Now do the n-1,n-1 -> n,n recursion and rescale all the entries which were seeded with 1e-280
             double sectorial=1/numericStabilityFactor; //= 1e280
 
-            for(int n=0;n<nmax_+1;++n){
-                for(int m=n;m<nmax_+1;++m){
-                    Pnm[inm(n,m)]*=sectorial;
+            for(int m=0;m<nmax_+1;++m){
+                for(int n=m;n<nmax_+1;++n){
+                    Pnm[n][m]*=sectorial;
                 }
                 //Do one step forward for the diagonal recursion
-                sectorial*=wnn_[n+1]*sinTheta;
+                sectorial*=wnn_[m+1]*sinTheta;
             };
 
             return Pnm;
         }
 
-        static int Legendre_nm_naive::inm(const int n, const int m) {
+        int Legendre_nm_naive::inm(const int n, const int m) {
             return (n * (n + 1)) / 2 + m;
 
+        }
+
+        std::vector<double> Legendre_nm_naive::d1at(const double costheta) const {
+            return std::vector<double>();
         }
 
 

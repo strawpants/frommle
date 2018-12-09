@@ -9,9 +9,10 @@ if (PYTHON)
     #add python wrapper routines
     list(APPEND CXXPYWRAPS pybindings/dimBindings.cpp)
     list(APPEND CXXPYWRAPS pybindings/SHDimensionBindings.cpp)
+    add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS}  )
 endif()
 
-add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${SHOBJS} ${CXXPYWRAPS}  )
+add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${SHOBJS} )
 target_include_directories(${FROMMLELIB} PUBLIC ${Boost_INCLUDE_DIR} )
 #set_target_properties(${FROMMLELIB} PROPERTIES PUBLIC_HEADER ${COREHEADERS})
 
