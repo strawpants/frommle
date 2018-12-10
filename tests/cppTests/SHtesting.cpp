@@ -24,6 +24,7 @@
 #define BOOST_TEST_MODULE SHtesting
 #include <boost/test/included/unit_test.hpp>
 #include "sh/Legendre_nm_naive.hpp"
+#include "sh/Legendre_nm.hpp"
 #include <math.h>
 #include <iomanip>
 using namespace frommle::sh;
@@ -35,10 +36,10 @@ double P52(double theta) {
 }
 
 
-BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
+BOOST_AUTO_TEST_CASE(assocLegendreSlow,*boost::unit_test::tolerance(1e-11))
 {
     const double d2r=std::atan(1.0)*4/180;
-    Legendre_nm_naive Pnm(1000);
+    Legendre_nm_naive Pnm(500);
 
     double theta;
     int nsteps=180/0.25;
@@ -53,3 +54,21 @@ BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
 
 }
 
+
+BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
+{
+    const double d2r=std::atan(1.0)*4/180;
+    Legendre_nm_d Pnm(500);
+
+    double theta;
+    int nsteps=180/0.25;
+    double dt=180.0/nsteps;
+
+    BOOST_TEST_MESSAGE("Testing associated Legendre polynomials against analytical P52 solution");
+    for(int i=0;i<=nsteps+1;i++){
+        theta=dt*i*d2r;
+        auto pout=Pnm(cos(theta));
+        BOOST_TEST(pout[Pnm.indxnm(5,2)]==P52(theta));
+    }
+
+}

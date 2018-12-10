@@ -30,7 +30,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 #set the name of the library to be build
 set(FROMMLELIB "Frommle")
-set(FROMMLEPYLIB "Frommle-pybind")
+set(FROMMLEPYLIB "Frommle_pybind")
 
 set(FROMMLELIBMAJORVERSION 0)
 set(FROMMLELIBMINORVERSION 1)

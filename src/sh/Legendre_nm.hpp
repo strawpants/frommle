@@ -1,5 +1,5 @@
 /*! \file
- \brief Computation of (associated) Legendre functions
+ \brief Computation of (associated) Legendre functions (fast version)
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -24,29 +24,36 @@
 #include "core/DimensionBase.hpp"
 #include <math.h>
 #include <vector>
+#include <assert.h>
 
-#ifndef FROMMLE_SHLEGNAIVE_HPP
-#define FROMMLE_SHLEGNAIVE_HPP
+#ifndef FROMMLE_SHLEGE_HPP
+#define FROMMLE_SHLEGE_HPP
 
 namespace frommle{
     namespace sh{
-        class Legendre_nm_naive{
+        template<class ftype>
+        class Legendre_nm{
         public:
-            Legendre_nm_naive(const int nmax);
-            ~Legendre_nm_naive();
+            Legendre_nm(const int nmax);
 
-            std::vector<std::vector<double>> operator()(const double costheta)const;
-            std::vector<double> d1at(const double costheta)const;
+            std::vector<ftype> operator()(const ftype costheta)const;
+            std::vector<ftype> d1at(const ftype costheta)const;
+            inline size_t indxnm(const int n, const int m)const{
+                assert(m<=n);
+                return m*(nmax_+1)-(m*(m+1))/2+n;
+            }
         private:
             int nmax_=0;
-            std::vector<double> wnn_={};
-            std::vector<std::vector<double>> wnm_ = {};
-            static int inm(const int n, const int m);
+            std::vector<ftype> wnn_={};
+            std::vector<ftype> wnm_ = {};
         };
 
+//explicitly initialize types for double and (long double) precision
+        using Legendre_nm_d=Legendre_nm<double>;
+        using Legendre_nm_ld=Legendre_nm<long double>;
 
     }
 }
 
 
-#endif //FROMMLE_SHLEGNAIVE_HPP
+#endif //FROMMLE_SHLEGE_HPP

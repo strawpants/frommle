@@ -1,1 +1,1 @@
-from frommle._cpp import nmt
+from frommle._cpp import *

@@ -29,7 +29,7 @@ setuptools.setup(
         "Development Status :: 1 - Planning"],
     ext_modules=[
         Extension("frommle._cpp", sources=["${CXXPYCOLLECTOR}"],
-                  library_dirs=["${Boost_LIBRARY_DIR_RELEASE}"],
+                  library_dirs=["${Boost_LIBRARY_DIR_RELEASE}","${PROJECT_BINARY_DIR}/lib" ],
                   libraries = ["${FROMMLELIB}","${FROMMLEPYLIB}","boost_python3","boost_system"],
                   include_dirs=["${Boost_INCLUDE_DIR}","${CMAKE_SOURCE_DIR}"],
                   runtime_library_dirs = ["${PROJECT_BINARY_DIR}/lib"])
