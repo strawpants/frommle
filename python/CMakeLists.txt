@@ -21,14 +21,14 @@ if (PYTHON)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
         add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ./setup.py develop
-                COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS}  )
+                COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS} ${FROMMLELIB} ${FROMMLEPYLIB}  )
     else ()
-        add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ${SETUP_PY} bdistwheel
-                COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS} )
+        add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ${SETUP_PY} develop
+                COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS} ${FROMMLELIB} ${FROMMLEPYLIB} )
     endif ()
 
 
-    add_custom_target(python DEPENDS ${TSTAMP} ${PYDEPS} ${FROMMLELIB} )
+    add_custom_target(python DEPENDS ${TSTAMP} ${PYDEPS} ${FROMMLELIB} ${FROMMLEPYLIB} )
 
     install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install )")
 

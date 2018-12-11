@@ -89,7 +89,7 @@ namespace frommle {
                 Pnm[idx+1]=L1CacheEntry.pnmin1*L1CacheEntry.sectorial;
 
                 //loop over remaining degrees
-                for(int n=m+2;n<=nmax_;++n){
+                for(int n=m+2;n<=nmax_+1;++n){
                     idx=indxnm(n,m);
 
                     L1CacheEntry.pn=wnm_[idx]*(costheta*L1CacheEntry.pnmin1-L1CacheEntry.pnmin2/wnm_[idx-1]);
@@ -103,7 +103,7 @@ namespace frommle {
                 //Update the m+1 sectorial (applies n+1,n+1 <- n,n recursion)
                 L1CacheEntry.sectorial*= wnn_[m+1]*sinTheta;
                 //also write the next sectorial to the output vector (scaled correctly)
-                Pnm[idx+1]=L1CacheEntry.sectorial*numericStabilityFactor;
+                Pnm[indxnm(m+1,m+1)]=L1CacheEntry.sectorial*numericStabilityFactor;
 
 
             }
