@@ -22,7 +22,7 @@
  */
 
 #include "core/DimensionBase.hpp"
-
+#include <tuple>
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP
 
@@ -32,6 +32,37 @@ namespace frommle{
         enum trig {C=0,S=1};
 
         struct nmt{int n; int m; trig t; };
+
+        /*! brief returns a vectorized index for order sorted spherical harmonics (no trigonometric variable)
+         * @param n input degree
+         * @param m input order
+         * @param nmax maximum degree to accomodate for
+         * @return zero based index of the corresponding entry
+         */
+        inline size_t i_from_mn(const int n,const int m, const int nmax){
+            assert(m<=n);
+            return m*(nmax+1)-(m*(m+1))/2+n;
+        }
+
+    /*!brief retrieve the degree and order from a index sorted by order and degree (no trig variable
+    *
+    * @param idx input index (zero based)
+    * @param nmax maximum degree for which has been allocated
+    * @return a tuple containing the degree and order in the first and second element respectively
+    */
+        inline std::tuple<int,int> mn_from_i(const size_t idx, const int nmax){
+            size_t colidx;
+
+            int n;
+            for(int m=0;m<=nmax+1;++m) {
+                colidx = m * (nmax + 1) - (m * (m + 1)) / 2+nmax;
+                if (idx <= colidx) {
+                    n=nmax-colidx+idx;
+                    return std::make_tuple(n, m);
+                }
+            }
+        }
+
 
         /*! brief
          *

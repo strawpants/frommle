@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
+#include <boost/python/tuple.hpp>
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
@@ -28,12 +29,49 @@ struct vec_to_ndarray{
 };
 
 
+//dummy struct which has a list of int template arguments (to be used for compile timne generation of lists)
+template<int...>
+struct sequence {};
+
+//recursive generate a list with integer template elements
+template<int N, int ...S>
+struct generator : generator<N-1, N-1, S...> { };
+
+//this stops the above recursion and sets the using member type to the sequence
+template<int... S>
+struct generator<0, S...> {
+    using type = sequence<S...>;
+};
+
+
+
+template<class T>
+struct stdtuple_to_btuple{
+  static PyObject* convert(T const & tin){
+        return p::incref(getbtuple(tin,typename generator<std::tuple_size<T>::value>::type()).ptr());
+
+  }
+  template <int ...S>
+  static p::tuple getbtuple(T const & tin, sequence<S...>){
+        return p::make_tuple(std::get<S>(tin)...);
+    }
+
+  };
+
+
+
+
 void pyexport_sh()
 {
+//    Py_Initialize();
     np::initialize();
 
     //register vector to ndarray converter at runtime
     p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
+
+    //register specific std:tuple to python tuple converters
+    p::to_python_converter<std::tuple<int,int>, stdtuple_to_btuple<std::tuple<int,int>>> ();
+
 
     p::enum_<sh::trig>("trig")
             .value("c",sh::trig::C)
@@ -44,6 +82,8 @@ void pyexport_sh()
         .def_readwrite("m",&sh::nmt::m);
 //        .def_readwrite('t',&sh::nmt::t);
 
+    p::def("i_from_mn",&sh::i_from_mn);
+    p::def("mn_from_i",&sh::mn_from_i);
 
     p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
             .def("__call__",&sh::Legendre_nm_d::operator())

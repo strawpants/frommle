@@ -23,10 +23,10 @@
 
 #define BOOST_TEST_MODULE SHtesting
 #include <boost/test/included/unit_test.hpp>
-#include "sh/Legendre_nm_naive.hpp"
 #include "sh/Legendre_nm.hpp"
 #include <math.h>
 #include <iomanip>
+#include <algorithm>
 using namespace frommle::sh;
 
 
@@ -36,30 +36,11 @@ double P52(double theta) {
 }
 
 
-BOOST_AUTO_TEST_CASE(assocLegendreSlow,*boost::unit_test::tolerance(1e-11))
-{
-    const double d2r=std::atan(1.0)*4/180;
-    Legendre_nm_naive Pnm(500);
-
-    double theta;
-    int nsteps=180/0.25;
-    double dt=180.0/nsteps;
-
-    BOOST_TEST_MESSAGE("Testing associated Legendre polynomials against analytical P52 solution");
-    for(int i=0;i<=nsteps+1;i++){
-        theta=dt*i*d2r;
-        auto pout=Pnm(cos(theta));
-        BOOST_TEST(pout[5][2]==P52(theta));
-    }
-
-}
-
 
 BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
 {
     const double d2r=std::atan(1.0)*4/180;
     Legendre_nm_d Pnm(500);
-
     double theta;
     int nsteps=180/0.25;
     double dt=180.0/nsteps;
@@ -69,6 +50,66 @@ BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
         theta=dt*i*d2r;
         auto pout=Pnm(cos(theta));
         BOOST_TEST(pout[Pnm.indxnm(5,2)]==P52(theta));
+    }
+
+}
+
+
+//ADD numeric test (close to pole and for high degrees) compare double against long double implementation
+BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
+{
+
+    if (sizeof(double) == sizeof(long double)){
+        BOOST_TEST_MESSAGE("double and long double have the same size for this compiler skipping stability test");
+        return;
+    }
+
+
+    const double d2r=std::atan(1.0)*4/180;
+    int nmax=2700;
+    Legendre_nm_d Pnm(nmax);
+    Legendre_nm_ld Pnmld(nmax);
+
+
+    //only check colatitudes close (within a degree) to the pole
+    int nsteps=100;
+    double dt=55555.0/nsteps;
+
+    long double z;
+    double dif,reldif;
+    double maxv;
+    double tol=5e-6;
+    double zeroCutoff=1e-50;
+    double valld,val;
+    bool RELERR_islessthan_TOL;
+    BOOST_TEST_MESSAGE("Testing relative stability against long double version (relative error <5e-6 for absolute values > 1e-100) of associated Legendre polynomials within 5 deg of North Pole");
+    for(int i=0;i<=nsteps+1;i++){
+        z=cos(dt*i*d2r);
+        auto pout=Pnm(z);
+        auto poutld=Pnmld(z);
+
+        for (int m = 0; m <= nmax; ++m) {
+            for (int n = m; n <= nmax; ++n) {
+                auto idx = Pnm.indxnm(n, m);
+                val=pout[idx];
+                //convert to double to compare properly
+                valld=poutld[idx];
+
+                dif = abs(val-valld);
+                maxv=std::max(abs(val),abs(valld));
+
+                reldif=dif/maxv;
+                if( maxv > zeroCutoff ) {
+                    //test for relative accuracy
+                    RELERR_islessthan_TOL= (reldif < tol)?true:false;
+//                    if(not RELERR_islessthan_TOL) {
+//                        std::cout <<RELERR_islessthan_TOL<<" " << reldif << " " << val<<" "<< valld<<std::endl;
+//                    }
+                    BOOST_TEST(RELERR_islessthan_TOL) ;
+                }
+            }
+        }
+
     }
 
 }

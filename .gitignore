@@ -2,3 +2,5 @@
 cmake-build*
 *.egg-info
 __pycache__
+docsrc/Doxyfile
+python/setup.py

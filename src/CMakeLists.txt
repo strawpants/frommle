@@ -2,8 +2,8 @@ LIST(APPEND COREHEADERS core/DimensionBase.hpp core/TimeDimension.hpp core/Annot
         core/OutputArchiveBase.hpp)
 LIST(APPEND COREOBJS core/TimeDimension.cpp)
 
-LIST(APPEND SHHEADERS sh/SHDimension.hpp sh/Legendre_nm_naive.hpp sh/Legendre_nm.hpp)
-LIST(APPEND SHOBJS sh/Legendre_nm_naive.cpp sh/Legendre_nm.cpp)
+LIST(APPEND SHHEADERS sh/SHDimension.hpp sh/Legendre_nm.hpp)
+LIST(APPEND SHOBJS sh/Legendre_nm.cpp)
 
 if (PYTHON)
     #add python wrapper routines

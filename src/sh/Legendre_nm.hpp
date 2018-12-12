@@ -25,6 +25,7 @@
 #include <math.h>
 #include <vector>
 #include <assert.h>
+//#include <boost/multiprecision/float128.hpp>
 
 #ifndef FROMMLE_SHLEGE_HPP
 #define FROMMLE_SHLEGE_HPP
@@ -51,6 +52,7 @@ namespace frommle{
 //explicitly initialize types for double and (long double) precision
         using Legendre_nm_d=Legendre_nm<double>;
         using Legendre_nm_ld=Legendre_nm<long double>;
+//        using Legendre_nm_dd=Legendre_nm<boost::multiprecision::float128>;
 
     }
 }
