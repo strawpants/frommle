@@ -42,10 +42,12 @@ namespace frommle {
  */
     class DimensionBase {
     public:
+        using index=size_t;
+        DimensionBase(){};
+        DimensionBase(const std::string & type, const index &sz):type_(type),size_(sz){}
         virtual ~DimensionBase() {
         }
 
-        using index=size_t;
 
         //add 1D index_range and index_gen types here?
         virtual std::string type() const =0;

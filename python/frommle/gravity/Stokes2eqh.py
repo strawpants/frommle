@@ -27,31 +27,37 @@ class Stokes2eqh():
         """Initializes Load love numbers and kernel (i.e. read from file)"""
         ll = LoadLove(loadlovefile, nmax)
         ll.setRefSystem(refsys)
-        nmax_=ll.hdat.shape[0]-1
+        self.nmax_=len(ll.hdat)-1
         #compute the isotropic kernel
-        self.kernel=np.zeros([nmax_+1])
-
-        for n in range(nmax_):
-            self.kernel[n]=RE/(2*n+1)*3*rho_w/rho_e
+        self.kernel=np.zeros([self.nmax_+1])
+        fact=RE*rho_e/(3*rho_w)
+        for n in range(self.nmax_+1):
+            self.kernel[n]=fact*(2*n+1)/(1+ll.kdat[n])
 
     def __call__(self,cnm,snm,sigcnm=None,sigsnm=None):
         """Convert a given set of Stokes coefficients"""
 
         #check whether the input sizes agree
-        if cnm.shape[0] != i_from_mn(self.nmax_,self.nmax_,self.nmax_):
+        if cnm.shape[0]-1 != i_from_mn(self.nmax_,self.nmax_,self.nmax_):
             raise Exception("maximum degree does not agree with input")
 
-        # cnmout=np.zeros(cnm.shape)
-        # snmout=np.zeros(snm.shape)
-        #
-        # if sigcnm and sigsnm:
-        #     sigcnmout=np.zeros(sigcnm.shape)
-        #     sigsnmout=np.zeros(sigsnm.shape)
+        cnmout=np.zeros(cnm.shape)
+        snmout=np.zeros(snm.shape)
+
+        if sigcnm and sigsnm:
+            sigcnmout=np.zeros(sigcnm.shape)
+            sigsnmout=np.zeros(sigsnm.shape)
 
 
-        # for m in range(self.nmax_):
-        #     # multiply order wise
-        #     cnmout=np.dot()
+        for m in range(self.nmax_):
+            istart=i_from_mn(m,m,self.nmax_)
+            iend=i_from_mn(self.nmax_,m,self.nmax_)
+            # multiply order wise
+            np.multiply(self.kernel[m:self.nmax_+1],cnm[istart:iend+1],out=cnmout[istart:iend+1])
+            np.multiply(self.kernel[m:self.nmax_+1],snm[istart:iend+1],out=snmout[istart:iend+1])
+            if sigcnm and sigsnm:
+                np.multiply(self.kernel[m:self.nmax_+1],sigcnm[istart:iend+1],out=sigcnmout[istart:iend+1])
+                np.multiply(self.kernel[m:self.nmax_+1],sigsnm[istart:iend+1],out=sigsnmout[istart:iend+1])
 
         if sigcnm and sigsnm:
             return cnmout,snmout,sigcnmout,sigsnmout

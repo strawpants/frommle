@@ -21,11 +21,6 @@ t2=time.time()
 print("elapsed time fortran implementation",t2-t1)
 
 
-# def mn_from_idx(idx,nmax):
-#     m=int((3+2*nmax)/2-math.sqrt(math.pow(3+2*nmax,2)/4-2*idx));
-#     n=idx-int(((m+1)*(m+2))/2+m*(nmax-m))+m+1
-#     return n,m
-
 #test index functions
 
 for m in range(0,nmax+1):
@@ -36,8 +31,3 @@ for m in range(0,nmax+1):
             print("error:",n,m,ni,mi)
 
 
-# for n in range(nmax+1):
-#     for m in range(n+1):
-#         ind = legendre.PlmIndex(n, m)
-#         ind2=pnm.indxnm(n,m)
-#         print(n,m, ind,ind2,vcval[ind],vc[ind2])

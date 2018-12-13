@@ -55,7 +55,9 @@ namespace frommle{
 
         }
 
-
+        inline int nmax_from_sz(const size_t sz){
+            return (std::sqrt(1.0+8*(sz-1))-1.0)/2.0;
+        }
 
         /*!brief
          * SHBasedimension groups all SH harmonic dimensions together
@@ -65,6 +67,7 @@ namespace frommle{
             using frommle::DimensionBase::index;
             using trig=enum {C=0,S=1};
             using nmtpack=std::tuple<int,int,trig>;
+            SHBaseDimension(const std::string & type, const index sz,const int nmax,const int nmin):DimensionBase(type,sz),nmax_(nmax),nmin_(nmin){}
             virtual index idx(const int n,const int m,const trig t)const=0;
             index idx(const nmtpack & in){
                 int n,m;
@@ -88,7 +91,7 @@ namespace frommle{
             using SHBaseDimension::trig;
             using SHBaseDimension::nmtpack;
             using SHBaseDimension::index;
-            SHmnDim(const int nmax):nmax_(nmax),type_("SHmnDim"),size_(2*i_from_mn(nmax,nmax,nmax)),{
+            SHmnDim(const int nmax):SHBaseDimension("SHmnDim",2*i_from_mn(nmax,nmax,nmax),nmax,0){
             };
             index idx(const int n, const int m, const trig t)const{
                 index shft=(t==trig::C)?0:size_/2;

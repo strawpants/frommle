@@ -71,6 +71,7 @@ void pyexport_sh()
 
     p::def("i_from_mn",&sh::i_from_mn);
     p::def("mn_from_i",&sh::mn_from_i);
+    p::def("nmax_from_sz",&sh::nmax_from_sz);
 
     p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
             .def("__call__",&sh::Legendre_nm_d::operator())
