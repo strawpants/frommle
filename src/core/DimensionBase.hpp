@@ -21,7 +21,9 @@
 #ifndef SRC_CPP_DIMENSIONBASE_HPP_
 #define SRC_CPP_DIMENSIONBASE_HPP_
 
-#include<string>
+#include <string>
+#include <vector>
+
 namespace frommle {
 
 
@@ -38,25 +40,28 @@ namespace frommle {
  * This abstract base class makes sure that the pure virtual functions are implemented and that
  * containers can store (smart) pointers to DimensionBase
  */
-class DimensionBase {
-public:
-	virtual ~DimensionBase() {
-	}
-	using index=size_t;
-	//add 1D index_range and index_gen types here?
-	virtual std::string type() const=0;
-	virtual index size() const=0;
-	virtual bool operator ==(const DimensionBase & in) const {
-		return type_ == in.type_;
-	}
-//	index operator[](index & in);
-private:
-	std::string type_;
-//	bool isPermuted_= false;
-//	std::vector<index> permute_={};
-protected:
+    class DimensionBase {
+    public:
+        virtual ~DimensionBase() {
+        }
 
-};
+        using index=size_t;
+
+        //add 1D index_range and index_gen types here?
+        virtual std::string type() const =0;
+
+        index size() const { return size_; }
+
+        virtual bool operator==(const DimensionBase &in) const {
+            return type_ == in.type_;
+        }
+    private:
+	bool isPermuted_= false;
+	std::vector<index> permute_={};
+    protected:
+        std::string type_ = "FROMMLE";
+        index size_ = 0;
+    };
 
 }
 

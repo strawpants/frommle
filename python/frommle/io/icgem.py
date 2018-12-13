@@ -30,7 +30,8 @@ def read_icgem(filename,headerOnly=False):
             hdr[spl[0]]=spl[1]
 
     try:
-        meta={"nmax":int(hdr["max_degree"]),
+        nmax=int(hdr["max_degree"])
+        meta={"nmax":nmax,
               "lastupdate":modtime,
               "format":"icgem",
               "gm":float(hdr["earth_gravity_constant"]),
@@ -58,7 +59,22 @@ def read_icgem(filename,headerOnly=False):
         return meta
 
     # also extract the coefficients
-    sz=
-    body=np.zeros([10,10])
+    sz=i_from_mn(nmax,nmax,nmax)+1
+    body={'nm':np.zeros([sz],dtype=(int,2)),'C':np.zeros([sz]),'S':np.zeros([sz]),'sigC':np.zeros([sz]),'sigS':np.zeros([sz])}
+    # loop over remaining lines
+    gfcregex=re.compile('^gfc .*')
+    for ln in fid:
+        if gfcregex.match(ln):
+            lnspl=ln.split()
+            n=int(lnspl[1])
+            m=int(lnspl[2])
+            idx=i_from_mn(n,m,nmax)
+            body['nm'][idx]=(n,m)
+            body['C'][idx]=float(lnspl[3])
+            body['S'][idx]=float(lnspl[4])
+            if len(tmp)> 6:
+                body['sigC'][idx]=float(lnspl[5])
+                body['sigS'][idx]=float(lnspl[6])
+
 
     return meta,body

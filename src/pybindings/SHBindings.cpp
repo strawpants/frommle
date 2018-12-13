@@ -60,14 +60,14 @@ void pyexport_sh()
     p::to_python_converter<std::tuple<int,int>, stdtuple_to_btuple<std::tuple<int,int>>> ();
 
 
-    p::enum_<sh::trig>("trig")
-            .value("c",sh::trig::C)
-            .value("s",sh::trig::S);
-
-    p::class_<sh::nmt>("nmt")
-        .def_readwrite("n",&sh::nmt::n)
-        .def_readwrite("m",&sh::nmt::m);
-//        .def_readwrite('t',&sh::nmt::t);
+//    p::enum_<sh::trig>("trig")
+//            .value("c",sh::trig::C)
+//            .value("s",sh::trig::S);
+//
+//    p::class_<sh::nmt>("nmt")
+//        .def_readwrite("n",&sh::nmt::n)
+//        .def_readwrite("m",&sh::nmt::m);
+////        .def_readwrite('t',&sh::nmt::t);
 
     p::def("i_from_mn",&sh::i_from_mn);
     p::def("mn_from_i",&sh::mn_from_i);
