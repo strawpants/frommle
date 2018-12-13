@@ -25,6 +25,7 @@
 #include <math.h>
 #include <vector>
 #include <assert.h>
+#include "sh/SHDimension.hpp"
 //#include <boost/multiprecision/float128.hpp>
 
 #ifndef FROMMLE_SHLEGE_HPP
@@ -40,8 +41,7 @@ namespace frommle{
             std::vector<ftype> operator()(const ftype costheta)const;
             std::vector<ftype> d1at(const ftype costheta)const;
             inline size_t indxnm(const int n, const int m)const{
-                assert(m<=n);
-                return m*(nmax_+1)-(m*(m+1))/2+n;
+                return i_from_mn(n,m,nmax_);
             }
         private:
             int nmax_=0;

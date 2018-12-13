@@ -51,9 +51,13 @@ namespace frommle{
         * @return a tuple containing the degree and order in the first and second element respectively
         */
         inline std::tuple<int,int> mn_from_i(const size_t idx, const int nmax){
-            int m=(3+2*nmax)/2-std::sqrt((3+2*nmax)^2)/4-2*idx);
-            int n=idx-((m+1)*(m+2))/2+m*(nmax-m)+m+1;
+            int m=(3.0+2*nmax)/2-std::sqrt(std::pow(3+2*nmax,2)/4.0-2*idx);
+            int n=idx-(((m+1)*(m+2))/2+m*(nmax-m))+m+1;
+            assert(m<=n);
             return std::make_tuple(n,m);
+
+//            m=int((3+2*nmax)/2-math.sqrt(math.pow(3+2*nmax,2)/4-2*idx));
+//            n=idx-int(((m+1)*(m+2))/2+m*(nmax-m))+m+1
         }
 
 

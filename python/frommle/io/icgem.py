@@ -5,7 +5,7 @@ import os
 import logging
 import re
 import numpy as np
-from frommle.sh import Legendre_nm
+from frommle.sh import i_from_mn
 
 def read_icgem(filename,headerOnly=False):
     """Extract meta information from a (possibly gzipped) icgem file"""

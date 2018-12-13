@@ -76,8 +76,11 @@ namespace frommle {
             //Loop over orders (slowly varying)
             size_t idx;
             cacheEntry<ftype> L1CacheEntry;
+
+
             //initial rescaling is 1e280
             L1CacheEntry.sectorial = 1.0 / numericStabilityFactor;
+
 
             Pnm[0] = 1.0; // or Pnm[0] = L1CacheEntry.sectorial*numericStabilityFactor
 
@@ -88,7 +91,6 @@ namespace frommle {
                 //compute offdiagonal element
                 L1CacheEntry.pnmin1 = wnm_[idx + 1] * costheta * L1CacheEntry.pnmin2;
                 Pnm[idx + 1] = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
-
                 //loop over remaining degrees
                 for (int n = m + 2; n <= nmax_ + 1; ++n) {
                     idx = indxnm(n, m);
