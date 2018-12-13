@@ -44,23 +44,16 @@ namespace frommle{
             return m*(nmax+1)-(m*(m+1))/2+n;
         }
 
-    /*!brief retrieve the degree and order from a index sorted by order and degree (no trig variable
-    *
-    * @param idx input index (zero based)
-    * @param nmax maximum degree for which has been allocated
-    * @return a tuple containing the degree and order in the first and second element respectively
-    */
+        /*!brief retrieve the degree and order from a index sorted by order and degree (no trig variable
+        *
+        * @param idx input index (zero based)
+        * @param nmax maximum degree for which has been allocated
+        * @return a tuple containing the degree and order in the first and second element respectively
+        */
         inline std::tuple<int,int> mn_from_i(const size_t idx, const int nmax){
-            size_t colidx;
-
-            int n;
-            for(int m=0;m<=nmax+1;++m) {
-                colidx = m * (nmax + 1) - (m * (m + 1)) / 2+nmax;
-                if (idx <= colidx) {
-                    n=nmax-colidx+idx;
-                    return std::make_tuple(n, m);
-                }
-            }
+            int m=(3+2*nmax)/2-std::sqrt((3+2*nmax)^2)/4-2*idx);
+            int n=idx-((m+1)*(m+2))/2+m*(nmax-m)+m+1;
+            return std::make_tuple(n,m);
         }
 
 

@@ -1,5 +1,5 @@
 /*! \file
- \brief Holds the base for the Dimension class
+ \brief Holds the base for the templated guided array class
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -18,10 +18,10 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef SRC_CPP_ANNOTARRAYBASE_HPP_
-#define SRC_CPP_ANNOTARRAYBASE_HPP_
+#ifndef SRC_CPP_GARRAYBASE_HPP_
+#define SRC_CPP_GARRAYBASE_HPP_
 
-#include<string>
+#include <string>
 
 namespace frommle {
 
@@ -29,10 +29,11 @@ namespace frommle {
 /*!
  * \brief Abstract base class for storing data and the corresponding dimensions
  * This class support the storing of multidimensional data in memory, whose dimensions are linked to Dimension objects
+ * Furthermore, a unitbase can be assigned to the array
  */
-class AnnotedArrayBase {
+class GArrayBase {
 public:
-	virtual ~AnnotedArrayBase() {
+	virtual ~GArrayBase() {
 	}
 private:
 protected:
@@ -41,4 +42,4 @@ protected:
 
 }
 
-#endif /* SRC_CPP_ANNOTARRAYBASE_HPP_*/
+#endif /* SRC_CPP_GARRAYBASE_HPP_*/

@@ -1,5 +1,5 @@
-LIST(APPEND COREHEADERS core/DimensionBase.hpp core/TimeDimension.hpp core/AnnotedArrayBase.hpp core/OperatorBase.hpp core/InputArchiveBase.hpp
-        core/OutputArchiveBase.hpp)
+LIST(APPEND COREHEADERS core/DimensionBase.hpp core/TimeDimension.hpp core/GArrayBase.hpp core/OperatorBase.hpp core/InputArchiveBase.hpp
+        core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp)
 LIST(APPEND COREOBJS core/TimeDimension.cpp)
 
 LIST(APPEND SHHEADERS sh/SHDimension.hpp sh/Legendre_nm.hpp)

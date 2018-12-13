@@ -8,6 +8,7 @@ namespace np = boost::python::numpy;
 
 #include "sh/SHDimension.hpp"
 #include "sh/Legendre_nm.hpp"
+#include "core/seqGenerator.hpp"
 
 using namespace frommle;
 
@@ -29,30 +30,16 @@ struct vec_to_ndarray{
 };
 
 
-//dummy struct which has a list of int template arguments (to be used for compile timne generation of lists)
-template<int...>
-struct sequence {};
-
-//recursive generate a list with integer template elements
-template<int N, int ...S>
-struct generator : generator<N-1, N-1, S...> { };
-
-//this stops the above recursion and sets the using member type to the sequence
-template<int... S>
-struct generator<0, S...> {
-    using type = sequence<S...>;
-};
-
 
 
 template<class T>
 struct stdtuple_to_btuple{
   static PyObject* convert(T const & tin){
-        return p::incref(getbtuple(tin,typename generator<std::tuple_size<T>::value>::type()).ptr());
+        return p::incref(getbtuple(tin,typename frommle::core::seqGenerator<std::tuple_size<T>::value>::type()).ptr());
 
   }
   template <int ...S>
-  static p::tuple getbtuple(T const & tin, sequence<S...>){
+  static p::tuple getbtuple(T const & tin, frommle::core::sequence<S...>){
         return p::make_tuple(std::get<S>(tin)...);
     }
 

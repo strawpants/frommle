@@ -1,5 +1,5 @@
-/*! \file
- \brief Holds the base for the Dimension class
+/*! \file contains some template tools to generate sequences
+ \brief 
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -17,38 +17,33 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-#ifndef SRC_CPP_UNITBASE_HPP_
-#define SRC_CPP_UNITBASE_HPP_
-
-#include<string>
+#ifndef FROMMLE_SEQUENCE_HPP
+#define FROMMLE_SEQUENCE_HPP
 
 namespace frommle {
+    namespace core {
+
+/*!brief Empty struct which has a specialization with a list of int arguments (to be used for compile time sequence generation)
+*/
+        template<int...>
+        struct sequence {
+        };
+
+/*!brief recursively generate a sequence with integer template elements
+*/
+        template<int N, int ...S>
+        struct seqGenerator : seqGenerator<N - 1, N - 1, S...> {
+        };
+
+/*! brief this stops the above recursion and sets the type member to the generated sequence<0,1,2, ...>
+*/
+        template<int... S>
+        struct seqGenerator<0, S...> {
+            using type = sequence<S...>;
+        };
 
 
-/*!
- * \brief Abstract base class for describing a unit and with possibly some defining parameters
- *
- */
-class UnitBase {
-public:
-	virtual ~UnitBase() {
-	}
-	virtual std::string format() const=0;
-	/*!
-	 * Compares 2 Units
-	 * @param UnitBase to compare with
-	 * @return true or false
-	 */
-	virtual bool operator ==(const UnitBase & in) const {
-		return false;
-	}
-private:
-	std::string type_=0;
-protected:
-
-};
-
+    }
 }
 
-#endif /* SRC_CPP_UNITBASE_HPP_*/
+#endif //FROMMLE_SEQUENCE_HPP
