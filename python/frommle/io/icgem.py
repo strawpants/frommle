@@ -7,7 +7,7 @@ import re
 import numpy as np
 from frommle.sh import i_from_mn
 
-def read_icgem(filename,headerOnly=False):
+def read_icgem(filename, nmax=None, headerOnly=False):
     """Extract meta information from a (possibly gzipped) icgem file"""
 
     modtime=datetime.fromtimestamp(os.path.getmtime(filename))
@@ -30,8 +30,13 @@ def read_icgem(filename,headerOnly=False):
             hdr[spl[0]]=spl[1]
 
     try:
-        nmax=int(hdr["max_degree"])
-        meta={"nmax":nmax,
+        nmaxsupp=int(hdr["max_degree"])
+        if nmax:
+            if nmax > nmaxsupp:
+                logging.warning("warning nmax requested larger than supported, setting to zero")
+        nmax=nmaxsupp
+
+        meta={"nmax":nmaxsupp,
               "lastupdate":modtime,
               "format":"icgem",
               "gm":float(hdr["earth_gravity_constant"]),
@@ -67,6 +72,9 @@ def read_icgem(filename,headerOnly=False):
         if gfcregex.match(ln):
             lnspl=ln.split()
             n=int(lnspl[1])
+            if n> nmax:
+                continue
+
             m=int(lnspl[2])
             idx=i_from_mn(n,m,nmax)
             body['nm'][idx]=(n,m)
