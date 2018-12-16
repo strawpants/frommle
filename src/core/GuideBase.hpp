@@ -28,33 +28,34 @@ namespace frommle {
 
 
 /*!
- * \brief Abstract base class for describing dimensions
- * The general idea behind the Dimension class is that it is used to describe the dimension of an array/vector
+ * \brief Abstract base class for describing  guided dimensions
+ * The general idea behind the Guide classes is that they are used to add value to the dimension of an array/vector
  * Derived classes are expected to provide the following functionality:
  * -# Encapsulate functions (notably index functions) which are specific to the dimension
  * -# Allow serialization to read from/write to archives and other processes
  * -# Keep track of permutations so that an underlying linked array may be permuted but the indexing stays the same
  * -# Provide ways to compare and permute with other Dimensions so that they can be sorted relative to each other
  * -# Can be used as template arguments in order to select the correct functions at compile time (e.g. an observation equation)
- * Please see the class \ref TimeDimension for an example of a derived class
+ * Please see the class \ref TimeGuide or \ref IndexGuide for an example of a derived class
  * This abstract base class makes sure that the pure virtual functions are implemented and that
  * containers can store (smart) pointers to DimensionBase
  */
-    class DimensionBase {
+    class GuideBase {
     public:
         using index=size_t;
-        DimensionBase(){};
-        DimensionBase(const std::string & type, const index &sz):type_(type),size_(sz){}
-        virtual ~DimensionBase() {
+        GuideBase(){};
+        GuideBase(const std::string & type, const index &sz):type_(type),size_(sz){}
+        GuideBase(const std::string & type):type_(type){}
+        virtual ~GuideBase() {
         }
 
 
         //add 1D index_range and index_gen types here?
-        virtual std::string type() const =0;
+        virtual std::string type() const {return type_;}
 
         index size() const { return size_; }
 
-        virtual bool operator==(const DimensionBase &in) const {
+        virtual bool operator==(const GuideBase &in) const {
             return type_ == in.type_;
         }
     private:

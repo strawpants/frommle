@@ -17,7 +17,8 @@
 
 from frommle.earthmodels import LoadLove
 from frommle.gravity.earth import rho_w,rho_e,RE
-from frommle.sh import i_from_mn
+from frommle.sh import SHtmnDim
+i_from_mn=SHtmnDim.i_from_mn
 import numpy as np
 
 class Stokes2eqh():

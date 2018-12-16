@@ -5,7 +5,8 @@ import os
 import logging
 import re
 import numpy as np
-from frommle.sh import i_from_mn
+from frommle.sh import SHtmnDim
+i_from_mn=SHtmnDim.i_from_mn
 
 def read_icgem(filename, nmax=None, headerOnly=False):
     """Extract meta information from a (possibly gzipped) icgem file"""

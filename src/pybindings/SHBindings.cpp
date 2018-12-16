@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
+#include <boost/core/noncopyable.hpp>
 #include <boost/python/tuple.hpp>
 
 namespace p = boost::python;
@@ -60,18 +61,27 @@ void pyexport_sh()
     p::to_python_converter<std::tuple<int,int>, stdtuple_to_btuple<std::tuple<int,int>>> ();
 
 
-//    p::enum_<sh::trig>("trig")
-//            .value("c",sh::trig::C)
-//            .value("s",sh::trig::S);
+    p::enum_<sh::SHBaseDimension::trig>("trig")
+            .value("c",sh::SHBaseDimension::trig::C)
+            .value("s",sh::SHBaseDimension::trig::S);
+
+
+    p::to_python_converter<sh::SHBaseDimension::nmtpack, stdtuple_to_btuple<sh::SHBaseDimension::nmtpack> >();
 //
-//    p::class_<sh::nmt>("nmt")
+//    p::class_<sh::SHBaseDimension::nmt>("nmt")
 //        .def_readwrite("n",&sh::nmt::n)
 //        .def_readwrite("m",&sh::nmt::m);
 ////        .def_readwrite('t',&sh::nmt::t);
 
-    p::def("i_from_mn",&sh::i_from_mn);
-    p::def("mn_from_i",&sh::mn_from_i);
+//    p::def("i_from_mn",&sh::i_from_mn);
+//    p::def("mn_from_i",&sh::mn_from_i);
     p::def("nmax_from_sz",&sh::nmax_from_sz);
+
+    p::class_<sh::SHtmnDim >("SHtmnDim",p::init<int>())
+            .def("idx",&sh::SHtmnDim::idx)
+            .def("nmt",&sh::SHtmnDim::nmt)
+            .def("i_from_mn",&sh::SHtmnDim::i_from_mn).staticmethod("i_from_mn")
+            .def("mn_from_i",&sh::SHtmnDim::mn_from_i).staticmethod("mn_from_i");
 
     p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
             .def("__call__",&sh::Legendre_nm_d::operator())

@@ -72,7 +72,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 #We need the boost library for various things (e.g. timing and dates)
 #find_package(Boost REQUIRED COMPONENTS system chrono program_options date_time serialization ${WITH_BOOST_MPI} iostreams)
-find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework ${WITH_BOOST_MPI})
+find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time ${WITH_BOOST_MPI})
 
 #add Boost include path
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})

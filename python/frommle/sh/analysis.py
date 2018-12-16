@@ -15,8 +15,10 @@
 
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 from frommle.sh import Legendre_nm
-from frommle.sh import nmax_from_sz,i_from_mn
+from frommle.sh import nmax_from_sz
 import math
+from frommle.sh import SHtmnDim
+i_from_mn=SHtmnDim.i_from_mn
 import numpy as np
 def SH2loc(loc,cnm,snm):
     """Performs a SH analysis on a set of points"""

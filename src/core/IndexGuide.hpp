@@ -1,5 +1,5 @@
 /*! \file
- \brief Implementation file for the TimeDimension class
+ \brief 
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -17,15 +17,25 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#include "core/GuideBase.hpp"
 
-
-#include "core/TimeDimension.hpp"
+#ifndef FROMMLE_INDEXGUIDE_HPP
+#define FROMMLE_INDEXGUIDE_HPP
 
 namespace frommle{
+    namespace core{
 
-/* default constructor */
-    TimeDimension::TimeDimension() {
+        /*!brief
+         * A guide which keeps track on (permuted) indices
+         */
+        class IndexGuide:public GuideBase{
+        public:
+            IndexGuide():GuideBase("IndexGuide"){}
+            IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
+        };
+
 
     }
-
 }
+
+#endif //FROMMLE_INDEXGUIDE_HPP

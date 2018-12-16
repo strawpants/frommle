@@ -1,6 +1,6 @@
-LIST(APPEND COREHEADERS core/DimensionBase.hpp core/TimeDimension.hpp core/GArrayBase.hpp core/OperatorBase.hpp core/InputArchiveBase.hpp
-        core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp)
-LIST(APPEND COREOBJS core/TimeDimension.cpp)
+LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/OperatorBase.hpp core/InputArchiveBase.hpp
+        core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp )
+LIST(APPEND COREOBJS core/TimeGuide.cpp)
 
 LIST(APPEND SHHEADERS sh/SHDimension.hpp sh/Legendre_nm.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp)

@@ -1,3 +1,12 @@
+#Core testing modules
+set(TESTBASE coretesting)
+add_executable(${TESTBASE} cppTests/${TESTBASE}.cpp )
+target_include_directories(${TESTBASE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(${TESTBASE} ${FROMMLELIB} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE} ${Boost_DATE_TIME_LIBRARY})
+list(APPEND ALLTESTS ${TESTBASE})
+
+
+#SH testing modules
 set(TESTBASE SHtesting)
 add_executable(${TESTBASE} cppTests/${TESTBASE}.cpp )
 target_include_directories(${TESTBASE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
