@@ -81,7 +81,7 @@ def read_icgem(filename, nmax=None, headerOnly=False):
             body['nm'][idx]=(n,m)
             body['C'][idx]=float(lnspl[3])
             body['S'][idx]=float(lnspl[4])
-            if len(tmp)> 6:
+            if len(lnspl)> 6:
                 body['sigC'][idx]=float(lnspl[5])
                 body['sigS'][idx]=float(lnspl[6])
 
