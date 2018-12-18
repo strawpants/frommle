@@ -23,7 +23,7 @@ if (PYTHON)
         add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ./setup.py develop
                 COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS} ${FROMMLELIB} ${FROMMLEPYLIB} ${SETUP_PY}  )
     else ()
-        add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ${SETUP_PY} develop
+        add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ${SETUP_PY} bdist_wheel
                 COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS} ${FROMMLELIB} ${FROMMLEPYLIB} )
     endif ()
 

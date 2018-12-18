@@ -35,15 +35,15 @@ namespace frommle{
         }
 
         /*!brief
-         * SHBasedimension groups all SH harmonic dimensions together
+         * SHiGuideBase groups all SH harmonic dimensions together
          */
-        class SHBaseDimension:public GuideBase{
+        class SHGuideBase:public GuideBase{
         public:
             using frommle::GuideBase::index;
             using trig=enum {C=0,S=1};
             using nmtpack=std::tuple<int,int,trig>;
-            SHBaseDimension()=default;
-            SHBaseDimension(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
+            SHGuideBase()=default;
+            SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
             virtual index idx(const int n,const int m,const trig t)const=0;
 //            index idx(const nmtpack & in){
 //                int n,m;
@@ -62,13 +62,13 @@ namespace frommle{
          * The scheme uses the sorting order for Cosines and Sine coefficients and thus
          * includes S_n0 terms (which should be zero)
          */
-        class SHtmnDim: public SHBaseDimension{
+        class SHtmnDim: public SHGuideBase{
         public:
-            using SHBaseDimension::trig;
-            using SHBaseDimension::nmtpack;
-            using SHBaseDimension::index;
+            using SHGuideBase::trig;
+            using SHGuideBase::nmtpack;
+            using SHGuideBase::index;
             SHtmnDim()=default;
-            SHtmnDim(const int nmax):SHBaseDimension("SHtmnDim",2*SHtmnDim::i_from_mn(nmax,nmax,nmax),nmax,0){
+            SHtmnDim(const int nmax):SHGuideBase("SHtmnDim",2*SHtmnDim::i_from_mn(nmax,nmax,nmax),nmax,0){
             };
             index idx(const int n, const int m, const trig t)const{
                 index shft=(t==trig::C)?0:size_/2;

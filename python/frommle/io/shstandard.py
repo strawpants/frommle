@@ -18,8 +18,7 @@
 import numpy as np
 from frommle.core.time import decyear2datetime
 from frommle.sh import SHtmnDim
-
-i_from_mn = SHtmnDim.i_from_mn
+from frommle.sh.shdata import shdata
 
 
 def read_shstandard(file, nmax=None, headerOnly=False):
@@ -35,9 +34,7 @@ def read_shstandard(file, nmax=None, headerOnly=False):
 
         # also extract the body
         nmax=meta['nmax']
-        sz = i_from_mn(nmax, nmax, nmax) + 1
-        body = {'nm': np.zeros([sz], dtype=(int, 2)), 'C': np.zeros([sz]), 'S': np.zeros([sz]), 'sigC': np.zeros([sz]),
-                'sigS': np.zeros([sz])}
+        shout=shdata(nmax)
         for ln in fid:
             lnspl = ln.split()
             n = int(lnspl[0])
@@ -45,12 +42,12 @@ def read_shstandard(file, nmax=None, headerOnly=False):
                 continue
 
             m = int(lnspl[1])
-            idx = i_from_mn(n, m, nmax)
-            body['nm'][idx] = (n, m)
-            body['C'][idx] = float(lnspl[2])
-            body['S'][idx] = float(lnspl[3])
-            if len(lnspl) > 5:
-                body['sigC'][idx] = float(lnspl[4])
-                body['sigS'][idx] = float(lnspl[5])
+            idx = shout.idx(n, m)
 
-    return meta,body
+            shout.C[idx] = float(lnspl[2])
+            shout.S[idx] = float(lnspl[3])
+            if len(lnspl) > 5:
+                shout.sigC[idx] = float(lnspl[4])
+                shout.sigS[idx] = float(lnspl[5])
+
+    return meta,shout

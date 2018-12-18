@@ -25,44 +25,43 @@ import urllib
 #download necessary files from github
 direc='ddktest'
 
-ddkfile=os.path.join(direc,'DDK1.bin')
-
 try:
     os.mkdir(direc)
 except FileExistsError:
     pass
 
-if not os.path.exists(ddkfile):
-    urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/data/DDK/Wbd_2-120.a_1d10p_4",ddkfile)
+shfilebase='GSM-2_2008122-2008153_0030_EIGEN_G---_0004'
+shvariations=['in','out','lmax60out','lmax60in']
 
+for shvar in shvariations:
+    fout=os.path.join(direc,shfilebase+shvar)
+    if not os.path.exists(fout):
+        urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/tests/"+shfilebase+shvar,fout)
 
-inputf=os.path.join(direc,'inGSM.sh')
-if not os.path.exists(inputf):
-    urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/tests/GSM-2_2008122-2008153_0030_EIGEN_G---_0004in",inputf)
-
-
-outputf=os.path.join(direc,'outGSM.sh')
-if not os.path.exists(outputf):
-    urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/tests/GSM-2_2008122-2008153_0030_EIGEN_G---_0004out",outputf)
-
-inputfn60=os.path.join(direc,'inGSMn60.sh')
-if not os.path.exists(inputfn60):
-    urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/tests/GSM-2_2008122-2008153_0030_EIGEN_G---_0004lmax60in",inputfn60)
-
-
-outputfn60=os.path.join(direc,'outGSMn60.sh')
-if not os.path.exists(outputfn60):
-    urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/tests/GSM-2_2008122-2008153_0030_EIGEN_G---_0004lmax60out",outputfn60)
-
-hdr,incoef=read_shstandard(inputf)
+ddkfilt='Wbd_2-120.a_1d13p_4'
+filtfile=os.path.join(direc,ddkfilt)
+if not os.path.exists(filtfile):
+    urllib.request.urlretrieve("https://github.com/strawpants/GRACE-filter/raw/master/data/DDK/"+ddkfilt,filtfile)
 
 
 
-filt=DDKfilter(ddkfile)
+# hdr,incoef=read_shstandard(inputf)
 
 
 
+filt=DDKfilter(filtfile)
 
-cnmout,snmout=filt(incoef)
+
+
+fin=os.path.join(direc,shfilebase+"lmax60in")
+fcheck=os.path.join(direc,shfilebase+"lmax60out")
+hdr,coefin=read_shstandard(fin)
+hdr,coefchk=read_shstandard(fcheck)
+coef=filt(coefin)
+tol=1e-22
+for i,(cf,cck,sf,sck) in enumerate(zip (coef.C,coefchk.C,coef.S,coefchk.S)):
+    if (abs(cf-cck)> tol or abs(sf-sck) >tol):
+        raise Exception("Comparison not within tolerance")
+    # print(coef.nm(i),cf,cck,sf,sck)
 # dat=readBIN(file)
 

@@ -7,7 +7,7 @@
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
-#include "sh/SHDimension.hpp"
+#include "sh/SHGuide.hpp"
 #include "sh/Legendre_nm.hpp"
 #include "core/seqGenerator.hpp"
 
@@ -61,14 +61,14 @@ void pyexport_sh()
     p::to_python_converter<std::tuple<int,int>, stdtuple_to_btuple<std::tuple<int,int>>> ();
 
 
-    p::enum_<sh::SHBaseDimension::trig>("trig")
-            .value("c",sh::SHBaseDimension::trig::C)
-            .value("s",sh::SHBaseDimension::trig::S);
+    p::enum_<sh::SHGuideBase::trig>("trig")
+            .value("c",sh::SHGuideBase::trig::C)
+            .value("s",sh::SHGuideBase::trig::S);
 
 
-    p::to_python_converter<sh::SHBaseDimension::nmtpack, stdtuple_to_btuple<sh::SHBaseDimension::nmtpack> >();
+    p::to_python_converter<sh::SHGuideBase::nmtpack, stdtuple_to_btuple<sh::SHGuideBase::nmtpack> >();
 //
-//    p::class_<sh::SHBaseDimension::nmt>("nmt")
+//    p::class_<sh::SHGuideBase::nmt>("nmt")
 //        .def_readwrite("n",&sh::nmt::n)
 //        .def_readwrite("m",&sh::nmt::m);
 ////        .def_readwrite('t',&sh::nmt::t);

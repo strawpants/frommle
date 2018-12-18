@@ -2,7 +2,7 @@ LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hp
         core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp )
 LIST(APPEND COREOBJS core/TimeGuide.cpp)
 
-LIST(APPEND SHHEADERS sh/SHDimension.hpp sh/Legendre_nm.hpp)
+LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp)
 
 if (PYTHON)

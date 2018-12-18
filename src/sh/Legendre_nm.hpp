@@ -25,7 +25,7 @@
 #include <math.h>
 #include <vector>
 #include <assert.h>
-#include "sh/SHDimension.hpp"
+#include "sh/SHGuide.hpp"
 //#include <boost/multiprecision/float128.hpp>
 
 #ifndef FROMMLE_SHLEGE_HPP

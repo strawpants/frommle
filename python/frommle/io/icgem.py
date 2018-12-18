@@ -5,8 +5,7 @@ import os
 import logging
 import re
 import numpy as np
-from frommle.sh import SHtmnDim
-i_from_mn=SHtmnDim.i_from_mn
+from frommle.sh.shdata import shdata
 
 def read_icgem(filename, nmax=None, headerOnly=False):
     """Extract meta information from a (possibly gzipped) icgem file"""
@@ -65,8 +64,7 @@ def read_icgem(filename, nmax=None, headerOnly=False):
         return meta
 
     # also extract the coefficients
-    sz=i_from_mn(nmax,nmax,nmax)+1
-    body={'nm':np.zeros([sz],dtype=(int,2)),'C':np.zeros([sz]),'S':np.zeros([sz]),'sigC':np.zeros([sz]),'sigS':np.zeros([sz])}
+    shout=shdata(nmax)
     # loop over remaining lines
     gfcregex=re.compile('^gfc .*')
     for ln in fid:
@@ -77,13 +75,12 @@ def read_icgem(filename, nmax=None, headerOnly=False):
                 continue
 
             m=int(lnspl[2])
-            idx=i_from_mn(n,m,nmax)
-            body['nm'][idx]=(n,m)
-            body['C'][idx]=float(lnspl[3])
-            body['S'][idx]=float(lnspl[4])
+            idx=shout.idx(n,m)
+            shout.C[idx]=float(lnspl[3])
+            shout.S[idx]=float(lnspl[4])
             if len(lnspl)> 6:
-                body['sigC'][idx]=float(lnspl[5])
-                body['sigS'][idx]=float(lnspl[6])
+                shout.sigC[idx]=float(lnspl[5])
+                shout.sigS[idx]=float(lnspl[6])
 
 
-    return meta,body
+    return meta,shout
