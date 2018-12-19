@@ -17,20 +17,42 @@
 
 import numpy as np
 from frommle.sh import SHtmnDim
+import math
 
 class shdata():
     """Contains a class which holds a SH dataset and some index functions"""
     nmax=0
-    def __init__(self,nmax):
+    errors=False
+    def __init__(self,nmax,errors=True):
         self.nmax=nmax
         sz = SHtmnDim.i_from_mn(nmax, nmax, nmax) + 1
         self.C=np.zeros([sz])
         self.S=np.zeros([sz])
-        self.sigC=np.zeros([sz])
-        self.sigS=np.zeros([sz])
+        self.errors=errors
+
+        if self.errors:
+            self.sigC=np.zeros([sz])
+            self.sigS=np.zeros([sz])
 
     def idx(self,n,m):
         return SHtmnDim.i_from_mn(n,m,self.nmax)
 
     def nm(self,idx):
         return SHtmnDim.mn_from_i(idx,self.nmax)
+
+    def __add__(self,other):
+        if other.nmax != self.nmax:
+            raise RuntimeError("Error in shdata __add__ maximum degrees do not agree, %d, %d"%(self.nmax,other.nmax))
+        shout=shdata(self.nmax)
+        shout.C=self.C+other.C
+        shout.S=self.S+other.S
+        return shout
+
+    def __sub__(self,other):
+        if other.nmax != self.nmax:
+            raise RuntimeError("Error in shdata __add__ maximum degrees do not agree, %d, %d"%(self.nmax,other.nmax))
+        shout=shdata(self.nmax)
+        shout.C=self.C-other.C
+        shout.S=self.S-other.S
+        return shout
+

@@ -34,7 +34,8 @@ def read_icgem(filename, nmax=None, headerOnly=False):
         if nmax:
             if nmax > nmaxsupp:
                 logging.warning("warning nmax requested larger than supported, setting to zero")
-        nmax=nmaxsupp
+        else:
+            nmax=nmaxsupp
 
         meta={"nmax":nmaxsupp,
               "lastupdate":modtime,
