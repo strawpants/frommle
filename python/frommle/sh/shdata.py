@@ -41,18 +41,42 @@ class shdata():
         return SHtmnDim.mn_from_i(idx,self.nmax)
 
     def __add__(self,other):
-        if other.nmax != self.nmax:
-            raise RuntimeError("Error in shdata __add__ maximum degrees do not agree, %d, %d"%(self.nmax,other.nmax))
+        if other.nmax > self.nmax:
+            raise RuntimeError("Error in shdata __add__ maximum degrees of right hand is larger than left hand %d, %d"%(self.nmax,other.nmax))
         shout=shdata(self.nmax)
-        shout.C=self.C+other.C
-        shout.S=self.S+other.S
+        if other.nmax== self.nmax:
+            shout.C=self.C+other.C
+            shout.S=self.S+other.S
+        else:
+            shout.C=self.C
+            shout.S=self.S
+            # we need a full loop
+            for i,(c,s) in enumerate(zip(other.C,other.S)):
+                n,m=other.mn_from_i(i)
+                idx=self.mn_from_i(n,m)
+                shout.C[idx]+=c
+                if m > 0:
+                    shout.S[idx]+=s
+
         return shout
 
     def __sub__(self,other):
-        if other.nmax != self.nmax:
-            raise RuntimeError("Error in shdata __add__ maximum degrees do not agree, %d, %d"%(self.nmax,other.nmax))
+        if other.nmax > self.nmax:
+            raise RuntimeError("Error in shdata __sub__ maximum degrees of right hand is larger than left hand %d, %d"%(self.nmax,other.nmax))
         shout=shdata(self.nmax)
-        shout.C=self.C-other.C
-        shout.S=self.S-other.S
+        if other.nmax== self.nmax:
+            shout.C=self.C-other.C
+            shout.S=self.S-other.S
+        else:
+            shout.C=self.C
+            shout.S=self.S
+            # we need a full loop
+            for i,(c,s) in enumerate(zip(other.C,other.S)):
+                n,m=other.mn_from_i(i)
+                idx=self.mn_from_i(n,m)
+                shout.C[idx]-=c
+                if m > 0:
+                    shout.S[idx]-=s
+
         return shout
 
