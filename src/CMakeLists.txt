@@ -1,8 +1,8 @@
-LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/OperatorBase.hpp core/InputArchiveBase.hpp
-        core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp )
+LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp core/InputArchiveBase.hpp
+        core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp)
 LIST(APPEND COREOBJS core/TimeGuide.cpp)
 
-LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp)
+LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp)
 
 if (PYTHON)
