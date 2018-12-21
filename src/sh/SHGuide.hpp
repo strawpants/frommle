@@ -43,6 +43,7 @@ namespace frommle{
             using trig=enum {C=0,S=1};
             using nmtpack=std::tuple<int,int,trig>;
             SHGuideBase()=default;
+            int nmax()const{return nmax_;}
             SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
             virtual index idx(const int n,const int m,const trig t)const=0;
 //            index idx(const nmtpack & in){

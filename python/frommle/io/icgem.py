@@ -6,8 +6,69 @@ import logging
 import re
 import numpy as np
 from frommle.sh.shdata import shdata
+from datetime import datetime
+import math
 
-def read_icgem(filename, nmax=None, headerOnly=False):
+class icgemLineParser():
+    def __init__(self,nmax,epoch):
+        self.epoch=epoch
+        self.nmax=nmax
+        self.t0=None
+        self.diyr=365.25
+        self.regex=re.compile('(^gfc .*)|(^gfct .*)|(^trnd .*)|(^acos .*)|(^asin .*)')
+    def __call__(self,ln):
+        """Parse a icgem line and return an update to the coefficient"""
+        if not self.regex.match(ln):
+            return None,None,None,None,None,None
+
+        lnspl=ln.split()
+        n=int(lnspl[1])
+        if n> self.nmax:
+            return None,None,None,None,None,None
+
+        m=int(lnspl[2])
+        C=float(lnspl[3])
+        S=float(lnspl[4])
+        if len(lnspl)> 6:
+            sigC=float(lnspl[5])
+            sigS=float(lnspl[6])
+        else:
+            sigC=0
+            sigS=0
+
+        if lnspl[0] =='gfc':
+            return n,m,C,S,sigC,sigS
+
+        #otherwise consider this as a time variable component
+        elif lnspl[0] =='gfct':
+            # also read/set the reference time from the last element
+            self.t0=datetime.strptime(lnspl[-1],'%Y%m%d')
+            return n,m,C,S,sigC,sigS
+
+        if not self.epoch:
+            #quick return if no time variable component is requested
+            return None,None,None,None,None,None
+
+        if lnspl[0] =='trnd':
+            #add a linear trend
+            scale=(self.epoch-self.t0).days/self.diyr
+            return n,m,scale*C,scale*S,scale*sigC,scale*sigS
+
+        elif lnspl[0] =='acos':
+            #add a cosine term
+            dt=(self.epoch-self.t0).days/self.diyr
+            omega=2*math.pi*float(lnspl[-1])/self.diyr
+            scale=math.cos(omega*dt)
+            return n,m,scale*C,scale*S,scale*sigC,scale*sigS
+
+        elif lnspl[0] =='asin':
+            #add a cosine term
+            dt=(self.epoch-self.t0).days/self.diyr
+            omega=2*math.pi*float(lnspl[-1])/self.diyr
+            scale=math.sin(omega*dt)
+            return n,m,scale*C,scale*S,scale*sigC,scale*sigS
+
+def read_icgem(filename, nmax=None, headerOnly=False, epoch=None):
     """Extract meta information from a (possibly gzipped) icgem file"""
 
     modtime=datetime.fromtimestamp(os.path.getmtime(filename))
@@ -36,10 +97,14 @@ def read_icgem(filename, nmax=None, headerOnly=False):
                 logging.warning("warning nmax requested larger than supported, setting to zero")
         else:
             nmax=nmaxsupp
+        if 'format' in hdr:
+            format=hdr['format']
+        else:
+            format='icgem'
 
         meta={"nmax":nmaxsupp,
               "lastupdate":modtime,
-              "format":"icgem",
+              "format":format,
               "gm":float(hdr["earth_gravity_constant"]),
               "re":float(hdr["radius"]),
               "uri":filename,
@@ -66,22 +131,22 @@ def read_icgem(filename, nmax=None, headerOnly=False):
 
     # also extract the coefficients
     shout=shdata(nmax)
+
+    if format == "icgem":
+        lParser=icgemLineParser(nmax,epoch)
+    else:
+        raise RuntimeError("The icgem format '%s' is currently unsupported"%(format))
+
     # loop over remaining lines
-    gfcregex=re.compile('^gfc .*')
+
     for ln in fid:
-        if gfcregex.match(ln):
-            lnspl=ln.split()
-            n=int(lnspl[1])
-            if n> nmax:
-                continue
-
-            m=int(lnspl[2])
-            idx=shout.idx(n,m)
-            shout.C[idx]=float(lnspl[3])
-            shout.S[idx]=float(lnspl[4])
-            if len(lnspl)> 6:
-                shout.sigC[idx]=float(lnspl[5])
-                shout.sigS[idx]=float(lnspl[6])
-
+        n,m,c,s,sigc,sigs=lParser(ln)
+        if not n :
+            continue
+        idx=shout.idx(n,m)
+        shout.C[idx]+=c
+        shout.S[idx]+=s
+        shout.sigC[idx]=math.sqrt(math.pow(shout.sigC[idx],2)+math.pow(sigc,2))
+        shout.sigS[idx]=math.sqrt(math.pow(shout.sigS[idx],2)+math.pow(sigs,2))
 
     return meta,shout
