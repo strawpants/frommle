@@ -31,7 +31,7 @@
 namespace frommle{
     namespace sh{
         template<class spatialG,class SHG>
-        class SHanalysis:public GOperator<spatialG,SHG>{
+        class SHanalysis:public frommle::core::GOperator<spatialG,SHG>{
         public:
             SHanalysis(spatialG && spatg, SHG && shg ){
                 GOperator(std::move(spatg),std::move(shg));
@@ -50,7 +50,7 @@ namespace frommle{
 
                 Legendre_nm_d Pnm(g<1>().nmax()));
                 std::vector<double> pnmvals;
-                for ( auto & loc:g<0>().geoms()){
+                for ( auto & loc:g<0>().begin()){
                     std::tie(lon,lat)=loc;
                     if (latold != lat){
                         pnmvals=Pnm(std::sin(lat*D2R));

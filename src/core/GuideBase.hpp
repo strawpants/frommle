@@ -25,7 +25,7 @@
 #include <vector>
 
 namespace frommle {
-
+namespace core {
 
 /*!
  * \brief Abstract base class for describing  guided dimensions
@@ -43,29 +43,34 @@ namespace frommle {
     class GuideBase {
     public:
         using index=size_t;
-        GuideBase(){};
-        GuideBase(const std::string & type, const index &sz):type_(type),size_(sz){}
-        GuideBase(const std::string & type):type_(type){}
+
+        GuideBase() {};
+
+        GuideBase(const std::string &type, const index &sz) : type_(type), size_(sz) {}
+
+        GuideBase(const std::string &type) : type_(type) {}
+
         virtual ~GuideBase() {
         }
 
 
         //add 1D index_range and index_gen types here?
-        virtual std::string type() const {return type_;}
+        virtual std::string type() const { return type_; }
 
         index size() const { return size_; }
 
         virtual bool operator==(const GuideBase &in) const {
             return type_ == in.type_;
         }
+
     private:
-	bool isPermuted_= false;
-	std::vector<index> permute_={};
+        bool isPermuted_ = false;
+        std::vector<index> permute_ = {};
     protected:
         std::string type_ = "FROMMLE";
         index size_ = 0;
     };
-
+}
 }
 
 #endif /* SRC_CPP_DIMENSIONBASE_HPP_*/

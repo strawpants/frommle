@@ -77,6 +77,10 @@ find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework
 #add Boost include path
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
 
+#find GDAL library (for reading shapefiles etc)
+find_package(GDAL REQUIRED)
+include_directories(${GDAL_INCLUDE_DIR})
+
 #find the hdf5 library
 #find_package(HDF5 REQUIRED COMPONENTS CXX)
 ##set a preprocessor FLAG depending on the version

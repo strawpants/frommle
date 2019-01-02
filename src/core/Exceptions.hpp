@@ -19,6 +19,7 @@
  */
 
 #include <stdexcept>
+#include "core/MacroMagic.hpp"
 
 #ifndef FROMMLE_EXCEPTIONS_HPP
 #define FROMMLE_EXCEPTIONS_HPP
@@ -29,6 +30,12 @@ namespace frommle{
         class GuideMatchingException:public std::runtime_error{
         public:
             GuideMatchingException(const std::string message):std::runtime_error(message){}
+        };
+
+        ///@brief dedicated exception thrown on wrong (user) input values
+        class InputException:public std::runtime_error{
+        public:
+            InputException(const std::string message):std::runtime_error(message){}
         };
     }
 }

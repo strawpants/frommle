@@ -21,12 +21,13 @@
 #include <string>
 #include <assert.h>
 #include <tuple>
+#include "core/GuidePack.hpp"
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
 
 
 namespace frommle {
-
+namespace core {
 
 /*!
  * \brief Abstract base class for describing an operator mapping from one dimension in the other dimensions
@@ -36,46 +37,36 @@ namespace frommle {
  * -# Implement the functional operator
  * -# Allow serialization: i.e. allows an operator to be stored in a file
  */
-class GOperatorBase {
-public:
-	virtual ~GOperatorBase() {
-	}
-private:
-protected:
-
-};
-
-
-	template<class outGuide, class inGuide>
-	class GOperator:public GOperatorBase {
+    class GOperatorBase {
     public:
-        using guide_t=std::tuple<outGuide,inGuide>;
-        GOperator(){}
-        GOperator(outGuide && out,inGuide &&in){
-            guides_=std::make_tuple(out,in);
+        virtual ~GOperatorBase() {
         }
 
-        template<int n>
-        typename std::tuple_element<n,guide_t>::type & g(){
-            assert(n<3);
-            return std::get<n>(guides_);
+    private:
+    protected:
+
+    };
+
+
+    template<class outGuide, class inGuide>
+    class GOperator : public GOperatorBase, GuidePack<outGuide,inGuide> {
+    public:
+        using GPack=GuidePack<outGuide,inGuide>;
+        using GPack::g;
+        GOperator() {}
+
+        GOperator(outGuide &&out, inGuide &&in):GPack(std::move(out),std::move(in)) {
         }
 
-        template<int n>
-        const typename std::tuple_element<n,guide_t>::type & g()const {
-            assert(n<3);
-            return std::get<n>(guides_);
-        }
 
 
     protected:
     private:
-        guide_t guides_={};
 
-};
-
+    };
 
 
+}
 
 }
 

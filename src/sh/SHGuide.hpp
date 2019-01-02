@@ -37,22 +37,16 @@ namespace frommle{
         /*!brief
          * SHiGuideBase groups all SH harmonic dimensions together
          */
-        class SHGuideBase:public GuideBase{
+        class SHGuideBase:public frommle::core::GuideBase{
         public:
-            using frommle::GuideBase::index;
+            using frommle::core::GuideBase::index;
             using trig=enum {C=0,S=1};
-            using nmtpack=std::tuple<int,int,trig>;
+            using pack=std::tuple<int,int,trig>;
             SHGuideBase()=default;
             int nmax()const{return nmax_;}
             SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
             virtual index idx(const int n,const int m,const trig t)const=0;
-//            index idx(const nmtpack & in){
-//                int n,m;
-//                trig t;
-//                std::tie(n,m,t)=in;
-//                return idx(n,m,t);
-//            }
-            virtual nmtpack nmt(const index idx)const=0;
+            virtual pack nmt(const index idx)const=0;
         protected:
             int nmax_=0;
             int nmin_=0;
@@ -66,7 +60,7 @@ namespace frommle{
         class SHtmnDim: public SHGuideBase{
         public:
             using SHGuideBase::trig;
-            using SHGuideBase::nmtpack;
+            using SHGuideBase::pack;
             using SHGuideBase::index;
             SHtmnDim()=default;
             SHtmnDim(const int nmax):SHGuideBase("SHtmnDim",2*SHtmnDim::i_from_mn(nmax,nmax,nmax),nmax,0){
@@ -75,7 +69,7 @@ namespace frommle{
                 index shft=(t==trig::C)?0:size_/2;
                 return SHtmnDim::i_from_mn(n,m,nmax_)+shft;
             }
-            nmtpack nmt(const index idx)const{
+            pack nmt(const index idx)const{
                 int n,m;
                 trig t=(idx<size_/2)?trig::C:trig::S;
                 std::tie(n,m)=SHtmnDim::mn_from_i(idx,nmax_);

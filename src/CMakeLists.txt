@@ -1,9 +1,12 @@
 LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp core/InputArchiveBase.hpp
-        core/OutputArchiveBase.hpp core/UnitBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp)
+        core/OutputArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp)
 LIST(APPEND COREOBJS core/TimeGuide.cpp)
 
 LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp)
+
+LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/GeoPoints.hpp)
+LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GeoPoints.cpp)
 
 if (PYTHON)
     #add python wrapper routines
@@ -12,7 +15,7 @@ if (PYTHON)
     add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS}  )
 endif()
 
-add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${SHOBJS} )
+add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${SHOBJS} ${GEOSPATHEADERS} ${GEOSPATOBJS} )
 target_include_directories(${FROMMLELIB} PUBLIC ${Boost_INCLUDE_DIR} )
 #set_target_properties(${FROMMLELIB} PROPERTIES PUBLIC_HEADER ${COREHEADERS})
 

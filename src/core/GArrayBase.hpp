@@ -24,13 +24,12 @@
 #include <string>
 #include <boost/multi_array.hpp>
 #include <tuple>
-#include "core/GuideBase.hpp"
+#include "core/GuidePack.hpp"
+
 #include <type_traits>
 
 namespace frommle {
     namespace core {
-
-        //forward declare GuideBase
 
 
 /*!
@@ -58,10 +57,11 @@ namespace frommle {
          * @tparam Guides a variadic set of Guides
          */
         template<class T, class... Guides>
-        class Garray:public GArrayBase, boost::multi_array<T,sizeof...(Guides)>{
+        class Garray:public GArrayBase, GuidePack < Guides... >, boost::multi_array<T,sizeof...(Guides)>{
         public:
-            static const int ndim=sizeof...(Guides);
-            using guides_t=std::tuple<Guides...>;
+            using GPack=GuidePack<Guides...>;
+            using GPack::ndim;
+            using GPack::g;
             using arr_t=boost::multi_array<T,ndim>;
             using arr_t::operator[];
             Garray(){};
@@ -69,57 +69,13 @@ namespace frommle {
              * Construct a Garray based on given set of Guide instances
              * @param Args
              */
-            Garray(Guides&& ... Args){
-                std::array<size_t,ndim> dimextent={Args.size()...};
-                guides_=std::make_tuple(std::forward<Guides>(Args)...);
+            Garray(Guides&& ... Args):GPack(std::forward<Guides>(Args)...){
                 //allocate matrix
-                this->resize(dimextent);
+                this->resize(this->getExtent());
             }
 
-            /*!brief
-             * Get the nth guide of the array
-             * @tparam n
-             * @return a reference to the Guide instance belonging to the Garray
-             */
-            template<int n>
-            typename std::tuple_element<n,guides_t>::type & g() {
-                assert(n<=ndim);
-                return std::get<n>(guides_);
-            }
-                template<int n>
-            const typename std::tuple_element<n,guides_t>::type & g()const{
-                assert(n<=ndim);
-                return std::get<n>(guides_);
-            }
-
-            /*!brief
-             * Polymorphic version of the g() function
-             * Recursively calls itself until the correct dimension is founc
-             * @tparam n test for this dimension
-             * @param i: dimension to retrieve
-             * @return a GuideBase
-             */
-            template<int n=0>
-            typename std::enable_if< n+1 != ndim,const GuideBase>::type & g(const int i){
-                if (i == n) {
-                    return g<n>();
-                }else{
-                    //call this function recursively
-                    return g<n+1>(i);
-                }
-            }
-            /*! brief the function below stops the recursion
-             *
-             * @tparam n
-             */
-            template<int n=0>
-            typename std::enable_if< n+1 == ndim,const GuideBase>::type & g(const int i){
-                    assert(i+1==ndim);
-                    return g<n>();
-            }
         protected:
         private:
-        guides_t guides_{};
         };
 
         /*!brief

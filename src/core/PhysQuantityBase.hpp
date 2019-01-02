@@ -30,17 +30,17 @@ namespace frommle {
  * \brief Abstract base class for describing a unit and with possibly some defining parameters
  *
  */
-class UnitBase {
+class PhysQuantityBase {
 public:
-	virtual ~UnitBase() {
+	virtual ~PhysQuantityBase() {
 	}
 	virtual std::string format() const=0;
 	/*!
 	 * Compares 2 Units
-	 * @param UnitBase to compare with
+	 * @param Physical quantity to compare with
 	 * @return true or false
 	 */
-	virtual bool operator ==(const UnitBase & in) const {
+	virtual bool operator ==(const PhysQuantityBase & in) const {
 		return false;
 	}
 private:

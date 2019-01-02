@@ -17,28 +17,19 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "core/GuideBase.hpp"
 
-#ifndef FROMMLE_INDEXGUIDE_HPP
-#define FROMMLE_INDEXGUIDE_HPP
+#include <ogr_geometry.h>
 
+#ifndef FROMMLE_GEOTYPES_HPP
+#define FROMMLE_GEOTYPES_HPP
 namespace frommle{
-    namespace core{
+    namespace geometry{
 
-        /*!brief
-         * A guide which keeps track on (permuted) indices
-         */
-        class IndexGuide:public GuideBase{
-        public:
-            using pack=unsigned long long int;
-            IndexGuide():GuideBase("IndexGuide"){}
-            IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
-            pack operator[](const GuideBase::index idx)const{return idx;}
-//            pack & operator[](GuideBase::index idx){return idx;}
-        };
-
+        using bbox=OGREnvelope;
+        using geopoint=OGRPoint;
 
     }
 }
 
-#endif //FROMMLE_INDEXGUIDE_HPP
+
+#endif //FROMMLE_GEOTYPES_HPP
