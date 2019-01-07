@@ -60,6 +60,22 @@ class shdata():
 
         return shout
 
+    def __iadd__(self,other):
+        if other.nmax > self.nmax:
+            raise RuntimeError("Error in shdata __iadd__ maximum degrees of right hand is larger than left hand %d, %d"%(self.nmax,other.nmax))
+        if other.nmax== self.nmax:
+            self.C+=other.C
+            self.S+=other.S
+        else:
+            # we need a full loop
+            for i,(c,s) in enumerate(zip(other.C,other.S)):
+                n,m=other.mn_from_i(i)
+                idx=self.mn_from_i(n,m)
+                self.C[idx]+=c
+                if m > 0:
+                    self.S[idx]+=s
+        return self
+
     def __sub__(self,other):
         if other.nmax > self.nmax:
             raise RuntimeError("Error in shdata __sub__ maximum degrees of right hand is larger than left hand %d, %d"%(self.nmax,other.nmax))
@@ -80,3 +96,20 @@ class shdata():
 
         return shout
 
+    def __isub__(self,other):
+        if other.nmax > self.nmax:
+            raise RuntimeError("Error in shdata __isub__ maximum degrees of right hand is larger than left hand %d, %d"%(self.nmax,other.nmax))
+        shout=shdata(self.nmax)
+        if other.nmax== self.nmax:
+            self.C-=other.C
+            self.S-=other.S
+        else:
+            # we need a full loop
+            for i,(c,s) in enumerate(zip(other.C,other.S)):
+                n,m=other.mn_from_i(i)
+                idx=self.mn_from_i(n,m)
+                self.C[idx]-=c
+                if m > 0:
+                    self.S[idx]-=s
+
+        return self
