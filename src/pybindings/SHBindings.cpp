@@ -66,7 +66,7 @@ void pyexport_sh()
             .value("s",sh::SHGuideBase::trig::S);
 
 
-    p::to_python_converter<sh::SHGuideBase::nmtpack, stdtuple_to_btuple<sh::SHGuideBase::nmtpack> >();
+    p::to_python_converter<sh::SHGuideBase::pack, stdtuple_to_btuple<sh::SHGuideBase::pack> >();
 //
 //    p::class_<sh::SHGuideBase::nmt>("nmt")
 //        .def_readwrite("n",&sh::nmt::n)
