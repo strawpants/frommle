@@ -15,23 +15,25 @@
 
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 from frommle.sh import Legendre_nm
-from frommle.sh import nmax_from_sz
+from frommle.sh import shdata
 import math
-from frommle.sh import SHtmnDim
-i_from_mn=SHtmnDim.i_from_mn
 import numpy as np
-def SH2loc(loc,cnm,snm):
+
+def SH2loc(loc,cnm,nmax=None):
     """Performs a SH analysis on a set of points"""
-    nmax=nmax_from_sz(cnm.shape[0])
+    if not nmax:
+        #take the maximum degree from the  input if not set explicitly
+        nmax=cnm.nmax
+
     Legnm=Legendre_nm(nmax)
     out=np.zeros((len(loc)))
     for i,(lon,lat) in enumerate(loc):
        pnm=Legnm(math.sin(lat))
        for m in range(nmax+1):
-           istart=i_from_mn(m,m,nmax)
-           iend=i_from_mn(nmax,m,nmax)
-           out[i]+=math.cos(m*lon)*np.dot(pnm[istart:iend+1],cnm[istart:iend+1])
+           istart=cnm.idx(m,m,nmax)
+           iend=cnm.idx(nmax,m,nmax)
+           out[i]+=math.cos(m*lon)*np.dot(pnm[istart:iend+1],cnm.C[istart:iend+1])
            if m>0:
-                out[i]+=math.sin(m*lon)*np.dot(pnm[istart:iend+1],snm[istart:iend+1])
+                out[i]+=math.sin(m*lon)*np.dot(pnm[istart:iend+1],cnm.S[istart:iend+1])
 
     return out
