@@ -17,8 +17,7 @@
 
 from frommle.earthmodels import LoadLove
 from frommle.gravity.earth import rho_w,rho_e,RE
-from frommle.sh import SHtmnDim
-i_from_mn=SHtmnDim.i_from_mn
+from frommle.sh.shdata import shdata
 import numpy as np
 
 class Stokes2eqh():
@@ -35,33 +34,30 @@ class Stokes2eqh():
         for n in range(self.nmax_+1):
             self.kernel[n]=fact*(2*n+1)/(1+ll.kdat[n])
 
-    def __call__(self,cnm,snm,sigcnm=None,sigsnm=None):
+    def __call__(self,cnm,sigcnm=None):
         """Convert a given set of Stokes coefficients"""
 
         #check whether the input sizes agree
-        if cnm.shape[0]-1 != i_from_mn(self.nmax_,self.nmax_,self.nmax_):
+        if cnm.nmax != self.nmax_:
             raise Exception("maximum degree does not agree with input")
+        cnmout=shdata(self.nmax_)
 
-        cnmout=np.zeros(cnm.shape)
-        snmout=np.zeros(snm.shape)
-
-        if sigcnm and sigsnm:
-            sigcnmout=np.zeros(sigcnm.shape)
-            sigsnmout=np.zeros(sigsnm.shape)
+        if sigcnm :
+            sigcnmout=shdata(self.nmax_)
 
 
         for m in range(self.nmax_):
-            istart=i_from_mn(m,m,self.nmax_)
-            iend=i_from_mn(self.nmax_,m,self.nmax_)
+            istart=cnm.idx(m,m)
+            iend=cnm.idx(self.nmax_,m)
             # multiply order wise
-            np.multiply(self.kernel[m:self.nmax_+1],cnm[istart:iend+1],out=cnmout[istart:iend+1])
-            np.multiply(self.kernel[m:self.nmax_+1],snm[istart:iend+1],out=snmout[istart:iend+1])
-            if sigcnm and sigsnm:
-                np.multiply(self.kernel[m:self.nmax_+1],sigcnm[istart:iend+1],out=sigcnmout[istart:iend+1])
-                np.multiply(self.kernel[m:self.nmax_+1],sigsnm[istart:iend+1],out=sigsnmout[istart:iend+1])
+            np.multiply(self.kernel[m:self.nmax_+1],cnm.C[istart:iend+1],out=cnmout.C[istart:iend+1])
+            np.multiply(self.kernel[m:self.nmax_+1],cnm.S[istart:iend+1],out=cnmout.S[istart:iend+1])
+            if sigcnm:
+                np.multiply(self.kernel[m:self.nmax_+1],sigcnm.C[istart:iend+1],out=sigcnmout.C[istart:iend+1])
+                np.multiply(self.kernel[m:self.nmax_+1],sigcnm.S[istart:iend+1],out=sigcnmout.S[istart:iend+1])
 
         if sigcnm and sigsnm:
-            return cnmout,snmout,sigcnmout,sigsnmout
+            return cnmout,sigcnmout
         else:
-            return cnmout,snmout
+            return cnmout
 

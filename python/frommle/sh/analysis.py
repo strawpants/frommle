@@ -15,7 +15,6 @@
 
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 from frommle.sh import Legendre_nm
-from frommle.sh import shdata
 import math
 import numpy as np
 
@@ -30,8 +29,8 @@ def SH2loc(loc,cnm,nmax=None):
     for i,(lon,lat) in enumerate(loc):
        pnm=Legnm(math.sin(lat))
        for m in range(nmax+1):
-           istart=cnm.idx(m,m,nmax)
-           iend=cnm.idx(nmax,m,nmax)
+           istart=cnm.idx(m,m)
+           iend=cnm.idx(nmax,m)
            out[i]+=math.cos(m*lon)*np.dot(pnm[istart:iend+1],cnm.C[istart:iend+1])
            if m>0:
                 out[i]+=math.sin(m*lon)*np.dot(pnm[istart:iend+1],cnm.S[istart:iend+1])

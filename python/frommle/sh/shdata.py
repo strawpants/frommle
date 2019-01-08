@@ -52,8 +52,8 @@ class shdata():
             shout.S=self.S
             # we need a full loop
             for i,(c,s) in enumerate(zip(other.C,other.S)):
-                n,m=other.mn_from_i(i)
-                idx=self.mn_from_i(n,m)
+                n,m=other.nm(i)
+                idx=self.idx(n,m)
                 shout.C[idx]+=c
                 if m > 0:
                     shout.S[idx]+=s
@@ -69,8 +69,8 @@ class shdata():
         else:
             # we need a full loop
             for i,(c,s) in enumerate(zip(other.C,other.S)):
-                n,m=other.mn_from_i(i)
-                idx=self.mn_from_i(n,m)
+                n,m=other.nm(i)
+                idx=self.idx(n,m)
                 self.C[idx]+=c
                 if m > 0:
                     self.S[idx]+=s
@@ -88,8 +88,8 @@ class shdata():
             shout.S=self.S
             # we need a full loop
             for i,(c,s) in enumerate(zip(other.C,other.S)):
-                n,m=other.mn_from_i(i)
-                idx=self.mn_from_i(n,m)
+                n,m=other.nm(i)
+                idx=self.idx(n,m)
                 shout.C[idx]-=c
                 if m > 0:
                     shout.S[idx]-=s
@@ -106,8 +106,8 @@ class shdata():
         else:
             # we need a full loop
             for i,(c,s) in enumerate(zip(other.C,other.S)):
-                n,m=other.mn_from_i(i)
-                idx=self.mn_from_i(n,m)
+                n,m=other.nm(i)
+                idx=self.idx(n,m)
                 self.C[idx]-=c
                 if m > 0:
                     self.S[idx]-=s
