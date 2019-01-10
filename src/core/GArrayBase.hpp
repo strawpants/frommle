@@ -25,6 +25,7 @@
 #include <boost/multi_array.hpp>
 #include <tuple>
 #include "core/GuidePack.hpp"
+#include "core/MarrayWrapper.hpp"
 
 #include <type_traits>
 
@@ -73,6 +74,7 @@ namespace frommle {
                 //allocate matrix
                 this->resize(this->getExtent());
             }
+
 
         protected:
         private:
