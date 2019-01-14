@@ -34,7 +34,7 @@ namespace frommle{
             IndexGuide():GuideBase("IndexGuide"){}
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
             pack operator[](const GuideBase::index idx)const{return idx;}
-//            pack & operator[](GuideBase::index idx){return idx;}
+//            Element & operator[](GuideBase::index idx){return idx;}
         };
 
 

@@ -27,6 +27,7 @@
 #include "core/TimeGuide.hpp"
 #include <boost/date_time.hpp>
 #include "core/IndexGuide.hpp"
+#include "core/MarrayEig.hpp"
 
 
 using namespace frommle::core;
@@ -40,8 +41,19 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
 
 
     //2D example
+    size_t nrows=23;
+    size_t ncols=4;
+    auto garr2d=make_garray(IndexGuide(nrows),IndexGuide(ncols));
 
-    auto garr2d=make_garray(IndexGuide(23),IndexGuide(4));
+    auto eigm=marray_to_eigen(garr2d);
+    eigm.array()=3.0;
+
+
+
+//    boost::multi_array<double,1> barr2d(shp);
+//    for(auto & el:garr2d){
+//        std::cout << el << std::endl;
+//    }
 
     std::cout << garr2d[0][0] << " " << garr2d.g(1).type()<< std::endl;
 

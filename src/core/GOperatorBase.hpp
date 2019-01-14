@@ -49,10 +49,9 @@ namespace core {
 
 
     template<class outGuide, class inGuide>
-    class GOperator : public GOperatorBase, GuidePack<outGuide,inGuide> {
+    class GOperator : public GOperatorBase, public GuidePack<outGuide,inGuide> {
     public:
         using GPack=GuidePack<outGuide,inGuide>;
-        using GPack::g;
         GOperator() {}
 
         GOperator(outGuide &&out, inGuide &&in):GPack(std::move(out),std::move(in)) {

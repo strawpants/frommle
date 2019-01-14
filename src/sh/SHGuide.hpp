@@ -22,7 +22,8 @@
  */
 
 #include "core/GuideBase.hpp"
-#include <tuple>
+#include <cassert>
+#include <cmath>
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP
 
@@ -41,12 +42,13 @@ namespace frommle{
         public:
             using frommle::core::GuideBase::index;
             using trig=enum {C=0,S=1};
-            using pack=std::tuple<int,int,trig>;
+            using Element=std::tuple<int,int,trig>;
             SHGuideBase()=default;
             int nmax()const{return nmax_;}
+            int nmin()const{return nmin_;}
             SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
             virtual index idx(const int n,const int m,const trig t)const=0;
-            virtual pack nmt(const index idx)const=0;
+            virtual Element nmt(const index idx)const=0;
         protected:
             int nmax_=0;
             int nmin_=0;
@@ -60,7 +62,7 @@ namespace frommle{
         class SHtmnDim: public SHGuideBase{
         public:
             using SHGuideBase::trig;
-            using SHGuideBase::pack;
+            using SHGuideBase::Element;
             using SHGuideBase::index;
             SHtmnDim()=default;
             SHtmnDim(const int nmax):SHGuideBase("SHtmnDim",2*SHtmnDim::i_from_mn(nmax,nmax,nmax),nmax,0){
@@ -69,7 +71,7 @@ namespace frommle{
                 index shft=(t==trig::C)?0:size_/2;
                 return SHtmnDim::i_from_mn(n,m,nmax_)+shft;
             }
-            pack nmt(const index idx)const{
+            Element nmt(const index idx)const{
                 int n,m;
                 trig t=(idx<size_/2)?trig::C:trig::S;
                 std::tie(n,m)=SHtmnDim::mn_from_i(idx,nmax_);
@@ -100,6 +102,32 @@ namespace frommle{
                 return std::make_tuple(n,m);
 
             }
+
+        };
+
+        using trig=enum {C=0,S=1};
+
+        using Element=std::tuple<int,int,trig>;
+        class SHtmnGuide:public frommle::core::GuideGen<Element>{
+        public:
+            index idx(const Element & in )const;
+            index idx(const int n, const int m, const trig t)const;
+            Element operator[](const index idx)const;
+            Element & operator[](const index idx);
+
+            static index i_from_mn(const int n,const int m, const int nmax);
+
+            static std::tuple<int,int> mn_from_i(const index idx, const int nmax);
+
+            class const_iterator:public frommle::core::Gconst_iterator<Element>{
+            public:
+                explicit const_iterator(SHtmnGuide & in);
+            private:
+                void increment();
+            };
+
+        private:
+            int nmax_=0;
 
         };
 

@@ -1,64 +1,36 @@
 #include <iostream>
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
-#include <boost/core/noncopyable.hpp>
-#include <boost/python/tuple.hpp>
+#include "pybindings/coreBindings.hpp"
+#include "core/GuideBase.hpp"
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
 #include "sh/SHGuide.hpp"
 #include "sh/Legendre_nm.hpp"
-#include "core/seqGenerator.hpp"
+
+
+namespace frommle {
+    namespace py {
+//Wrapper class is needed to cope with pure virtual functions of SHGuideBase
+        struct SHGuideBaseWrapper : sh::SHGuideBase, p::wrapper<sh::SHGuideBase> {
+        public:
+            index idx(const int n, const int m, const trig t)const {
+                return this->get_override("idx")(n,m,t);
+            }
+
+            Element nmt(const index idx) const {
+                return this->get_override("nmt")(idx);
+            }
+        };
+    }
+}
 
 using namespace frommle;
 
-template<class ftype>
-struct vec_to_ndarray{
-    static PyObject* convert( std::vector<ftype> const & invec){
-        p::tuple shape = p::make_tuple(invec.size());
-        np::dtype dtype = np::dtype::get_builtin<ftype>();
-//        np::ndarray py_array = np::from_data(invec.data(), dtype, p::make_tuple(invec.size()),p::make_tuple(sizeof(ftype)),p::object());
-        np::ndarray py_array = np::empty(shape, dtype);
-        ftype * dptr = reinterpret_cast<ftype*> (py_array.get_data());
-        //copy values (not very efficient for large vectors)
-        for (auto & el: invec){
-            *dptr=el;
-            dptr++;
-        }
-        return p::incref(py_array.ptr());
-    }
-};
-
-
-
-
-template<class T>
-struct stdtuple_to_btuple{
-  static PyObject* convert(T const & tin){
-        return p::incref(getbtuple(tin,typename frommle::core::seqGenerator<std::tuple_size<T>::value>::type()).ptr());
-
-  }
-  template <int ...S>
-  static p::tuple getbtuple(T const & tin, frommle::core::sequence<S...>){
-        return p::make_tuple(std::get<S>(tin)...);
-    }
-
-  };
-
-
-
-
 void pyexport_sh()
 {
-//    Py_Initialize();
-    np::initialize();
-
-    //register vector to ndarray converter at runtime
-    p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
-
-    //register specific std:tuple to python tuple converters
-    p::to_python_converter<std::tuple<int,int>, stdtuple_to_btuple<std::tuple<int,int>>> ();
 
 
     p::enum_<sh::SHGuideBase::trig>("trig")
@@ -66,9 +38,14 @@ void pyexport_sh()
             .value("s",sh::SHGuideBase::trig::S);
 
 
-    p::to_python_converter<sh::SHGuideBase::pack, stdtuple_to_btuple<sh::SHGuideBase::pack> >();
-//
-//    p::class_<sh::SHGuideBase::nmt>("nmt")
+    p::to_python_converter<sh::SHGuideBase::Element, py::stdtuple_to_ptuple<sh::SHGuideBase::Element> >();
+
+    p::class_<py::SHGuideBaseWrapper,boost::noncopyable>("SHGuideBase")
+            .def("nmax",p::pure_virtual(&sh::SHGuideBase::nmax))
+            .def("nmin",p::pure_virtual(&sh::SHGuideBase::nmin))
+            .def("idx",p::pure_virtual(&sh::SHGuideBase::idx))
+            .def("nmt",p::pure_virtual(&sh::SHGuideBase::nmt));
+
 //        .def_readwrite("n",&sh::nmt::n)
 //        .def_readwrite("m",&sh::nmt::m);
 ////        .def_readwrite('t',&sh::nmt::t);
@@ -77,9 +54,9 @@ void pyexport_sh()
 //    p::def("mn_from_i",&sh::mn_from_i);
     p::def("nmax_from_sz",&sh::nmax_from_sz);
 
-    p::class_<sh::SHtmnDim >("SHtmnDim",p::init<int>())
-            .def("idx",&sh::SHtmnDim::idx)
-            .def("nmt",&sh::SHtmnDim::nmt)
+    p::class_<sh::SHtmnDim,p::bases<sh::SHGuideBase> >("SHtmnDim",p::init<int>())
+//            .def("idx",&sh::SHtmnDim::idx)
+//            .def("nmt",&sh::SHtmnDim::nmt)
             .def("i_from_mn",&sh::SHtmnDim::i_from_mn).staticmethod("i_from_mn")
             .def("mn_from_i",&sh::SHtmnDim::mn_from_i).staticmethod("mn_from_i");
 

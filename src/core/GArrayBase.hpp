@@ -25,7 +25,7 @@
 #include <boost/multi_array.hpp>
 #include <tuple>
 #include "core/GuidePack.hpp"
-#include "core/MarrayWrapper.hpp"
+#include "core/MarrayEig.hpp"
 
 #include <type_traits>
 
@@ -58,13 +58,13 @@ namespace frommle {
          * @tparam Guides a variadic set of Guides
          */
         template<class T, class... Guides>
-        class Garray:public GArrayBase, GuidePack < Guides... >, boost::multi_array<T,sizeof...(Guides)>{
+        class Garray:public GArrayBase, public GuidePack < Guides... >, public boost::multi_array<T,sizeof...(Guides)>{
         public:
             using GPack=GuidePack<Guides...>;
             using GPack::ndim;
             using GPack::g;
             using arr_t=boost::multi_array<T,ndim>;
-            using arr_t::operator[];
+//            using arr_t::operator[];
             Garray(){};
             /*!brief
              * Construct a Garray based on given set of Guide instances

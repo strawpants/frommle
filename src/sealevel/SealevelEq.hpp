@@ -1,5 +1,5 @@
 /*! \file
- \brief This is the only file which is compiled through the python setup.py file and therefore does not belong to any c++ target
+ \brief 
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -18,18 +18,31 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "core/GOperatorBase.hpp"
+#include "core/GArrayBase.hpp"
+#ifndef FROMMLE_SEALEVELEQ_HPP
+#define FROMMLE_SEALEVELEQ_HPP
+namespace frommle{
+    namespace sea{
+
+        template<class Rep>
+        class SealevelEq:public frommle::core::GOperator<Rep,Rep>{
+        public:
+            //contructor takes an ocean function, a Load Love number set, and the desired representation(spatial/spectral)
+            //applies the sea level equation to an input dataset
+            SealevelEq(){};
+
+            //@todo write a cosntructor which reads the sea level equation operator from a file
+            template<class RG...>
+        void operator()(const Rep & in);
+        private:
+
+        };
 
 
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
+    }
 
-void pyexport_core();
-void pyexport_sh();
+}
 
-BOOST_PYTHON_MODULE(_cpp)
-        {
-        Py_Initialize();
-        boost::python::numpy::initialize();
-                pyexport_core();
-                pyexport_sh();
-        }
+
+#endif //FROMMLE_SEALEVELEQ_HPP

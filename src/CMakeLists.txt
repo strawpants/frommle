@@ -1,16 +1,16 @@
 LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp core/InputArchiveBase.hpp
-        core/OutputArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp)
+        core/OutputArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp)
 LIST(APPEND COREOBJS core/TimeGuide.cpp)
 
 LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp)
-LIST(APPEND SHOBJS sh/Legendre_nm.cpp)
+LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/GeoPoints.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GeoPoints.cpp)
 
 if (PYTHON)
     #add python wrapper routines
-    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp)
+    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
     add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS}  )
 endif()
