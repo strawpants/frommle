@@ -19,14 +19,16 @@
  */
 
 #include "sh/SHGuide.hpp"
+#include "core/GuideBase.hpp"
 #include <cmath>
 
 namespace frommle {
     namespace sh {
+        using  frommle::core::index;
 
-        using frommle::core::GuideBase::index;
+        SHtmnGuide::SHtmnGuide(const int nmax):nmax_(nmax){}
 
-        index SHtmnGuide::idx(const SHtmnGuide::Element & in)const{
+        index SHtmnGuide::idx(const frommle::sh::Element & in)const{
             int n,m;
             trig t;
             std::tie(n,m,t)=in;
@@ -40,24 +42,18 @@ namespace frommle {
         }
 
 
-        SHtmnGuide::Element SHtmnGuide::operator[](const index idx)const{
+        frommle::sh::Element SHtmnGuide::operator[](const index idx)const{
             int n,m;
             trig t=(idx<size_/2)?trig::C:trig::S;
             std::tie(n,m)=SHtmnGuide::mn_from_i(idx,nmax_);
             return std::make_tuple(n,m,t);
         }
 
-        SHtmnGuide::Element & SHtmnGuide::operator[](const index idx){
-            int n,m;
-            trig t=(idx<size_/2)?trig::C:trig::S;
-            std::tie(n,m)=SHtmnGuide::mn_from_i(idx,nmax_);
-            return std::make_tuple(n,m,t);
-
+        frommle::sh::Element & SHtmnGuide::operator[](const index idx){
+            assert(0);
         }
 
-        void SHtmnGuide::const_iterator::increment() {
 
-        }
 
         /*! brief returns a vectorized index for order sorted spherical harmonics (no trigonometric variable)
          * @param n input degree
@@ -65,7 +61,7 @@ namespace frommle {
          * @param nmax maximum degree to accomodate for
          * @return zero based index of the corresponding entry
          */
-        index SHtmnGuide::i_from_mn(const int n,const int m, const int nmax);{
+        index SHtmnGuide::i_from_mn(const int n,const int m, const int nmax){
             assert(m<=n);
             return m*(nmax+1)-(m*(m+1))/2+n;
         }
@@ -85,6 +81,15 @@ namespace frommle {
         }
 
 
-
     }
 }
+//note this needs to be implemented outside of the frommle::sh namespace
+namespace frommle{
+    namespace core {
+        template<>
+        void frommle::sh::SHtmnGuide::const_iterator::increment() {
+//        void frommle::core::GuideGen<frommle::sh::SHtmnGuide,frommle::sh::Element>::const_iterator::increment() {
+
+        }
+    }}
+

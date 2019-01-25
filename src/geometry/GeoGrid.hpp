@@ -28,7 +28,7 @@
 
 namespace frommle{
     namespace geometry{
-
+        using frommle::core::index;
         /*!brief
          * A guide class which contains the description of an equidistant grid
          * a different stepsize in longitude and latitude direction is allowed
@@ -36,7 +36,6 @@ namespace frommle{
         class GeoGrid:public frommle::core::GuideBase{
         public:
             enum gridreg{pix=0,grid=1};
-            using GuideBase::index;
             using lint=long unsigned int;
 
             GeoGrid(double west=-180.0, double east=180.0, double south=-90, double north=90,double dlon=1.0,double dlat=1.0, const gridreg reg = gridreg::pix);

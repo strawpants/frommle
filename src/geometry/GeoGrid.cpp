@@ -51,12 +51,12 @@ namespace frommle {
 
         }
 
-        core::GuideBase::index GeoGrid::idx(const lint ilon, const lint ilat) const {
+        index GeoGrid::idx(const lint ilon, const lint ilat) const {
             //note that we index such that the latitude loops slowest
             return ilat * nlon_ + ilon;
         }
 
-        std::tuple<long unsigned int, long unsigned int> GeoGrid::ilonilat(const core::GuideBase::index idx) const {
+        std::tuple<long unsigned int, long unsigned int> GeoGrid::ilonilat(const index idx) const {
             lint ilat = idx / nlon_;
             return std::make_tuple(idx - ilat * nlon_, ilat);
         }

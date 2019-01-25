@@ -29,7 +29,7 @@
 
 namespace frommle{
     namespace sh{
-
+        using frommle::core::index;
 
         inline int nmax_from_sz(const size_t sz){
             return (std::sqrt(1.0+8*(sz-1))-1.0)/2.0;
@@ -40,7 +40,6 @@ namespace frommle{
          */
         class SHGuideBase:public frommle::core::GuideBase{
         public:
-            using frommle::core::GuideBase::index;
             using trig=enum {C=0,S=1};
             using Element=std::tuple<int,int,trig>;
             SHGuideBase()=default;
@@ -63,7 +62,6 @@ namespace frommle{
         public:
             using SHGuideBase::trig;
             using SHGuideBase::Element;
-            using SHGuideBase::index;
             SHtmnDim()=default;
             SHtmnDim(const int nmax):SHGuideBase("SHtmnDim",2*SHtmnDim::i_from_mn(nmax,nmax,nmax),nmax,0){
             };
@@ -106,10 +104,18 @@ namespace frommle{
         };
 
         using trig=enum {C=0,S=1};
+        //forward declare class
+//        class SHtmnGuide;
+//        template<>
+//        class frommle::core::Gtraits<frommle::sh::SHtmnGuide>{
+//            using Element=std::tuple<int,int,frommle::sh::trig>;
+//            using const_iterator=frommle::core::Gconst_iterator<frommle::sh::SHtmnGuide,Element>;
+//        };
 
         using Element=std::tuple<int,int,trig>;
-        class SHtmnGuide:public frommle::core::GuideGen<Element>{
+        class SHtmnGuide:public frommle::core::GuideGen<SHtmnGuide,Element>{
         public:
+            SHtmnGuide(int nmax);
             index idx(const Element & in )const;
             index idx(const int n, const int m, const trig t)const;
             Element operator[](const index idx)const;
@@ -119,12 +125,12 @@ namespace frommle{
 
             static std::tuple<int,int> mn_from_i(const index idx, const int nmax);
 
-            class const_iterator:public frommle::core::Gconst_iterator<Element>{
-            public:
-                explicit const_iterator(SHtmnGuide & in);
-            private:
-                void increment();
-            };
+//            class const_iterator:public frommle::core::Gconst_iterator<Element>{
+//            public:
+//                explicit const_iterator(SHtmnGuide & in);
+//            private:
+//                void increment();
+//            };
 
         private:
             int nmax_=0;

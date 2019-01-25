@@ -29,6 +29,7 @@
 namespace frommle {
 namespace core {
 
+    using index=size_t;
 /*!
  * \brief Abstract base class for describing  guided dimensions
  * The general idea behind the Guide classes is that they are used to add value to the dimension of an array/vector
@@ -44,7 +45,6 @@ namespace core {
  */
     class GuideBase {
     public:
-        using index=size_t;
 
         GuideBase() {};
 
@@ -73,35 +73,67 @@ namespace core {
         index size_ = 0;
     };
 
-    //!@brief templated constant forward iterator class for use in Guides
-    template<class Element>
-    class Gconst_iterator: public boost::iterator_facade<Gconst_iterator<Element>,Element const,boost::forward_traversal_tag>{
-    public:
-        ~Gconst_iterator(){}
-        Gconst_iterator(){};
-    protected:
-        friend class boost::iterator_core_access;
-        //note that the default constructed Element corresponds to the 'end' of the iteration
-        std::unique_ptr<Element> currentEl_={};
-        virtual void increment()=0;
-        const Element & dereference()const{return *currentEl_;}
-        bool equal(const Gconst_iterator & comp)const{return *currentEl_ == *(comp.currentEl_);}
+//    //!@brief templated constant forward iterator class for use in Guides
+//    template<class Guide, class Element>
+//    class Gconst_iterator: public boost::iterator_facade<Gconst_iterator<Guide,Element>,Element const,boost::forward_traversal_tag>{
+//    public:
+//        ~Gconst_iterator(){}
+//        Gconst_iterator(){};
+//        Gconst_iterator(Gconst_iterator && in){
+//            gptr_=std::move(in.gptr_);
+//            //move the element
+//            currentEl_=std::move(in.currentEl_);
+//        };
+//        Gconst_iterator(const Guide * Gptr):gptr_(Gptr){};
+//    protected:
+//        friend class boost::iterator_core_access;
+//        //note that the default constructed Element corresponds to the 'end' of the iteration
+//        std::unique_ptr<Element> currentEl_={};
+//        Guide * gptr_= nullptr; //NOTE: not owned by this class
+//        virtual void increment()=0;
+//        const Element & dereference()const{return *currentEl_;}
+////        bool equal(const Gconst_iterator & comp)const{return *currentEl_ == *(comp.currentEl_);}
+//
+//    };
 
-    };
+        template<class Guide, class Element>
+        class GuideGen : public GuideBase {
+        public:
+            virtual Element operator[](const index idx) const =0;
 
-    template <class Element>
-    class GuideGen:public GuideBase{
-    public:
-        virtual Element operator[](const index idx)const =0;
-        virtual Element & operator[](const index idx)=0;
-        virtual index idx(const Element & in)const=0;
-        Gconst_iterator<Element> begin()const=0;
-        Gconst_iterator<Element> end()const=0;
-    protected:
-    private:
+            virtual Element &operator[](const index idx)=0;
 
-    };
+            virtual index idx(const Element &in) const =0;
 
+            class const_iterator
+                    : public boost::iterator_facade<const_iterator, Element const, boost::forward_traversal_tag> {
+            public:
+                const_iterator() {}
+
+                explicit const_iterator(const Guide *Gptr) : gptr_(const_cast<Guide*>(Gptr)){}
+
+            private:
+                friend class boost::iterator_core_access;
+
+                std::unique_ptr<Element> currentEl_ = {};
+                Guide *gptr_ = nullptr; //NOTE: not owned by this class
+                void increment(){++(*currentEl_);};
+
+                const Element &dereference() const { return *currentEl_; }
+
+                bool equal(const const_iterator &comp) const {
+                    return *currentEl_ == *(comp.currentEl_);
+                }
+            };
+
+            const_iterator begin() const { return const_iterator(static_cast<Guide *>(const_cast<GuideGen *>(this))); };
+
+            const_iterator end() const { return const_iterator(); }
+
+        protected:
+        private:
+
+        };
 }
 }
 

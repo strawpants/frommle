@@ -24,6 +24,7 @@
 #define BOOST_TEST_MODULE SHtesting
 #include <boost/test/included/unit_test.hpp>
 #include "sh/Legendre_nm.hpp"
+#include "sh/SHGuide.hpp"
 #include <math.h>
 #include <iomanip>
 #include <algorithm>
@@ -35,6 +36,17 @@ double P52(double theta) {
     return sc * (2 * cos(theta) + cos(3 * theta) - 3 * cos(5 * theta));
 }
 
+
+BOOST_AUTO_TEST_CASE(SHguidetest){
+    int nmax=10;
+    int n,m;
+    trig t;
+   SHtmnGuide shg(nmax);
+    for(const auto & tpl:shg){
+        std::tie(n,m,t)=tpl;
+        std::cout << n<<" "<<m<<" "<<t<<std::endl;
+    }
+}
 
 
 BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
