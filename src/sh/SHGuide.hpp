@@ -24,6 +24,7 @@
 #include "core/GuideBase.hpp"
 #include <cassert>
 #include <cmath>
+#include <boost/iterator/iterator_adaptor.hpp>
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP
 
@@ -36,7 +37,7 @@ namespace frommle{
         }
 
         /*!brief
-         * SHiGuideBase groups all SH harmonic dimensions together
+         * SHGuideBase groups all SH harmonic dimensions together
          */
         class SHGuideBase:public frommle::core::GuideBase{
         public:
@@ -46,35 +47,60 @@ namespace frommle{
             int nmax()const{return nmax_;}
             int nmin()const{return nmin_;}
             SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
+            index idx(const Element el){
+                int n,m;
+                trig t;
+                std::tie(n,m,t)=el;
+                return idx(n,m,t);
+            }
             virtual index idx(const int n,const int m,const trig t)const=0;
-            virtual Element nmt(const index idx)const=0;
+            virtual Element operator[](const index idx)const=0;
+//            virtual Element & operator[](const index idx)=0;
+                class const_iterator: public boost::iterator_adaptor<
+                        const_iterator,
+                        Element const *,
+                        Element const,
+                        boost::forward_traversal_tag
+                >{
+            public:
+                const_iterator():const_iterator::iterator_adaptor_(0){}
+                explicit const_iterator(const  SHGuideBase * const gb ):idx_(0),
+                                                                        gptr_(gb),
+                                                                        currentEl_(gptr_->operator[](idx_)),
+                                                                        const_iterator::iterator_adaptor_(&currentEl_){}
+            private:
+                friend class boost::iterator_core_access;
+                index idx_=0;
+                const SHGuideBase* gptr_=nullptr;
+                Element currentEl_={};
+                void increment(){
+                    currentEl_=gptr_->operator[](++idx_);
+                    this->base_reference()=&currentEl_;
+                    if(idx_ > gptr_->size()){
+                        this->base_reference()=0;
+                    }
+                }
+            };
+            const_iterator begin()const{return const_iterator(this);}
+            const_iterator end()const{return const_iterator();}
         protected:
             int nmax_=0;
             int nmin_=0;
         };
 
         /*!brief
-         * SHmnDim holds a SH sorting scheme which varies quickly in degree and than order
+         * SHmnGuide holds a SH sorting scheme which varies quickly in degree and than order
          * The scheme uses the sorting order for Cosines and Sine coefficients and thus
          * includes S_n0 terms (which should be zero)
          */
-        class SHtmnDim: public SHGuideBase{
+        class SHtmnGuide: public SHGuideBase{
         public:
             using SHGuideBase::trig;
             using SHGuideBase::Element;
-            SHtmnDim()=default;
-            SHtmnDim(const int nmax):SHGuideBase("SHtmnDim",2*SHtmnDim::i_from_mn(nmax,nmax,nmax),nmax,0){
-            };
-            index idx(const int n, const int m, const trig t)const{
-                index shft=(t==trig::C)?0:size_/2;
-                return SHtmnDim::i_from_mn(n,m,nmax_)+shft;
-            }
-            Element nmt(const index idx)const{
-                int n,m;
-                trig t=(idx<size_/2)?trig::C:trig::S;
-                std::tie(n,m)=SHtmnDim::mn_from_i(idx,nmax_);
-                return std::make_tuple(n,m,t);
-            }
+            SHtmnGuide()=default;
+            SHtmnGuide(const int nmax);
+            index idx(const int n, const int m, const trig t)const;
+            Element operator[](const index idx)const;
 
             /*! brief returns a vectorized index for order sorted spherical harmonics (no trigonometric variable)
              * @param n input degree
@@ -100,40 +126,6 @@ namespace frommle{
                 return std::make_tuple(n,m);
 
             }
-
-        };
-
-        using trig=enum {C=0,S=1};
-        //forward declare class
-//        class SHtmnGuide;
-//        template<>
-//        class frommle::core::Gtraits<frommle::sh::SHtmnGuide>{
-//            using Element=std::tuple<int,int,frommle::sh::trig>;
-//            using const_iterator=frommle::core::Gconst_iterator<frommle::sh::SHtmnGuide,Element>;
-//        };
-
-        using Element=std::tuple<int,int,trig>;
-        class SHtmnGuide:public frommle::core::GuideGen<SHtmnGuide,Element>{
-        public:
-            SHtmnGuide(int nmax);
-            index idx(const Element & in )const;
-            index idx(const int n, const int m, const trig t)const;
-            Element operator[](const index idx)const;
-            Element & operator[](const index idx);
-
-            static index i_from_mn(const int n,const int m, const int nmax);
-
-            static std::tuple<int,int> mn_from_i(const index idx, const int nmax);
-
-//            class const_iterator:public frommle::core::Gconst_iterator<Element>{
-//            public:
-//                explicit const_iterator(SHtmnGuide & in);
-//            private:
-//                void increment();
-//            };
-
-        private:
-            int nmax_=0;
 
         };
 

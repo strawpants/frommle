@@ -40,12 +40,19 @@ double P52(double theta) {
 BOOST_AUTO_TEST_CASE(SHguidetest){
     int nmax=10;
     int n,m;
-    trig t;
-   SHtmnGuide shg(nmax);
+    SHGuideBase::trig t;
+    SHtmnGuide shg(nmax);
+    int ii=0;
+    //internal  consistency check
+    bool checkDegOrdTrigIndex;
     for(const auto & tpl:shg){
         std::tie(n,m,t)=tpl;
-        std::cout << n<<" "<<m<<" "<<t<<std::endl;
+        checkDegOrdTrigIndex = shg[ii++]==tpl;
+        BOOST_TEST(checkDegOrdTrigIndex);
+//        std::cout << n<<" "<<m<<" "<<t<<std::endl;
     }
+    //also check whether the iterator covered al of the coefficients
+    BOOST_TEST(ii-1==shg.size());
 }
 
 

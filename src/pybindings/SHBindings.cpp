@@ -13,15 +13,18 @@ namespace np = boost::python::numpy;
 
 namespace frommle {
     namespace py {
+
+
 //Wrapper class is needed to cope with pure virtual functions of SHGuideBase
         struct SHGuideBaseWrapper : sh::SHGuideBase, p::wrapper<sh::SHGuideBase> {
         public:
-            index idx(const int n, const int m, const trig t)const {
+            using sh::SHGuideBase::idx;
+            frommle::core::index idx(const int n, const int m, const trig t)const {
                 return this->get_override("idx")(n,m,t);
             }
 
-            Element nmt(const index idx) const {
-                return this->get_override("nmt")(idx);
+            Element operator[](const frommle::core::index idx) const {
+                return this->get_override("operator[]")(idx);
             }
         };
     }
@@ -44,7 +47,7 @@ void pyexport_sh()
             .def("nmax",p::pure_virtual(&sh::SHGuideBase::nmax))
             .def("nmin",p::pure_virtual(&sh::SHGuideBase::nmin))
             .def("idx",p::pure_virtual(&sh::SHGuideBase::idx))
-            .def("nmt",p::pure_virtual(&sh::SHGuideBase::nmt));
+            .def("__get__",p::pure_virtual(&sh::SHGuideBase::operator[]));
 
 //        .def_readwrite("n",&sh::nmt::n)
 //        .def_readwrite("m",&sh::nmt::m);
@@ -54,11 +57,11 @@ void pyexport_sh()
 //    p::def("mn_from_i",&sh::mn_from_i);
     p::def("nmax_from_sz",&sh::nmax_from_sz);
 
-    p::class_<sh::SHtmnDim,p::bases<sh::SHGuideBase> >("SHtmnDim",p::init<int>())
+    p::class_<sh::SHtmnGuide,p::bases<sh::SHGuideBase> >("SHtmnGuide",p::init<int>())
 //            .def("idx",&sh::SHtmnDim::idx)
 //            .def("nmt",&sh::SHtmnDim::nmt)
-            .def("i_from_mn",&sh::SHtmnDim::i_from_mn).staticmethod("i_from_mn")
-            .def("mn_from_i",&sh::SHtmnDim::mn_from_i).staticmethod("mn_from_i");
+            .def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
+            .def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i");
 
     p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
             .def("__call__",&sh::Legendre_nm_d::operator())

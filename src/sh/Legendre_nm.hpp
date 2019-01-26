@@ -41,7 +41,7 @@ namespace frommle{
             std::vector<ftype> operator()(const ftype costheta)const;
             std::vector<ftype> d1at(const ftype costheta)const;
             inline size_t indxnm(const int n, const int m)const{
-                return SHtmnDim::i_from_mn(n,m,nmax_);
+                return SHtmnGuide::i_from_mn(n,m,nmax_);
             }
         private:
             int nmax_=0;
