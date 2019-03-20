@@ -24,9 +24,13 @@
 #include <boost/python/tuple.hpp>
 #include <boost/multi_array.hpp>
 #include "core/seqGenerator.hpp"
+#include "../../../../../../../usr/include/python3.7m/object.h"
+#include "../core/seqGenerator.hpp"
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
+#include "pybindings/tupleconversion.hpp"
+
 #ifndef FROMMLE_COREBINDINGS_HPP
 #define FROMMLE_COREBINDINGS_HPP
 namespace frommle{
@@ -49,18 +53,8 @@ namespace frommle{
             }
         };
 
-        template<class T>
-        struct stdtuple_to_ptuple{
-            static PyObject* convert(T const & tin){
-                return p::incref(getptuple(tin, typename frommle::core::seqGenerator<std::tuple_size<T>::value>::type()).ptr());
 
-            }
-            template <int ...S>
-            static p::tuple getptuple(T const &tin, frommle::core::sequence<S...>){
-                return p::make_tuple(std::get<S>(tin)...);
-            }
 
-        };
 
         template<int ndim>
         struct arr_to_ptuple{

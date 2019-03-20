@@ -47,12 +47,10 @@ namespace frommle{
             int nmax()const{return nmax_;}
             int nmin()const{return nmin_;}
             SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
-            index idx(const Element el){
-                int n,m;
-                trig t;
-                std::tie(n,m,t)=el;
-                return idx(n,m,t);
-            }
+            index idxfromEl(const Element el)const;
+            //helper function to make C++ interface consistent
+            inline index idx(const Element el)const{return idxfromEl(el);}
+
             virtual index idx(const int n,const int m,const trig t)const=0;
             virtual Element operator[](const index idx)const=0;
 //            virtual Element & operator[](const index idx)=0;

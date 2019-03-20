@@ -24,7 +24,7 @@ namespace frommle {
     namespace sh {
         using  frommle::core::index;
 
-        SHtmnGuide::SHtmnGuide(const int nmax) :SHGuideBase("SHtmnGuide",2*SHtmnGuide::i_from_mn(nmax,nmax,nmax),nmax,0){
+        SHtmnGuide::SHtmnGuide(const int nmax) :SHGuideBase("SHtmnGuide",2*SHtmnGuide::i_from_mn(nmax,nmax,nmax)+1,nmax,0){
 
         }
 
@@ -41,6 +41,12 @@ namespace frommle {
             return std::make_tuple(n,m,t);
         }
 
+        index sh::SHGuideBase::idxfromEl(const std::tuple<int, int, sh::SHGuideBase::trig> el) const {
+            int n,m;
+            trig t;
+            std::tie(n,m,t)=el;
+            return idx(n,m,t);
+        }
     }
 }
 

@@ -10,9 +10,9 @@ LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GeoPoints.cpp)
 
 if (PYTHON)
     #add python wrapper routines
-    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp)
+    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/tupleconversion.hpp)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
-    add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS}  )
+    add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )
 endif()
 
 add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${SHOBJS} ${GEOSPATHEADERS} ${GEOSPATOBJS} )
