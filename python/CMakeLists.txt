@@ -11,9 +11,14 @@ if (PYTHON)
    set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
    set(TSTAMP "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
 
+    #set the base name for the collector files (each containing a BOOST_PYTHON_MODULE calls)
+#    set(CXXPYCOLLECTBASE "${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect")
+#        foreach(cppmod "_core" "_sh")
+#            list(APPEND CXXPYCOLLECTOR ${CXXPYCOLLECTBASE}${cppmod}".cpp")
+#        endforeach()
    #set dependencies (python files and wrappers)
-   list(APPEND CXXPYCOLLECTOR ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect.cpp)
-   set(PYDEPS ${CXXPYCOLLECTOR} ${CMAKE_CURRENT_SOURCE_DIR}/frommle/__init__.py ${CMAKE_CURRENT_SOURCE_DIR}/frommle/core/__init__.py)
+   list(APPEND CXXPYCOLLECTOR ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_core.cpp ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_sh.cpp)
+   set(PYDEPS ${CXXPYCOLLECTOR})
 
     add_custom_target(linkpython COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/frommle ${CMAKE_CURRENT_BINARY_DIR}/frommle)
 

@@ -54,7 +54,8 @@ namespace frommle{
             virtual index idx(const int n,const int m,const trig t)const=0;
             virtual Element operator[](const index idx)const=0;
 //            virtual Element & operator[](const index idx)=0;
-                class const_iterator: public boost::iterator_adaptor<
+
+            class const_iterator: public boost::iterator_adaptor<
                         const_iterator,
                         Element const *,
                         Element const,

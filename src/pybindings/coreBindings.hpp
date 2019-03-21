@@ -24,8 +24,8 @@
 #include <boost/python/tuple.hpp>
 #include <boost/multi_array.hpp>
 #include "core/seqGenerator.hpp"
-#include "../../../../../../../usr/include/python3.7m/object.h"
-#include "../core/seqGenerator.hpp"
+#include "python/object.h"
+#include "core/seqGenerator.hpp"
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;

@@ -75,24 +75,24 @@ namespace core {
 
 
     //!@brief templated forward iterator (both usable as const and non-const version, set Element to e.g int const versus just int) class for use in Guides
-    template<class Element>
-    class Guideiterator: public boost::iterator_adaptor<
-            Guideiterator<Element>,
-            Element*,
-            Element,
-            boost::forward_traversal_tag
-    >
-    {
-    public:
-        ~Guideiterator(){}
-        Guideiterator():Guideiterator::iterator_adaptor_(0){}
-        explicit Guideiterator(Element * el):Guideiterator::iterator_adaptor_(el){}
-    protected:
-        virtual void increment()=0;
-        bool equal(Guideiterator const& other) const{return this->base()==other.base();};
-    private:
-        friend class boost::iterator_core_access;
-    };
+//    template<class Element>
+//    class Guideiterator: public boost::iterator_adaptor<
+//            Guideiterator<Element>,
+//            Element*,
+//            Element,
+//            boost::forward_traversal_tag
+//    >
+//    {
+//    public:
+//        ~Guideiterator(){}
+//        Guideiterator():Guideiterator::iterator_adaptor_(0){}
+//        explicit Guideiterator(Element * el):Guideiterator::iterator_adaptor_(el){}
+//    protected:
+//        virtual void increment()=0;
+//        bool equal(Guideiterator const& other) const{return this->base()==other.base();};
+//    private:
+//        friend class boost::iterator_core_access;
+//    };
 }
 }
 

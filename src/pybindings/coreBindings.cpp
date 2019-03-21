@@ -5,20 +5,6 @@
 using namespace frommle::py;
 using namespace frommle::core;
 
-//this wrapper class is needed in order for the virtual type function to work
-//struct GuideBaseWrap : GuideBase, p::wrapper<GuideBase>
-//{
-//    std::string type()const
-//    {
-//        if (p::override type = this->get_override("type"))
-//            return type(); // *note*
-//        return GuideBase::type();
-//    }
-//
-//    std::string default_type() { return this->GuideBase::type(); }
-//};
-
-
 void pyexport_core(){
 
 
