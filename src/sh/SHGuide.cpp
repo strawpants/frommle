@@ -24,7 +24,7 @@ namespace frommle {
     namespace sh {
         using  frommle::core::index;
 
-        SHtmnGuide::SHtmnGuide(const int nmax) :SHGuideBase("SHtmnGuide",2*SHtmnGuide::i_from_mn(nmax,nmax,nmax)+1,nmax,0){
+        SHtmnGuide::SHtmnGuide(const int nmax) :SHGuideBase("SHtmnGuide",2*(SHtmnGuide::i_from_mn(nmax,nmax,nmax)+1),nmax,0){
 
         }
 

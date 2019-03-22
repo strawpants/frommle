@@ -58,9 +58,12 @@ endif( ${USE_MPI} )
 
 
 # see if python3 is installed
+#find_package (Python3 COMPONENTS Interpreter Development)
 find_program(PYTHON "python3")
 if (PYTHON)
-   execute_process(COMMAND python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
+   execute_process(COMMAND python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR )
+    #also store the include path in the cache
+    set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} CACHE PATH "Include path for python headers")
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

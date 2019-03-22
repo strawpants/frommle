@@ -49,10 +49,10 @@ BOOST_AUTO_TEST_CASE(SHguidetest){
         std::tie(n,m,t)=tpl;
         checkDegOrdTrigIndex = shg[ii++]==tpl;
         BOOST_TEST(checkDegOrdTrigIndex);
-//        std::cout << n<<" "<<m<<" "<<t<<std::endl;
+        std::cout << n<<" "<<m<<" "<<t<<std::endl;
     }
     //also check whether the iterator covered al of the coefficients
-    BOOST_TEST(ii-1==shg.size());
+    BOOST_TEST(ii==shg.size());
 }
 
 

@@ -25,6 +25,7 @@
 #include <cassert>
 #include <cmath>
 #include <boost/iterator/iterator_adaptor.hpp>
+#include <iostream>
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP
 
@@ -73,11 +74,14 @@ namespace frommle{
                 const SHGuideBase* gptr_=nullptr;
                 Element currentEl_={};
                 void increment(){
-                    currentEl_=gptr_->operator[](++idx_);
-                    this->base_reference()=&currentEl_;
-                    if(idx_ > gptr_->size()){
+                    if(idx_+1 == gptr_->size()){
+                        //this will cause an increment one passed the end
                         this->base_reference()=0;
+                        return;
                     }
+                    currentEl_=gptr_->operator[](++idx_);
+                    std::cout << "incrementing"<<idx_<< " "<<gptr_->size() <<std::endl;
+                    this->base_reference()=&currentEl_;
                 }
             };
             const_iterator begin()const{return const_iterator(this);}
