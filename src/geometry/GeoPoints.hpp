@@ -72,9 +72,11 @@ namespace frommle{
 
             };
 
-            const_iterator begin() const { return const_iterator(this); }
+            std::vector<geopoint>::const_iterator begin() const { return points_.begin(); }
+            std::vector<geopoint>::const_iterator end() const { return points_.end(); }
 
-            const_iterator end() const { return const_iterator(); }
+            std::vector<geopoint>::iterator begin() { return points_.begin(); }
+            std::vector<geopoint>::iterator end() { return points_.end(); }
 
         private:
             std::vector <geopoint> points_={};

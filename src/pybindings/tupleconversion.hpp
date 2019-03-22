@@ -107,7 +107,7 @@ namespace frommle {
             p::to_python_converter<T, stdtuple_to_ptuple<T>>();
             p::converter::registry::push_back(&ptuple_to_stdtuple<T>::convertible, &ptuple_to_stdtuple<T>::construct,
                                               p::type_id<T>());
-        };
+        }
     }
 }
 

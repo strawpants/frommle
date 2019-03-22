@@ -56,34 +56,32 @@ namespace frommle{
             virtual Element operator[](const index idx)const=0;
 //            virtual Element & operator[](const index idx)=0;
 
-            class const_iterator: public boost::iterator_adaptor<
-                        const_iterator,
-                        Element const *,
-                        Element const,
-                        boost::forward_traversal_tag
-                >{
-            public:
-                const_iterator():const_iterator::iterator_adaptor_(0){}
-                explicit const_iterator(const  SHGuideBase * const gb ):idx_(0),
-                                                                        gptr_(gb),
-                                                                        currentEl_(gptr_->operator[](idx_)),
-                                                                        const_iterator::iterator_adaptor_(&currentEl_){}
-            private:
-                friend class boost::iterator_core_access;
-                index idx_=0;
-                const SHGuideBase* gptr_=nullptr;
-                Element currentEl_={};
-                void increment(){
-                    if(idx_+1 == gptr_->size()){
-                        //this will cause an increment one passed the end
-                        this->base_reference()=0;
-                        return;
-                    }
-                    currentEl_=gptr_->operator[](++idx_);
-                    std::cout << "incrementing"<<idx_<< " "<<gptr_->size() <<std::endl;
-                    this->base_reference()=&currentEl_;
+        //nested class which acts as an iterator
+        class const_iterator:public frommle::core::Guideiterator<Element ,const_iterator>{
+        public:
+            const_iterator():Guideiterator(Element(-1,-1,trig::C)){}
+            const_iterator(const SHGuideBase * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
+            const_iterator operator++(int){
+                const_iterator retval(*this);
+                ++(*this);
+                return retval;
+            }
+            const_iterator & operator++(){
+                ++idx_;
+                if (idx_==sz_){
+                    //stops iteration
+                    elVal=Element(-1,-1,trig::C);
+                }else {
+                    elVal = gptr_->operator[](idx_);
                 }
-            };
+                return *this;
+            }
+
+        private:
+            const SHGuideBase* gptr_=nullptr;
+            index sz_=0;
+            index idx_=0;
+        };
             const_iterator begin()const{return const_iterator(this);}
             const_iterator end()const{return const_iterator();}
         protected:

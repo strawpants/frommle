@@ -64,7 +64,7 @@ void pyexport_sh()
             .def("idx",&sh::SHGuideBase::idxfromEl)
             .def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
             .def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i")
-            .def("__iter__",p::iterator<const sh::SHtmnGuide>());
+            .def("__iter__",p::iterator<const sh::SHGuideBase>());
 
 
 

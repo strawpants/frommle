@@ -74,25 +74,28 @@ namespace core {
     };
 
 
-    //!@brief templated forward iterator (both usable as const and non-const version, set Element to e.g int const versus just int) class for use in Guides
-//    template<class Element>
-//    class Guideiterator: public boost::iterator_adaptor<
-//            Guideiterator<Element>,
-//            Element*,
-//            Element,
-//            boost::forward_traversal_tag
-//    >
-//    {
-//    public:
-//        ~Guideiterator(){}
-//        Guideiterator():Guideiterator::iterator_adaptor_(0){}
-//        explicit Guideiterator(Element * el):Guideiterator::iterator_adaptor_(el){}
-//    protected:
-//        virtual void increment()=0;
-//        bool equal(Guideiterator const& other) const{return this->base()==other.base();};
-//    private:
-//        friend class boost::iterator_core_access;
-//    };
+    //!@brief templated abstract forward iterator (both usable as const and non-const version, set Element to e.g int const versus just int) class for use in Guides
+    template<class Element, class Derivediterator>
+    class Guideiterator{
+    public:
+        //iterator traits
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Element;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Element*;
+        using reference = Element&;
+        explicit Guideiterator(Element el):elVal(el){}
+        virtual Guideiterator& operator++()=0;
+//        Guideiterator & operator++(int){Derivediterator retval(*this); ++(*this); return retval;}
+        bool operator==(Guideiterator & other) const {return elVal == other.elVal;}
+        bool operator!=(Guideiterator & other) const {return !(*this == other);}
+        Element & operator*() {return elVal;}
+        ~Guideiterator(){}
+        Guideiterator(){}
+    protected:
+        Element elVal={};
+    private:
+    };
 }
 }
 
