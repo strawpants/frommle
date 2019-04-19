@@ -26,6 +26,7 @@
 #include <vector>
 #include <assert.h>
 #include "sh/SHGuide.hpp"
+#include "core/GArrayBase.hpp"
 //#include <boost/multiprecision/float128.hpp>
 
 #ifndef FROMMLE_SHLEGE_HPP
@@ -34,19 +35,25 @@
 namespace frommle{
     namespace sh{
         template<class ftype>
-        class Legendre_nm{
+        class Legendre_nm:public frommle::core::Garray<ftype,SHtmnGuide>{
         public:
+            using Garr=frommle::core::Garray<ftype,SHtmnGuide>;
+            using Garr::operator[];
+            //for future note: finding out that one need to insert'template' has costed multiple hours of my life
+            inline SHtmnGuide & shg(){return this->template g<0>();}
             Legendre_nm(const int nmax);
+            void set(const ftype costheta);
 
-            std::vector<ftype> operator()(const ftype costheta)const;
-            std::vector<ftype> d1at(const ftype costheta)const;
-            inline size_t indxnm(const int n, const int m)const{
-                return SHtmnGuide::i_from_mn(n,m,nmax_);
-            }
+//            std::vector<ftype> operator()(const ftype costheta)const;
+//            std::vector<ftype> d1at(const ftype costheta)const;
+//            inline size_t indxnm(const int n, const int m)const{
+//                return SHtmnGuide::i_from_mn(n,m,nmax_);
+//            }
         private:
-            int nmax_=0;
+//            int nmax_=0;
             std::vector<ftype> wnn_={};
             std::vector<ftype> wnm_ = {};
+            ftype costheta_=2; //impossible value to initiate values upon first call to set
         };
 
 //explicitly initialize types for double and (long double) precision
@@ -55,6 +62,9 @@ namespace frommle{
 //        using Legendre_nm_dd=Legendre_nm<boost::multiprecision::float128>;
 
     }
+
+
+
 }
 
 

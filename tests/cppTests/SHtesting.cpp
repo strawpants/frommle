@@ -53,6 +53,9 @@ BOOST_AUTO_TEST_CASE(SHguidetest){
     }
     //also check whether the iterator covered al of the coefficients
     BOOST_TEST(ii==shg.size());
+
+
+
 }
 
 
@@ -67,8 +70,9 @@ BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
     BOOST_TEST_MESSAGE("Testing associated Legendre polynomials against analytical P52 solution");
     for(int i=0;i<=nsteps+1;i++){
         theta=dt*i*d2r;
-        auto pout=Pnm(cos(theta));
-        BOOST_TEST(pout[Pnm.indxnm(5,2)]==P52(theta));
+        Pnm.set(cos(theta));
+        auto indx=SHtmnGuide::Element(5,2,SHGuideBase::trig::C);
+        BOOST_TEST(Pnm[indx]==P52(theta));
     }
 
 }
@@ -104,15 +108,15 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
     BOOST_TEST_MESSAGE("Testing relative stability against long double version (relative error <5e-6 for absolute values > 1e-100) of associated Legendre polynomials within 5 deg of North Pole");
     for(int i=0;i<=nsteps+1;i++){
         z=cos(dt*i*d2r);
-        auto pout=Pnm(z);
-        auto poutld=Pnmld(z);
+        Pnm.set(z);
+        Pnmld.set(z);
 
         for (int m = 0; m <= nmax; ++m) {
             for (int n = m; n <= nmax; ++n) {
-                auto idx = Pnm.indxnm(n, m);
-                val=pout[idx];
+                auto idx = Pnm.shg().idx(n, m);
+                val=Pnm[idx];
                 //convert to double to compare properly
-                valld=poutld[idx];
+                valld=Pnmld[idx];
 
                 dif = abs(val-valld);
                 maxv=std::max(abs(val),abs(valld));

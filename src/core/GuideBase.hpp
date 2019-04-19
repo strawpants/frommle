@@ -31,7 +31,7 @@ namespace core {
 
     using index=size_t;
 /*!
- * \brief Abstract base class for describing  guided dimensions
+ * \brief Base class for describing  guided dimensions
  * The general idea behind the Guide classes is that they are used to add value to the dimension of an array/vector
  * Derived classes are expected to provide the following functionality:
  * -# Encapsulate functions (notably index functions) which are specific to the dimension

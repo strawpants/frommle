@@ -38,6 +38,7 @@ namespace frommle {
         template<class Tp>
 		class TimeGuide : public GuideBase {
 		public:
+		    using Element=Tp;
 			TimeGuide():GuideBase("TimeGuide"){}
 
             TimeGuide(Tp && in):GuideBase("TimeGuide"){

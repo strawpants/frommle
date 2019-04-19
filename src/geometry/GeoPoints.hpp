@@ -37,6 +37,7 @@ namespace frommle{
  */
         class GeoPoints : public frommle::core::GuideBase {
         public:
+            using Element=geopoint;
             GeoPoints();
 
             void push_back(geopoint &&pnt);

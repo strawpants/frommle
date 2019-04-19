@@ -62,9 +62,19 @@ namespace frommle {
         public:
             using GPack=GuidePack<Guides...>;
             using GPack::ndim;
-            using GPack::g;
+            template<int n>
+            using g_t=typename GPack::template g_t<n>;
+
+            template<int n>
+            inline g_t<n> & g(){return this->GPack::template g<n>();}
+            inline const GuideBase & g(const int n){return this->GPack::g(n);}
+//                        template<class LGuide, class ... RGuides>
+//            using nextGarray=Garray<T,RGuides...>;
+//
+//            using subGarray=typename nextGarray<Guides...>;
+
             using arr_t=boost::multi_array<T,ndim>;
-//            using arr_t::operator[];
+            using arr_t::operator[];
             Garray(){};
             /*!brief
              * Construct a Garray based on given set of Guide instances
@@ -75,10 +85,27 @@ namespace frommle {
                 this->resize(this->getExtent());
             }
 
+//            //return a single value of the internal multi_array
+            template<int i=0>
+            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::Element & indx){
+                assert(1==ndim);
+                return this->operator[](g<0>().idx(indx));
+            }
+
+            // return a subview of the current Garray (i.e. strip a dimension)
+            using subGarray=typename arr_t::template array_view<ndim-1>::type;
+            template<int i=0>
+            typename std::enable_if< i+1 != ndim, subGarray >::type & operator[](const typename g_t<0>::Element & indx){
+                assert(i<ndim-1);
+                return this->operator[](g<0>().idx(indx));
+            }
+
 
         protected:
         private:
         };
+
+//        class GarrayRef..
 
         /*!brief
          * Factory function to quickly create garrays from initialized Guides
