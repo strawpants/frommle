@@ -30,10 +30,10 @@ namespace frommle{
          */
         class IndexGuide:public GuideBase{
         public:
-            using pack=unsigned long long int;
+            using Element=unsigned long long int;
             IndexGuide():GuideBase("IndexGuide"){}
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
-            pack operator[](const frommle::core::index idx)const{return idx;}
+            Element operator[](const frommle::core::index idx)const{return idx;}
 //            Element & operator[](GuideBase::index idx){return idx;}
         };
 

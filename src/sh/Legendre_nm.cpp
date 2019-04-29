@@ -41,20 +41,18 @@ namespace frommle {
 
         //@brief precompute factors with square roots for reuse later
         template<class ftype>
-        Legendre_nm<ftype>::Legendre_nm(const int nmax) {
-            nmax_ = nmax;
+        Legendre_nm<ftype>::Legendre_nm(const int nmax):Garr(SHtmnGuide(nmax)) {
             //precompute factors involving square roots
-            wnn_ = std::vector<ftype>(nmax_ + 1);
+            wnn_ = std::vector<ftype>(nmax + 1);
             wnn_[0] = 0.0;
             wnn_[1] = sqrt(3.0);
-            for (int n = 2; n <= nmax_; ++n) {
+            for (int n = 2; n <= nmax; ++n) {
                 wnn_[n] = sqrt((2 * n + 1) / (2.0 * n));
             }
-
-            wnm_ = std::vector<ftype>(indxnm(nmax_, nmax_) + 1);
-            for (int m = 0; m <= nmax_; ++m) {
-                for (int n = m + 1; n <= nmax_; ++n) {
-                    wnm_[indxnm(n, m)] = sqrt((2 * n + 1.0) / (n + m) * (2 * n - 1.0) / (n - m));
+            wnm_ = std::vector<ftype>(shg().size());
+            for (int m = 0; m <= nmax; ++m) {
+                for (int n = m + 1; n <= nmax; ++n) {
+                    wnm_[shg().idx(n, m)] = sqrt((2 * n + 1.0) / (n + m) * (2 * n - 1.0) / (n - m));
                 }
 
             }
@@ -62,11 +60,11 @@ namespace frommle {
         }
 
         template<class ftype>
-        std::vector<ftype> Legendre_nm<ftype>::operator()(const ftype costheta) const {
+        void Legendre_nm<ftype>::set(const ftype costheta){
             assert(costheta >= -1.0 and costheta <= 1.0);
 
-            std::vector<ftype> Pnm(indxnm(nmax_, nmax_) + 1);
-            std::fill(Pnm.begin(), Pnm.end(), 0.0);
+//            std::vector<ftype> Pnm(indxnm(nmax_, nmax_) + 1);
+//            std::fill(Pnm.begin(), Pnm.end(), 0.0);
 
 
             ftype sinTheta = std::sqrt(1 - pow(costheta, 2));
@@ -77,28 +75,29 @@ namespace frommle {
             size_t idx;
             cacheEntry<ftype> L1CacheEntry;
 
+            int nmax_=shg().nmax();
 
             //initial rescaling is 1e280
             L1CacheEntry.sectorial = 1.0 / numericStabilityFactor;
 
 
-            Pnm[0] = 1.0; // or Pnm[0] = L1CacheEntry.sectorial*numericStabilityFactor
+            this->operator[](0) = 1.0; // or Pnm[0] = L1CacheEntry.sectorial*numericStabilityFactor
 
             for (int m = 0; m < nmax_; ++m) {
-                idx = indxnm(m, m);
+                idx = shg().idx(m, m);
                 L1CacheEntry.pnmin2 = numericStabilityFactor;
 
                 //compute offdiagonal element
                 L1CacheEntry.pnmin1 = wnm_[idx + 1] * costheta * L1CacheEntry.pnmin2;
-                Pnm[idx + 1] = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
+                this->operator[](idx + 1) = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
                 //loop over remaining degrees
                 for (int n = m + 2; n <= nmax_ + 1; ++n) {
-                    idx = indxnm(n, m);
+                    idx = shg().idx(n, m);
 
                     L1CacheEntry.pn =
                             wnm_[idx] * (costheta * L1CacheEntry.pnmin1 - L1CacheEntry.pnmin2 / wnm_[idx - 1]);
                     //write value to output vector and shift entries in the cache
-                    Pnm[idx] = L1CacheEntry.pn * L1CacheEntry.sectorial;
+                    this->operator[](idx) = L1CacheEntry.pn * L1CacheEntry.sectorial;
                     //shift entry to prepare for the next degree
                     L1CacheEntry.pnmin2 = L1CacheEntry.pnmin1;
                     L1CacheEntry.pnmin1 = L1CacheEntry.pn;
@@ -107,17 +106,16 @@ namespace frommle {
                 //Update the m+1 sectorial (applies n+1,n+1 <- n,n recursion)
                 L1CacheEntry.sectorial *= wnn_[m + 1] * sinTheta;
                 //also write the next sectorial to the output vector (scaled correctly)
-                Pnm[indxnm(m + 1, m + 1)] = L1CacheEntry.sectorial * numericStabilityFactor;
+                this->operator[](shg().idx(m + 1, m + 1)) = L1CacheEntry.sectorial * numericStabilityFactor;
 
 
             }
-            return Pnm;
         }
 
-        template<class ftype>
-        std::vector<ftype> Legendre_nm<ftype>::d1at(const ftype costheta) const {
-            return std::vector<ftype>();
-        }
+//        template<class ftype>
+//        std::vector<ftype> Legendre_nm<ftype>::d1at(const ftype costheta) const {
+//            return std::vector<ftype>();
+//        }
 
 
 //explicit template initialization

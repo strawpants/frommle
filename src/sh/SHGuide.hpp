@@ -52,7 +52,7 @@ namespace frommle{
             //helper function to make C++ interface consistent
             inline index idx(const Element el)const{return idxfromEl(el);}
 
-            virtual index idx(const int n,const int m,const trig t)const=0;
+            virtual index idx(const int n,const int m,const trig t=trig::C)const=0;
             virtual Element operator[](const index idx)const=0;
 //            virtual Element & operator[](const index idx)=0;
 
@@ -98,9 +98,10 @@ namespace frommle{
         public:
             using SHGuideBase::trig;
             using SHGuideBase::Element;
+            using SHGuideBase::idx;
             SHtmnGuide()=default;
             SHtmnGuide(const int nmax);
-            index idx(const int n, const int m, const trig t)const;
+            index idx(const int n, const int m, const trig t=trig::C)const;
             Element operator[](const index idx)const;
 
             /*! brief returns a vectorized index for order sorted spherical harmonics (no trigonometric variable)

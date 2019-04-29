@@ -26,6 +26,10 @@
 namespace frommle{
 
     namespace core{
+
+//        template <class LGuide, class ... RGuides> struct stripfirst{
+//            using type=std::tuple<RGuides...>;
+//        };
 /*!brief
  * Wraps several guides into a tuple and provide access functions
  * @tparam Guides: a variadic list of guides which spans the dimensions
@@ -35,14 +39,19 @@ namespace frommle{
         public:
             static const int ndim=sizeof...(Guides);
             using guides_t=std::tuple<Guides...>;
+            template<int n>
+            using g_t=typename std::tuple_element<n,guides_t>::type;
+//            using subguides=typename stripfirst<Guides...>::type;
             GuidePack(){}
             GuidePack(Guides&& ... Args){
                 extent_={Args.size()...};
                 guides_ = std::make_tuple(std::forward<Guides>(Args)...);
+
             }
             std::array<size_t,ndim> getExtent()const{
                 return extent_;
             };
+
             /*!brief
              * Get the nth guide of the array
              * @tparam n

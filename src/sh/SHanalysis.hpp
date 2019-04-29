@@ -41,24 +41,35 @@ namespace frommle{
                     throw frommle::core::GuideMatchingException(HERE+"SH dimension");
                 }
 
-//                construct an object to be filled
+//                construct an object to be filled with the result
                 frommle::core::Garray<spatialG> out(g<0>());
 
                 //loop over locations (latitude loops slowest to make best use of associated Legendre polynomials)
                 double lon,lat;
                 double latold=1000*D2R; //set to out of range value on purpose
-
+                int n,m;
+                g<1>().trig trig;
                 Legendre_nm_d Pnm(g<1>().nmax()));
-                std::vector<double> pnmvals;
-                for ( auto & loc:g<0>().begin()){
-                    std::tie(lon,lat)=loc;
+//                std::vector<double> pnmvals;
+                for ( auto & geoloc:g<1>(){
+                    lon=geoloc.getX();
+                    lat=geoloc.getY();
                     if (latold != lat){
-                        pnmvals=Pnm(std::sin(lat*D2R));
+                        std::vector<double> pnmvals=Pnm(std::sin(lat*D2R));
                     }
 
-                    //Multiply  spherical harmonics with coefficients
-//                    out[]
+                    double val=0.0;
 
+                    for (auto & nmt:g<0>()){
+                        std::tie(n,m,trig)=nmt;
+                        val+=in[nmt]*cos(m*lon)*pnmvals[Pnm.indxnm(n,m)]
+                    }
+                    //longitude part of the spherical harmonics
+                    //Multiply  spherical harmonics with coefficients
+                    std::vector<double> csmlon=cos();
+
+                    out[geoloc]=pnmvals*in
+                    latold=lat;
 
                 }
             }
