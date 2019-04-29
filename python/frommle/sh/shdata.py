@@ -16,7 +16,7 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 
 import numpy as np
-from frommle.sh import SHtmnDim
+from frommle.sh import SHtmnGuide
 import math
 
 class shdata():
@@ -25,7 +25,7 @@ class shdata():
     errors=False
     def __init__(self,nmax,errors=True):
         self.nmax=nmax
-        sz = SHtmnDim.i_from_mn(nmax, nmax, nmax) + 1
+        sz = SHtmnGuide.i_from_mn(nmax, nmax, nmax) + 1
         self.C=np.zeros([sz])
         self.S=np.zeros([sz])
         self.errors=errors
@@ -35,10 +35,10 @@ class shdata():
             self.sigS=np.zeros([sz])
 
     def idx(self,n,m):
-        return SHtmnDim.i_from_mn(n,m,self.nmax)
+        return SHtmnGuide.i_from_mn(n,m,self.nmax)
 
     def nm(self,idx):
-        return SHtmnDim.mn_from_i(idx,self.nmax)
+        return SHtmnGuide.mn_from_i(idx,self.nmax)
 
     def __add__(self,other):
         if other.nmax > self.nmax:
