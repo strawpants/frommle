@@ -43,6 +43,12 @@ namespace frommle{
         public:
             IndexingException(const std::string message):std::runtime_error(message){}
         };
+
+        ///@brief Exception for indexing errors (out of bound, stride mismath etc)
+        class IOException:public std::runtime_error{
+        public:
+            IOException(const std::string message):std::runtime_error(message){}
+        };
     }
 }
 

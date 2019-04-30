@@ -1,5 +1,5 @@
 /*! \file
- \brief Holds the base for the inputArchive class
+ \brief templated ocean function (masks land values, given an input)
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -18,37 +18,16 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef SRC_CPP_INARCHIVEBASE_HPP_
-#define SRC_CPP_INARCHIVEBASE_HPP_
+#include "core/GOperatorBase.hpp"
 
-#include<string>
-#include <map>
-#include <boost/any.hpp>
-
-namespace frommle {
-	namespace io {
-		using ArchiveOpts=std::map<std::string,boost::any>;
-/*!
- * \brief Abstract base class for an input archive
- */
-		class InputArchiveBase {
-		public:
-			virtual ~InputArchiveBase() {
-			}
-			virtual void changeGroup(const std::string & GroupName){
-				currentgroup_=GroupName;
-				//reset current variable name
-				currentvar_="";
-			}
-			virtual void changeVar(const std::string & VarName){
-				currentvar_=VarName;
-			}
-		protected:
-			std::string currentgroup_{};
-			std::string currentvar_{};
-		private:
-		};
-
-	}
+#ifndef FROMMLE_OCEANFUNCTION_HPP
+#define FROMMLE_OCEANFUNCTION_HPP
+namespace frommle{
+    namespace sea{
+        template<class G>
+        class OceanFunc:public core::GOperator<G,G>{
+        OceanFunc();
+        };
+    }
 }
-#endif /* SRC_CPP_INARCHIVEBASE_HPP_*/
+#endif //FROMMLE_OCEANFUNCTION_HPP

@@ -19,9 +19,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 #basic compiler flags
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++11")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++11 -DBOOST_LOG_DYN_LINK")
 #set(CMAKE_CXX_FLAGS_DEBUG "-pg  -g -O3") #to use when the gprof profiler is used for performance testing
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Winline -ansi -pedantic -Wextra -Weffc++ -Wno-long-long -std=c++11")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -DBOOST_LOG_DYN_LINK -Wall -Winline -ansi -pedantic -Wextra -Weffc++ -Wno-long-long -std=c++11 ")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11")
 
 #add make info
@@ -61,7 +61,7 @@ endif( ${USE_MPI} )
 #find_package (Python3 COMPONENTS Interpreter Development)
 find_program(PYTHON "python3")
 if (PYTHON)
-   execute_process(COMMAND python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR )
+   execute_process(COMMAND ${PYTHON} -c "from distutils.sysconfig import get_python_inc; print(get_python_inc(),end='')" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR )
     #also store the include path in the cache
     set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} CACHE PATH "Include path for python headers")
 endif()
@@ -75,7 +75,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 #We need the boost library for various things (e.g. timing and dates)
 #find_package(Boost REQUIRED COMPONENTS system chrono program_options date_time serialization ${WITH_BOOST_MPI} iostreams)
-find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time ${WITH_BOOST_MPI})
+find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time log ${WITH_BOOST_MPI})
 
 #add Boost include path
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
@@ -84,6 +84,9 @@ include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
 find_package(GDAL REQUIRED)
 include_directories(${GDAL_INCLUDE_DIR})
 
+#find the threading library
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 #find the hdf5 library
 #find_package(HDF5 REQUIRED COMPONENTS CXX)
 ##set a preprocessor FLAG depending on the version

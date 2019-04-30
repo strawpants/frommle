@@ -17,12 +17,12 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
+#define BOOST_TEST_MAIN
 #define BOOST_TEST_MODULE GeometryTesting
 #include <boost/test/included/unit_test.hpp>
 #include "geometry/GeoGrid.hpp"
 #include "geometry/GeoPoints.hpp"
-
+#include "core/Logging.hpp"
 
 using namespace frommle::geometry;
 BOOST_AUTO_TEST_CASE(GeoGridGuide,*boost::unit_test::tolerance(1e-11)){
@@ -90,4 +90,12 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
         BOOST_TEST(lat[idx] == loc.getY());
         ++idx;
     }
+}
+
+//Test reading OGR shapes from a database
+BOOST_AUTO_TEST_CASE(OGRArchive){
+    frommle::core::Logging::setInfoLevel();
+    LOGINFO << "testing INFOLOG";
+    LOGDEBUG << "testing DEBUGLOG";
+    BOOST_TEST(1 == 1);
 }

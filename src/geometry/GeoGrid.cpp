@@ -73,7 +73,7 @@ namespace frommle {
         GeoGrid::const_iterator::const_iterator(){
             ilat=-1;
             ilon=-1;
-        };
+        }
 
         GeoGrid::const_iterator::const_iterator(const GeoGrid * in){
             gridPtr=in;
