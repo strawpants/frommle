@@ -28,7 +28,7 @@
 #include <boost/date_time.hpp>
 #include "core/IndexGuide.hpp"
 #include "core/MarrayEig.hpp"
-
+#include "core/UserSettings.hpp"
 
 using namespace frommle::core;
 namespace bg=boost::gregorian;
@@ -63,3 +63,8 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
 }
 
 
+BOOST_AUTO_TEST_CASE(Settings){
+    std::string user=UserSettings::as<std::string>("User");
+    std::cout << user << std::endl;
+
+}

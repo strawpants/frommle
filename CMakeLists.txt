@@ -103,6 +103,10 @@ find_package(Threads REQUIRED)
 #find_package(GDAL REQUIRED)
 #include_directories(${GDAL_INCLUDE_DIR})
 
+
+#find the YAML library
+find_library(YAML_CPP_LIBRARY NAMES yaml-cpp )
+
 #where to copy public library header files
 set(FROMMLE_HEADER_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 #define some PATHS to essential components of the package

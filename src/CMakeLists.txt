@@ -1,6 +1,7 @@
 LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp core/InputArchiveBase.hpp
-    core/OutputArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp)
-LIST(APPEND COREOBJS core/TimeGuide.cpp)
+    core/OutputArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp core/UserSettings.hpp)
+
+LIST(APPEND COREOBJS core/TimeGuide.cpp core/UserSettings.cpp)
 
 LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
