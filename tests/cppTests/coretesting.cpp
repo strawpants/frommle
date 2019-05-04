@@ -29,6 +29,7 @@
 #include "core/IndexGuide.hpp"
 #include "core/MarrayEig.hpp"
 #include "core/UserSettings.hpp"
+#include <cstdio>
 
 using namespace frommle::core;
 namespace bg=boost::gregorian;
@@ -63,8 +64,35 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
 }
 
 
-BOOST_AUTO_TEST_CASE(Settings){
-    std::string user=UserSettings::as<std::string>("User");
-    std::cout << user << std::endl;
+BOOST_AUTO_TEST_CASE(Settings) {
 
+    //first create the default template
+    std::string yamlfile("default.yaml");
+    UserSettings::get().setDefaults();
+    UserSettings::write(yamlfile);
+    UserSettings::read(yamlfile);
+
+    std::string user = UserSettings::at("User").as<std::string>();
+    std::string usercheck = std::string(std::getenv("USER"));
+
+    //first trivial check to see if write -> read cycle went well
+    BOOST_TEST(user == usercheck);
+
+    //change some data on the fly
+    std::string modentry("Modified");
+    UserSettings::at("History").push_back(modentry);
+
+    BOOST_TEST(UserSettings::at("History")[0].as<std::string>() == modentry);
+    //write and read file
+    UserSettings::write(yamlfile);
+    UserSettings::read(yamlfile);
+
+    BOOST_TEST(UserSettings::at("History")[0].as<std::string>() == modentry);
+
+
+    //remove file
+    if (std::remove(yamlfile.c_str()) != 0){
+        BOOST_TEST_MESSAGE("Error deleting file");
+        BOOST_TEST( false);
+    }
 }

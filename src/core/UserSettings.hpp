@@ -24,21 +24,37 @@
 
 #include "core/Singleton.hpp"
 #include "yaml-cpp/yaml.h"
+#include <iostream>
+#include <ostream>
 
 namespace frommle {
 	namespace core {
 
 	class UserSettings: public Singleton<UserSettings>{
 		public:
-			template<class T, class K=std::string>
-			static const T as(const K & name){
-				return UserSettings::get().config_[name].template as<T>();
-			}
+			template<class T>
+			static YAML::Node at(const T & key){return UserSettings::get().config_[key];}
+			static void write();
+			static void write(const std::string filename);
+
+			static void write(std::ostream & fout);
+
+			static void read(const std::string filename);
+			static void read();
+
+			static std::string yamlfile();
+
+			static YAML::Node getAuth(const std::string alias);
+			void setDefaults();
 		private:
 			friend Singleton<UserSettings>;
+
 			//@brief reads in the user settings from a yaml file
 			UserSettings();
+			void readYaml(const std::string yamlfile);
 			YAML::Node config_{};
+			std::string yamlfile_="";
+
 	};
 	}
 }
