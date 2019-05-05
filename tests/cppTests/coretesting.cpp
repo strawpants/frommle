@@ -89,6 +89,21 @@ BOOST_AUTO_TEST_CASE(Settings) {
 
     BOOST_TEST(UserSettings::at("History")[0].as<std::string>() == modentry);
 
+    //store and lookup a password
+    std::string secretpassword("Blafjasldkmvapdkva;dkvas");
+    UserSettings::setAuth("Frommledummy",secretpassword);
+    auto checkpassword=UserSettings::getAuth("Frommledummy");
+
+    BOOST_TEST(secretpassword == checkpassword);
+
+    //the same but now stored unsecurely
+    UserSettings::at("Authstore")="unsecure";
+    UserSettings::setAuth("Frommledummy",secretpassword);
+    auto checkunsecurepassword=UserSettings::getAuth("Frommledummy");
+    BOOST_TEST(secretpassword == checkunsecurepassword);
+
+
+    UserSettings::write(yamlfile);
 
     //remove file
     if (std::remove(yamlfile.c_str()) != 0){

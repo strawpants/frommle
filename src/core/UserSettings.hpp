@@ -44,7 +44,8 @@ namespace frommle {
 
 			static std::string yamlfile();
 
-			static YAML::Node getAuth(const std::string alias);
+			static std::string getAuth(const std::string alias);
+			static void setAuth(const std::string alias,const std::string secret);
 			void setDefaults();
 		private:
 			friend Singleton<UserSettings>;
@@ -52,6 +53,12 @@ namespace frommle {
 			//@brief reads in the user settings from a yaml file
 			UserSettings();
 			void readYaml(const std::string yamlfile);
+
+			std::string getAuthUnsecure(const std::string alias)const;
+			void setAuthUnsecure(const std::string alias,const std::string secret);
+
+			std::string getAuthlibsecret(const std::string alias)const;
+			void setAuthlibsecret(const std::string alias,const std::string secret)const;
 			YAML::Node config_{};
 			std::string yamlfile_="";
 

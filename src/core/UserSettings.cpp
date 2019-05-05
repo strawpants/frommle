@@ -24,9 +24,11 @@
 #include <fstream>
 #include "core/Logging.hpp"
 #include "UserSettings.hpp"
-
+#include "core/Exceptions.hpp"
 #include <chrono>
 #include <ctime>
+#include <libsecret/secret.h>
+
 namespace frommle {
 	namespace core {
 			//@brief reads in the user settings from a yaml file
@@ -50,7 +52,7 @@ namespace frommle {
 			config_["User"]= std::string(std::getenv("USER"));
 			config_["Contact"]= config_["User"].as<std::string>() + "@unknown";
 
-			config_["Authstore"]="gnome-keyring";
+			config_["Authstore"]="libsecret";
 
 			config_["geoslurp"]["host"]= std::string("karpaten");
 			config_["geoslurp"]["port"]= std::string("5432");
@@ -64,7 +66,11 @@ namespace frommle {
 		//@brief write current yaml tree to a stream
 		void UserSettings::write(std::ostream & fout) {
 			auto tnow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			fout << "# Frommle yaml config file, written " <<std::ctime(&tnow) <<std::endl;
+			fout << "# Frommle yaml config file, written " <<std::ctime(&tnow);
+			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
+			if (method == "unsecure"){
+				fout << "# WARNING passwords are stored unencrypted (consider using Authstore: libsecret)" << std::endl;
+			}
 			fout << UserSettings::get().config_;
 		}
 
@@ -90,18 +96,91 @@ namespace frommle {
 			return UserSettings::get().yamlfile_;
 		}
 
-		YAML::Node UserSettings::getAuth(const  std::string alias) {
-			YAML::Node authnode;
+		std::string UserSettings::getAuth(const  std::string alias) {
 			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
 
-			if (method == "gnome-keyring") {
+			if (method == "libsecret") {
 				//try to retrieve the authentification credentials from the gnome-keyring
-				authnode["password"]="Blah blah this is not a password";
+				return UserSettings::get().getAuthlibsecret(alias);
+			}else if (method == "unsecure"){
+				return UserSettings::get().getAuthUnsecure(alias);
+			}else{
+				throw InputException("Unknown method to retrieve authentification secrets: "+ method);
 			}
 
-			return authnode;
+		}
+
+		//@brief stores a secret
+		void UserSettings::setAuth(const std::string alias, const std::string secret) {
+			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
+			if (method == "libsecret") {
+				//try to retrieve the authentification credentials from the gnome-keyring
+				UserSettings::get().setAuthlibsecret(alias, secret);
+			}else if (method == "unsecure"){
+				UserSettings::get().setAuthUnsecure(alias, secret);
+			}else{
+				throw InputException("Unknown method to store authentification secrets: "+ method);
+			}
 
 		}
+
+		//@brief store secret passwords in an unsecure way (plain text in config_ tree)
+		void UserSettings::setAuthUnsecure(const std::string alias, const std::string secret) {
+			config_["Secrets"][alias]=secret;
+		}
+
+		//@brief retrieves secrets stored in an unsecure way from config_ tree
+		std::string UserSettings::getAuthUnsecure(const std::string alias) const {
+			return config_["Secrets"][alias].as<std::string>();
+		}
+
+		const SecretSchema *
+		frommle_get_schema (void)
+		{
+			static const SecretSchema the_schema = {
+					"org.frommle.Password", SECRET_SCHEMA_NONE,
+					{
+							{  "alias", SECRET_SCHEMA_ATTRIBUTE_STRING },
+							{  "NULL", SECRET_SCHEMA_ATTRIBUTE_STRING },
+					}
+			};
+			return &the_schema;
+		}
+
+		//@brief lookup a password or secret token through the libsecret method
+		std::string UserSettings::getAuthlibsecret(const std::string alias) const {
+			GError *error = NULL;
+			gchar *password = secret_password_lookup_sync (frommle_get_schema(), NULL, &error,
+					"alias",alias.c_str(),
+					NULL);
+
+			if (error != NULL) {
+				/* ... handle the failure here */
+				g_error_free (error);
+
+			}
+
+			return std::string(password);
+		}
+
+		//@brief stores a secret with libsecret
+		void UserSettings::setAuthlibsecret(const std::string alias, const std::string secret) const {
+			GError *error = NULL;
+
+			secret_password_store_sync (frommle_get_schema(), SECRET_COLLECTION_DEFAULT,
+										"Frommle", secret.c_str(), NULL, &error,
+										"alias", alias.c_str(),
+										NULL);
+
+			if (error != NULL) {
+				/* ... handle the failure here */
+				g_error_free (error);
+			} else {
+				/* ... do something now that the password has been stored */
+			}
+
+		}
+
 	}
 
 }

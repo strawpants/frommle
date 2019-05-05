@@ -107,6 +107,13 @@ find_package(Threads REQUIRED)
 #find the YAML library
 find_library(YAML_CPP_LIBRARY NAMES yaml-cpp )
 
+
+#find libsecret using pkg-config
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
+include_directories(${LIBSECRET_INCLUDE_DIRS})
+
+
 #where to copy public library header files
 set(FROMMLE_HEADER_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 #define some PATHS to essential components of the package
