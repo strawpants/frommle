@@ -18,31 +18,30 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA 
 */
 #include <io/OGRIArchive.hpp>
+#include "core/Logging.hpp"
+#include <gdal.h>
 namespace frommle {
 	namespace io {
 		///@brief Destructor needs to take care on closing the OGR datasource correctly
 		OGRIArchive::~OGRIArchive() {
-			freeFeature();
 			GDALClose(poDS);
+//			delete poDS;
 			poDS = nullptr;
 		}
 
-		void OGRIArchive::freeFeature() {
-			if (poFeat) {
-				OGRFeature::DestroyFeature(poFeat);
-				poFeat = nullptr;
-			}
-		}
 
 		void OGRIArchive::setOpts(const ArchiveOpts &Opts, const std::string sourceName) {
 			//first all OGR data formats must be dynamically initiated (this needs to be done only once per program call)
 			GDALinit::get();
 
-			//open a directory containing shapefiles
-			poDS = (GDALDataset *) GDALOpenEx(sourceName.c_str(), GDAL_OF_READONLY, NULL, NULL, NULL);
+			//open the ogr source (e.g. a directory containing shapefiles)
+			poDS = (GDALDataset *) GDALOpenEx(sourceName.c_str(), GDAL_OF_VECTOR,NULL,NULL,NULL);
 			if (!poDS) {
 				throw core::IOException("Error opening OGR source");
 			}
+			//default opens the first layer
+			poLayer = poDS->GetLayer(0);
+			poFDefn = poLayer->GetLayerDefn();
 
 
 		}
@@ -51,29 +50,23 @@ namespace frommle {
 		void OGRIArchive::changeGroup(const std::string &GroupName){
 			InputArchiveBase::changeGroup(GroupName);
 			poLayer = poDS->GetLayerByName(GroupName.c_str());
-			freeFeature();
-
-		}
-
-///@brief loads the next feature in the layer (note that the variable name is irrelevant)
-		void OGRIArchive::changeVar(const std::string &VarName){
-			InputArchiveBase::changeVar(VarName);
-			//destroy old feature
-			freeFeature();
-
-			poFeat = poLayer->GetNextFeature();
-			//also load the attribute field descriptions
 			poFDefn = poLayer->GetLayerDefn();
 		}
 
-		void OGRIArchive::listLayers() {
-			int nlayers = poDS->GetLayerCount();
-			for (int i = 0; i < nlayers; ++i) {
-				OGRLayer *tmp = poDS->GetLayer(i);
-//				INFOLOG1 << "Layer " << i + 1 << ": " << tmp->GetName() << " type: "
-//						 << OGRGeometryTypeToName(tmp->GetGeomType()) << std::endl;
-			}
+/////@brief loads the next feature in the layer (note that the variable name is irrelevant)
+//		void OGRIArchive::changeVar(const std::string &VarName){
+//			InputArchiveBase::changeVar(VarName);
+//
+////			poFeat = poLayer->GetNextFeature();
+//			//also load the attribute field descriptions
+////			poFDefn = poLayer->GetLayerDefn();
+//		}
 
+		void OGRIArchive::listLayers() {
+			for( auto&& layer: poDS->GetLayers() )
+			{
+				LOGINFO << "Layer:  "<< layer->GetName() << " type: " << OGRGeometryTypeToName(layer->GetGeomType()) << std::endl;
+			}
 
 		}
 

@@ -23,6 +23,7 @@
 # include "core/Singleton.hpp"
 //#include "core/Logging.hpp"
 #include <ogrsf_frmts.h>
+#include "geometry/OGRiteratorBase.hpp"
 
 #ifndef SRC_CORE_OGRIARCHIVE_HPP_
 #define SRC_CORE_OGRIARCHIVE_HPP_
@@ -59,22 +60,49 @@ namespace frommle {
 
 //			using InputArchiveBase::operator>>;
 
-			OGRGeometry *getOGRGeometry();
-
 			OGRSpatialReference *getOGRspatialRef();
 
 			void changeGroup(const std::string & GroupName);
-			void changeVar(const std::string & VarName);
+
+			//@brief nested iterator class
+			class ogriterator:public geometry::OGRiteratorBase{
+			public:
+				ogriterator(){}
+				~ogriterator(){
+					freefeat();
+				}
+				ogriterator(OGRIArchive * in):ArPtr_(in){}
+				virtual ogriterator& operator++(){
+					//destroy feature if not nullptr
+					freefeat();
+					//get next feature
+					poFeat_ = ArPtr_->poLayer->GetNextFeature();
+					//set pointer to OGRGeometry
+					elVal=poFeat_->GetGeometryRef();
+				};
+			private:
+				void freefeat(){
+					if (poFeat_) {
+						OGRFeature::DestroyFeature(poFeat_);
+					}
+				}
+				OGRIArchive * ArPtr_=nullptr;
+				OGRFeature *poFeat_ = nullptr;
+			};
+			std::shared_ptr<geometry::OGRiteratorBase>  ogrbegin(){
+				return std::shared_ptr<ogriterator>(new ogriterator(this));
+			}
+
+			std::shared_ptr<geometry::OGRiteratorBase>  ogrend()const{
+				return std::shared_ptr<ogriterator>(new ogriterator());
+			}
 
 		private:
 			void setOpts(const ArchiveOpts &Opts, const std::string sourceName);
 
-			void freeFeature();
-
 			GDALDataset *poDS = nullptr;
 			OGRLayer *poLayer = nullptr;
-			OGRFeature *poFeat = nullptr;
-			OGRFeatureDefn *poFDefn;
+			OGRFeatureDefn *poFDefn=nullptr;
 		};
 
 	}

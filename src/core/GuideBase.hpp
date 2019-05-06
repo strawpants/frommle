@@ -86,7 +86,6 @@ namespace core {
         using reference = Element&;
         explicit Guideiterator(Element el):elVal(el){}
         virtual Guideiterator& operator++()=0;
-//        Guideiterator & operator++(int){Derivediterator retval(*this); ++(*this); return retval;}
         bool operator==(Guideiterator & other) const {return elVal == other.elVal;}
         bool operator!=(Guideiterator & other) const {return !(*this == other);}
         Element & operator*() {return elVal;}

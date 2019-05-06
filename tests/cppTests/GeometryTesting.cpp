@@ -21,7 +21,7 @@
 #define BOOST_TEST_MODULE GeometryTesting
 #include <boost/test/included/unit_test.hpp>
 #include "geometry/GeoGrid.hpp"
-#include "geometry/GeoPoints.hpp"
+#include "geometry/OGRGuide.hpp"
 #include "core/Logging.hpp"
 
 using namespace frommle::geometry;
@@ -75,27 +75,25 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
 
     std::vector<double> lon={-179.3,60.0,180.0};
     std::vector<double> lat={-87.0,0.0,34};
-
+    using GeoPoints=OGRGuide<geopoint>;
     GeoPoints geopnts=GeoPoints();
-    //push back with a lon,lat value
-    geopnts.push_back(lon[0],lat[0]);
-    //push back with a OGRPoinr
-    geopnts.push_back(geopoint(lon[1],lat[1]));
-    auto pnt=geopoint(lon[2], lat[2]);
+    //push back with a OGRPoint
+    geopnts.push_back(geopoint(lon[0],lat[0]));
+    auto pnt=geopoint(lon[1], lat[1]);
     geopnts.push_back(pnt);
     unsigned int idx=0;
     for (const auto & loc:geopnts){
-//        std::cout << lon[idx]<<" "<<lat[idx] <<" " << loc.getX()<<" "<<loc.getY()<<std::endl;
         BOOST_TEST(lon[idx] == loc.getX());
         BOOST_TEST(lat[idx] == loc.getY());
         ++idx;
     }
 }
 
-//Test reading OGR shapes from a database
+//Test writing & reading OGR geometries from shapefiles / database
 BOOST_AUTO_TEST_CASE(OGRArchive){
-    frommle::core::Logging::setInfoLevel();
-    LOGINFO << "testing INFOLOG";
-    LOGDEBUG << "testing DEBUGLOG";
+//    frommle::core::Logging::setInfoLevel();
+//    using GeoPoly=OGRGuide<geopoly>;
+    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+    iAr.listLayers();
     BOOST_TEST(1 == 1);
 }

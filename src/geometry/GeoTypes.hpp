@@ -27,6 +27,7 @@ namespace frommle{
 
         using bbox=OGREnvelope;
         using geopoint=OGRPoint;
+        using geopoly=OGRPolygon;
 
     }
 }

@@ -6,8 +6,8 @@ LIST(APPEND COREOBJS core/TimeGuide.cpp core/UserSettings.cpp)
 LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 
-LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/GeoPoints.hpp)
-LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GeoPoints.cpp)
+LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp)
+LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp )
 
 LIST(APPEND IOHEADERS io/getpass.hpp io/OGRIArchive.hpp)
 LIST(APPEND IOOBJS io/getpass.cpp io/OGRIArchive.cpp)

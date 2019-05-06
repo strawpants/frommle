@@ -53,7 +53,7 @@ namespace frommle {
 				config_["User"]=username;
 				config_["Contact"]= username + "@unknown";
 
-				config_["authstore"]="libsecret";
+				config_["Authstore"]="libsecret";
 				config_["geoslurp"]["db"]= std::string("geoslurp");
 				config_["geoslurp"]["host"]= std::string("hostname");
 				config_["geoslurp"]["port"]= std::string("5432");
@@ -68,8 +68,8 @@ namespace frommle {
 		void UserSettings::write(std::ostream & fout) {
 			auto tnow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			fout << "# Frommle yaml config file, written " <<std::ctime(&tnow);
-			fout << "# Frommle version: " << FRVERSION <<std::endl;
-			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
+			fout << "# Frommle version: " << FRVERSION << std::endl;
+			std::string method=UserSettings::at("Authstore").as<std::string>();
 			if (method == "unsecure"){
 				fout << "# WARNING passwords are stored unencrypted (consider using Authstore: libsecret)" << std::endl;
 			}
@@ -120,7 +120,7 @@ namespace frommle {
 
 		//@brief stores a secret
 		void UserSettings::setAuth(const std::string alias, const std::string secret) {
-			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
+			std::string method=UserSettings::at("Authstore").as<std::string>();
 			if (method == "libsecret") {
 				//try to retrieve the authentification credentials from the gnome-keyring
 				UserSettings::get().setAuthlibsecret(alias, secret);

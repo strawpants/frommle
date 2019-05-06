@@ -35,6 +35,7 @@ namespace frommle{
          */
         class GeoGrid:public frommle::core::GuideBase{
         public:
+            using Element=geopoint;
             enum gridreg{pix=0,grid=1};
             using lint=long unsigned int;
 
@@ -46,14 +47,6 @@ namespace frommle{
 
             std::tuple<double,double> lonlat(const lint ilon, const lint ilat)const;
 
-//        class const_iterator:public frommle::core::Guideiterator<geopoint,const_iterator>{
-//        public:
-//            const_iterator():Guideiterator(geopoint(-1000,-1000)),idx_(-1){}
-//            const_iterator(const GeoGrid * ggrd):gptr_(ggrd),idx_(0){}
-//        private:
-//            const GeoGrid* gptr_=nullptr;
-//            index idx_=0;
-//        };
             ///@brief nested iterator class using boost iterators to loop over the points of the grid
             class const_iterator:public  boost::iterator_facade<const_iterator,geopoint const,boost::forward_traversal_tag>{
             public:

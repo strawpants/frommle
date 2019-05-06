@@ -23,6 +23,7 @@
 #define SRC_CORE_USER_SETTINGS_HPP_
 
 #include "core/Singleton.hpp"
+#include "core/Exceptions.hpp"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
 #include <ostream>
@@ -33,7 +34,13 @@ namespace frommle {
 	class UserSettings: public Singleton<UserSettings>{
 		public:
 			template<class T>
-			static YAML::Node at(const T & key){return UserSettings::get().config_[key];}
+			static YAML::Node at(const T & key){
+				if (UserSettings::get().config_[key]){
+					return UserSettings::get().config_[key];
+				}else{
+					throw InputException("Cannot find the key in the YAML::node");
+				}
+			}
 			static void write();
 			static void write(const std::string filename);
 

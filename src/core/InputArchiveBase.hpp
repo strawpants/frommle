@@ -24,6 +24,9 @@
 #include<string>
 #include <map>
 #include <boost/any.hpp>
+#include <cassert>
+#include <boost/serialization/split_free.hpp>
+#include "geometry/OGRiteratorBase.hpp"
 
 namespace frommle {
 	namespace io {
@@ -33,8 +36,8 @@ namespace frommle {
  */
 		class InputArchiveBase {
 		public:
-			virtual ~InputArchiveBase() {
-			}
+			virtual ~InputArchiveBase() = default;
+
 			virtual void changeGroup(const std::string & GroupName){
 				currentgroup_=GroupName;
 				//reset current variable name
@@ -43,7 +46,25 @@ namespace frommle {
 			virtual void changeVar(const std::string & VarName){
 				currentvar_=VarName;
 			}
+
+			//@brief this template calls serialization calls of  Y object
+			template<class Y>
+			InputArchiveBase & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
+
+			typedef boost::mpl::bool_<false> is_saving;
+			typedef boost::mpl::bool_<true> is_loading;
+			//needed to be compatible with the boost serialization library(don't ask me why)
+			void load_binary(void * address,std::size_t count){assert(0);};
+
+			template <class T>
+			InputArchiveBase & operator & ( T & t){
+				return *this >> t;
+			}
+			using ogriter=geometry::OGRiteratorBase;
+			virtual std::shared_ptr<ogriter> ogrbegin(){return std::shared_ptr<ogriter>(new ogriter());}
+			virtual std::shared_ptr<ogriter> ogrend()const{return std::shared_ptr<ogriter>(new ogriter());}
 		protected:
+			virtual unsigned int file_version(){return 0;};
 			std::string currentgroup_{};
 			std::string currentvar_{};
 		private:
