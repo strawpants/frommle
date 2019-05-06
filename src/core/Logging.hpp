@@ -11,6 +11,7 @@
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
+#include <boost/log/expressions/message.hpp>
 #include "core/Singleton.hpp"
 //Define preprocessor macros (currently wrap around trivial logging)
 #define LOGDEBUG BOOST_LOG_TRIVIAL(debug)
@@ -37,8 +38,6 @@ public:
 	static void setDebugLevel(){
 		Logging::setLevel(boost::log::trivial::debug);
 	}
-
-
 private:
 	friend class Singleton<Logging>;
 	

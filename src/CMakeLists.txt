@@ -9,11 +9,16 @@ LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/GeoPoints.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GeoPoints.cpp)
 
-LIST(APPEND IOHEADERS io/OGRIArchive.hpp)
-LIST(APPEND IOOBJS io/OGRIArchive.cpp)
+LIST(APPEND IOHEADERS io/getpass.hpp io/OGRIArchive.hpp)
+LIST(APPEND IOOBJS io/getpass.cpp io/OGRIArchive.cpp)
 
 LIST(APPEND SEAHEADERS sealevel/OceanFunction.hpp)
 #LIST(APPEND SEAOBJS sealevel/)
+
+LIST(APPEND HELPERSHEADERS helpers/commandLineParsing.hpp)
+LIST(APPEND HELPERSOBJS helpers/commandLineParsing.cpp)
+
+
 
 if (PYTHON)
     #add python wrapper routines
@@ -22,7 +27,12 @@ if (PYTHON)
     add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )
 endif()
 
-add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS} ${SHHEADERS} ${SHOBJS} ${GEOSPATHEADERS} ${GEOSPATOBJS} ${IOHEADERS} ${IOOBJS} ${SEAHEADERS})
+add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS}
+        ${SHHEADERS} ${SHOBJS}
+        ${GEOSPATHEADERS} ${GEOSPATOBJS}
+        ${IOHEADERS} ${IOOBJS}
+        ${SEAHEADERS}
+        ${HELPERSHEADERS} ${HELPERSOBJS})
 target_include_directories(${FROMMLELIB} PUBLIC ${Boost_INCLUDE_DIR} )
 #set_target_properties(${FROMMLELIB} PROPERTIES PUBLIC_HEADER ${COREHEADERS})
 

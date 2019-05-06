@@ -40,11 +40,4 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
         "Development Status :: 1 - Planning"],
     ext_modules=yieldExtensions(),
-    # ext_modules=[
-    #     Extension("frommle._cpp", sources=["${CXXPYCOLLECTOR}"],
-    #               library_dirs=["${Boost_LIBRARY_DIR_RELEASE}","${PROJECT_BINARY_DIR}/lib" ],
-    #               libraries = ["${FROMMLEPYLIB}","${FROMMLELIB}",getLibraryAlias("${Boost_PYTHON3_LIBRARY}"),getLibraryAlias("${Boost_NUMPY3_LIBRARY}"),getLibraryAlias("${Boost_SYSTEM_LIBRARY}"),getLibraryAlias("${GDAL_LIBRARY}")],
-    #               include_dirs=["${Boost_INCLUDE_DIR}","${CMAKE_SOURCE_DIR}"],
-    #               runtime_library_dirs = ["${PROJECT_BINARY_DIR}/lib"])
-    # ],
 )

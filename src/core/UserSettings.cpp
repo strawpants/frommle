@@ -49,14 +49,15 @@ namespace frommle {
 			}
 
 		void UserSettings::setDefaults()  {//fill with default values
-			config_["User"]= std::string(std::getenv("USER"));
-			config_["Contact"]= config_["User"].as<std::string>() + "@unknown";
+				auto username= std::string(std::getenv("USER"));
+				config_["User"]=username;
+				config_["Contact"]= username + "@unknown";
 
-			config_["Authstore"]="libsecret";
-
-			config_["geoslurp"]["host"]= std::string("karpaten");
-			config_["geoslurp"]["port"]= std::string("5432");
-			config_["geoslurp"]["user"]= std::string("geoslurp");
+				config_["authstore"]="libsecret";
+				config_["geoslurp"]["db"]= std::string("geoslurp");
+				config_["geoslurp"]["host"]= std::string("hostname");
+				config_["geoslurp"]["port"]= std::string("5432");
+				config_["geoslurp"]["user"]= username;
 		}
 
 		void UserSettings::readYaml(const std::string yamlfile) {
@@ -67,21 +68,28 @@ namespace frommle {
 		void UserSettings::write(std::ostream & fout) {
 			auto tnow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			fout << "# Frommle yaml config file, written " <<std::ctime(&tnow);
+			fout << "# Frommle version: " << FRVERSION <<std::endl;
 			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
 			if (method == "unsecure"){
 				fout << "# WARNING passwords are stored unencrypted (consider using Authstore: libsecret)" << std::endl;
 			}
-			fout << UserSettings::get().config_;
+			fout << UserSettings::get().config_ <<std::endl;
 		}
 
 		void UserSettings::write(const std::string filename) {
-			std::ofstream fout(filename,std::ios::out|std::ios::trunc);
-			UserSettings::write(fout);
-			fout.close();
+				if (filename == "-"){
+					UserSettings::write(std::cout);
+				}else {
+					std::ofstream fout(filename, std::ios::out | std::ios::trunc);
+					UserSettings::write(fout);
+					fout.close();
+				}
 		}
 
 		void UserSettings::write() {
-			UserSettings::write(UserSettings::yamlfile());
+				if (!UserSettings::yamlfile().empty()){
+					UserSettings::write(UserSettings::yamlfile());
+				}
 		}
 
 		void UserSettings::read(const std::string filename) {

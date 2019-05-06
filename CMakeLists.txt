@@ -18,8 +18,12 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 endif()
 
-#basic compiler flags
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++11 -DBOOST_LOG_DYN_LINK")
+set(FROMMLELIBMAJORVERSION 0)
+set(FROMMLELIBMINORVERSION 1)
+set(FROMMLEVERSION "Alpha V${FROMMLELIBMAJORVERSION}.${FROMMLELIBMINORVERSION}")
+add_compile_definitions(FRVERSION="${FROMMLEVERSION}")
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG-std=c++11 -DBOOST_LOG_DYN_LINK")
 #set(CMAKE_CXX_FLAGS_DEBUG "-pg  -g -O3") #to use when the gprof profiler is used for performance testing
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DBOOST_LOG_DYN_LINK -Wall -Winline -ansi -pedantic -Wextra -Weffc++ -Wno-long-long -std=c++11 ")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11")
@@ -31,9 +35,6 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 #set the name of the library to be build
 set(FROMMLELIB "Frommle")
 set(FROMMLEPYLIB "Frommle_pybind")
-
-set(FROMMLELIBMAJORVERSION 0)
-set(FROMMLELIBMINORVERSION 1)
 
 #where to put build executables
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -75,7 +76,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 #We need the boost library for various things (e.g. timing and dates)
 #find_package(Boost REQUIRED COMPONENTS system chrono program_options date_time serialization ${WITH_BOOST_MPI} iostreams)
-find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time log ${WITH_BOOST_MPI})
+find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time log program_options ${WITH_BOOST_MPI} )
 
 #add Boost include path
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
@@ -130,6 +131,10 @@ add_subdirectory(src)
 
 #add directory with python and C++ wrappers
 add_subdirectory(python)
+
+
+#add (C++) Apps  which are based upon the library
+add_subdirectory(apps)
 
 #Directory with documentation (Using Doxygen and Sphinx)
 add_subdirectory(docsrc)
