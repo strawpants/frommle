@@ -19,14 +19,17 @@
 */
 #include <io/OGRIArchive.hpp>
 #include "core/Logging.hpp"
+#include "OGRIArchive.hpp"
+
 #include <gdal.h>
 namespace frommle {
 	namespace io {
 		///@brief Destructor needs to take care on closing the OGR datasource correctly
 		OGRIArchive::~OGRIArchive() {
-			GDALClose(poDS);
-//			delete poDS;
-			poDS = nullptr;
+			if (poDS) {
+				GDALClose(poDS);
+				poDS = nullptr;
+			}
 		}
 
 
@@ -35,22 +38,24 @@ namespace frommle {
 			GDALinit::get();
 
 			//open the ogr source (e.g. a directory containing shapefiles)
-			poDS = (GDALDataset *) GDALOpenEx(sourceName.c_str(), GDAL_OF_VECTOR,NULL,NULL,NULL);
+			poDS = static_cast<GDALDataset *>(GDALOpenEx(sourceName.c_str(), GDAL_OF_VECTOR,NULL,NULL,NULL));
 			if (!poDS) {
 				throw core::IOException("Error opening OGR source");
 			}
 			//default opens the first layer
 			poLayer = poDS->GetLayer(0);
 			poFDefn = poLayer->GetLayerDefn();
-
+			poLayer->ResetReading();
 
 		}
 
 ///@brief opens up a OGR layer by name
 		void OGRIArchive::changeGroup(const std::string &GroupName){
+			checkValidity();
 			InputArchiveBase::changeGroup(GroupName);
 			poLayer = poDS->GetLayerByName(GroupName.c_str());
 			poFDefn = poLayer->GetLayerDefn();
+			poLayer->ResetReading();
 		}
 
 /////@brief loads the next feature in the layer (note that the variable name is irrelevant)
@@ -63,11 +68,12 @@ namespace frommle {
 //		}
 
 		void OGRIArchive::listLayers() {
-			for( auto&& layer: poDS->GetLayers() )
-			{
+		    checkValidity();
+			OGRLayer * layer;
+		    for(int i=0;i<poDS->GetLayerCount();++i){
+		        layer=poDS->GetLayer(i);
 				LOGINFO << "Layer:  "<< layer->GetName() << " type: " << OGRGeometryTypeToName(layer->GetGeomType()) << std::endl;
-			}
-
+		    }
 		}
 
 //		///@brief reads in a attributmap from the current feature
@@ -109,10 +115,17 @@ namespace frommle {
 
 		///@brief returns the spatial reference of the current layer (group)
 		OGRSpatialReference *OGRIArchive::getOGRspatialRef() {
-			if (poLayer) {
-				return poLayer->GetSpatialRef();
-			} else {
-				throw core::IOException("Cannot get spatial reference as layer is inactive");
+			checkValidity();
+			return poLayer->GetSpatialRef();
+		}
+
+		void OGRIArchive::checkValidity() {
+			if (!poDS){
+				throw core::IOException("Data source is not opened");
+
+			}
+			if (!poLayer) {
+				throw core::IOException("No layer is active");
 			}
 		}
 	}

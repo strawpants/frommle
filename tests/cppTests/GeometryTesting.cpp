@@ -93,7 +93,15 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
 BOOST_AUTO_TEST_CASE(OGRArchive){
 //    frommle::core::Logging::setInfoLevel();
 //    using GeoPoly=OGRGuide<geopoly>;
+//    frommle::io::OGRIArchive iAr;
     frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
-    iAr.listLayers();
+    auto itbeg = iAr.ogrbegin();
+    auto itend=iAr.ogrend();
+    OGRGeometry * geom;
+    for(auto it=iAr.ogrbegin();*it != *(iAr.ogrend()); ++(*it)){
+        geom = **it;
+//        LOGINFO << geom->getGeometryName() <<std::endl;
+    }
+//    iAr.listLayers();
     BOOST_TEST(1 == 1);
 }

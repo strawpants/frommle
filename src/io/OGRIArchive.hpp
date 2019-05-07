@@ -36,19 +36,24 @@ namespace frommle {
 			friend class core::Singleton<GDALinit>;
 
 			GDALinit() {
-				OGRRegisterAll();
+				GDALAllRegister();
+//				OGRRegisterAll();
 			}
 
 		};
 
 	class OGRIArchive : public InputArchiveBase {
 		public:
+			OGRIArchive(){}
 			//default constructor opens a source location in the form of string (e.g. directory containing shapefiles)
 			OGRIArchive(const std::string &sourceName) {
 				setOpts(ArchiveOpts(), sourceName);
 			};
 
-			//possibly parse options first before opening a file
+
+
+
+		//possibly parse options first before opening a file
 			OGRIArchive(const std::string &sourceName, const ArchiveOpts &Opts) {
 				//Process options and open files
 				setOpts(Opts, sourceName);
@@ -71,14 +76,24 @@ namespace frommle {
 				~ogriterator(){
 					freefeat();
 				}
-				ogriterator(OGRIArchive * in):ArPtr_(in){}
-				virtual ogriterator& operator++(){
+				ogriterator(const ogriterator & ogrother)=delete;
+				ogriterator & operator=(const ogriterator & rhs)=delete;
+				ogriterator(OGRIArchive * in):ArPtr_(in){
+					//load the first geeometry by incrementing
+					++*this;
+				}
+				ogriterator& operator++(){
 					//destroy feature if not nullptr
 					freefeat();
 					//get next feature
 					poFeat_ = ArPtr_->poLayer->GetNextFeature();
-					//set pointer to OGRGeometry
-					elVal=poFeat_->GetGeometryRef();
+					if (poFeat_  != NULL) {
+						//set pointer to OGRGeometry
+						elVal = poFeat_->GetGeometryRef();
+					}else{
+						elVal= nullptr;
+					}
+					return *this;
 				};
 			private:
 				void freefeat(){
@@ -99,7 +114,7 @@ namespace frommle {
 
 		private:
 			void setOpts(const ArchiveOpts &Opts, const std::string sourceName);
-
+			void checkValidity();
 			GDALDataset *poDS = nullptr;
 			OGRLayer *poLayer = nullptr;
 			OGRFeatureDefn *poFDefn=nullptr;

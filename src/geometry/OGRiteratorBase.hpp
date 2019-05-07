@@ -31,11 +31,11 @@ namespace frommle{
             using difference_type = std::ptrdiff_t;
             using pointer = OGRGeometry*;
             using reference = OGRGeometry&;
-            virtual OGRiteratorBase& operator++(){};
+            virtual OGRiteratorBase& operator++(){ return *this;};
             bool operator==(OGRiteratorBase & other) const {return elVal == other.elVal;}
             bool operator!=(OGRiteratorBase & other) const {return !(*this == other);}
-            OGRGeometry & operator*() {return *elVal;}
-            ~OGRiteratorBase(){}
+            OGRGeometry * operator*() {return elVal;}
+            virtual ~OGRiteratorBase(){}
             OGRiteratorBase(){}
         protected:
             OGRGeometry *elVal=nullptr;
