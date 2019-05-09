@@ -57,21 +57,16 @@ namespace frommle {
 			if (!poDS) {
 				throw core::IOException("Error opening OGR source");
 			}
-			//default opens the first layer
-			poLayer = poDS->GetLayer(0);
-			poFDefn = poLayer->GetLayerDefn();
-			poLayer->ResetReading();
-
 		}
 
-///@brief opens up a OGR layer by name
-		void OGRIArchive::changeGroup(const std::string &GroupName){
-			checkValidity();
-			InputArchiveBase::changeGroup(GroupName);
-			poLayer = poDS->GetLayerByName(GroupName.c_str());
-			poFDefn = poLayer->GetLayerDefn();
-			poLayer->ResetReading();
-		}
+/////@brief opens up a OGR layer by name
+//		void OGRIArchive::changeGroup(const std::string &GroupName){
+//			checkValidity();
+//			InputArchiveBase::changeGroup(GroupName);
+//			poLayer = poDS->GetLayerByName(GroupName.c_str());
+//			poFDefn = poLayer->GetLayerDefn();
+//			poLayer->ResetReading();
+//		}
 
 /////@brief loads the next feature in the layer (note that the variable name is irrelevant)
 //		void OGRIArchive::changeVar(const std::string &VarName){
@@ -82,14 +77,14 @@ namespace frommle {
 ////			poFDefn = poLayer->GetLayerDefn();
 //		}
 
-		void OGRIArchive::listLayers() {
-		    checkValidity();
-			OGRLayer * layer;
-		    for(int i=0;i<poDS->GetLayerCount();++i){
-		        layer=poDS->GetLayer(i);
-				LOGINFO << "Layer:  "<< layer->GetName() << " type: " << OGRGeometryTypeToName(layer->GetGeomType()) << std::endl;
-		    }
-		}
+//		void OGRIArchive::listLayers() {
+//		    checkValidity();
+//			OGRLayer * layer;
+//		    for(int i=0;i<poDS->GetLayerCount();++i){
+//		        layer=poDS->GetLayer(i);
+//				LOGINFO << "Layer:  "<< layer->GetName() << " type: " << OGRGeometryTypeToName(layer->GetGeomType()) << std::endl;
+//		    }
+//		}
 
 //		///@brief reads in a attributmap from the current feature
 //		OGRIArchive &OGRIArchive::operator>>(frommle::AttribsMap &out) {
@@ -128,21 +123,50 @@ namespace frommle {
 //			return tmp;
 //		}
 
+
+
+        GroupRef OGRIArchive::at(const std::string &groupName)const {
+			OGRGroup * grptr = new OGRGroup(groupName,this);
+			grptr->loadlayer(poDS->GetLayerByName(groupName.c_str()));
+            return GroupRef(new GroupBase());
+		}
+
+		GroupRef OGRIArchive::at(const int nGroup)const {
+			OGRGroup * grptr = new OGRGroup(this);
+			if (nGroup > poDS->GetLayerCount()){
+				throw core::IOException("OGRsource does not have layer with this number");
+			}
+			//Now we load the layer in the
+			grptr->loadlayer(poDS->GetLayer(nGroup),nGroup);
+
+			return GroupRef(grptr);
+		}
+
+		void OGRGroup::loadlayer( OGRLayer *const lyr, const int gid) {
+			if (lyr) {
+				layer_ = lyr;
+				layerdef_ = layer_->GetLayerDefn();
+				layer_->ResetReading();
+				//also update name and id
+				gname_ = layer_->GetName();
+				if (gid >= 0) {
+					gid_ = gid;
+				}
+			}else{
+				throw core::IOException("invalid OGRlayer requested");
+			}
+		}
+
+
 		///@brief returns the spatial reference of the current layer (group)
-		OGRSpatialReference *OGRIArchive::getOGRspatialRef() {
-			checkValidity();
-			return poLayer->GetSpatialRef();
+		OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
+
+			if (!layer_) {
+				throw core::IOException("No layer is opened");
+			}
+			return layer_->GetSpatialRef();
 		}
 
-		void OGRIArchive::checkValidity() {
-			if (!poDS){
-				throw core::IOException("Data source is not opened");
-
-			}
-			if (!poLayer) {
-				throw core::IOException("No layer is active");
-			}
-		}
 	}
 }
 

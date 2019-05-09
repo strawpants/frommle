@@ -1,5 +1,5 @@
 /*! \file
- \brief Holds the implementation for the inputArchivebase class
+ \brief
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -18,12 +18,18 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "core/InputArchiveBase.hpp"
-#include "InputArchiveBase.hpp"
+#include "core/InputArchiveBase.cpp"
+namespace frommle{
+    namespace io{
 
 
-namespace frommle {
-	namespace io {
 
-	}
+        Groupiterator::Groupiterator(const InputArchiveBase * const inAr) {
+            grpPtr_=inAr->operator[](0);
+        }
+    }
+
 }
+
+
+

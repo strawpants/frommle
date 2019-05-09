@@ -40,19 +40,26 @@ namespace frommle {
 		public:
 			virtual ~InputArchiveBase() = default;
 
-			virtual void changeGroup(const std::string & GroupName){
-				currentgroup_=GroupName;
-				//reset current variable name
-				currentvar_="";
-			}
-			virtual void changeVar(const std::string & VarName){
-				currentvar_=VarName;
-			}
-
 			//@brief this template calls serialization calls of  Y object
 			template<class Y>
 			InputArchiveBase & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
 
+
+			Groupiterator begin()const{return Groupiterator(this);}
+			Groupiterator end()const{return Groupiterator();}
+
+
+			//Functions which allow to navigate through the groups of an Archive
+			GroupRef operator[](const std::string & Groupname)const{return this->at(Groupname);}
+			GroupRef operator[](const int & nGroup)const{return this->at(nGroup);}
+		protected:
+			virtual unsigned int file_version(){return 0;};
+
+			virtual GroupRef  at(const std::string & groupname)const=0;
+			virtual GroupRef  at(const int nGroup)const=0;
+
+		private:
+			friend boost::serialization::access;
 			typedef boost::mpl::bool_<false> is_saving;
 			typedef boost::mpl::bool_<true> is_loading;
 			//needed to be compatible with the boost serialization library(don't ask me why)
@@ -62,28 +69,6 @@ namespace frommle {
 			InputArchiveBase & operator & ( T & t){
 				return *this >> t;
 			}
-
-			Groupiterator begin()const;
-			Groupiterator end()const;
-
-
-
-			using ogriter=geometry::OGRiteratorBase;
-			virtual std::shared_ptr<ogriter> ogrbegin(){return std::shared_ptr<ogriter>(new ogriter());}
-			virtual std::shared_ptr<ogriter> ogrend()const{return std::shared_ptr<ogriter>(new ogriter());}
-
-			//Functions which allow to navigate through the groups of an Archive
-			GroupBase & operator[](const std::string & Groupname){return this->at(Groupname);}
-			GroupBase & operator[](const int & nGroup){return this->at(nGroup);}
-		protected:
-			virtual unsigned int file_version(){return 0;};
-			std::string currentgroup_{};
-			std::string currentvar_{};
-
-			virtual GroupBase & at(const std::string & groupname)=0;
-			virtual GroupBase & at(const int & nGroup)=0;
-
-		private:
 //			virtual GroupBase nextGroup()=0;
 		};
 

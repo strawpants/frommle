@@ -94,18 +94,25 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRIArchive iAr;
 
-    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
-    frommle::io::OGRIArchive iAr(Opts);
-    iAr.changeGroup("oceanobs.orsifronts");
+//    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
+//    frommle::io::OGRIArchive iAr(Opts);
+//    iAr.changeGroup("oceanobs.orsifronts");
 //        frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
-    auto itbeg = iAr.ogrbegin();
-    auto itend=iAr.ogrend();
-    OGRGeometry * geom;
-    for(auto it=iAr.ogrbegin();*it != *(iAr.ogrend()); ++(*it)){
-        geom = **it;
-        LOGINFO << geom->getGeometryName() <<std::endl;
+    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+
+    for (auto const & grplayer:iAr){
+        LOGINFO << grplayer->getName() <<std::endl;
     }
-    iAr.listLayers();
+     LOGINFO << iAr[0]->getName();
+    LOGINFO <<iAr["ne_110m_land"]->getName();
+//    auto itbeg = iAr.ogrbegin();
+//    auto itend=iAr.ogrend();
+//    OGRGeometry * geom;
+//    for(auto it=iAr.ogrbegin();*it != *(iAr.ogrend()); ++(*it)){
+//        geom = **it;
+//        LOGINFO << geom->getGeometryName() <<std::endl;
+//    }
+//    iAr.listLayers();
     BOOST_TEST(1 == 1);
 }
 

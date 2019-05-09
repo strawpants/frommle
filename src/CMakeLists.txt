@@ -12,8 +12,8 @@ LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp )
 
-LIST(APPEND IOHEADERS io/getpass.hpp io/OGRIArchive.hpp)
-LIST(APPEND IOOBJS io/getpass.cpp io/OGRIArchive.cpp)
+LIST(APPEND IOHEADERS io/getpass.hpp io/OGRIArchive.hpp io/GroupBase.hpp)
+LIST(APPEND IOOBJS io/getpass.cpp io/OGRIArchive.cpp io/GroupBase.cpp)
 
 LIST(APPEND SEAHEADERS sealevel/OceanFunction.hpp)
 #LIST(APPEND SEAOBJS sealevel/)

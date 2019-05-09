@@ -36,6 +36,9 @@
 namespace frommle {
 	namespace io {
 
+		class OGRGroup;
+
+
 		std::string GDALPOSTGISSource(const std::string PGname="",const std::string schemas="") {
 			using us=core::UserSettings;
 			std::string pgname_=PGname;
@@ -91,65 +94,86 @@ namespace frommle {
 
 			~OGRIArchive();
 
-			void listLayers();
-
 //			using InputArchiveBase::operator>>;
 
 			OGRSpatialReference *getOGRspatialRef();
 
-			void changeGroup(const std::string & GroupName);
-
-			//@brief nested iterator class
-			class ogriterator:public geometry::OGRiteratorBase{
-			public:
-				ogriterator(){}
-				~ogriterator(){
-					freefeat();
-				}
-				ogriterator(const ogriterator & ogrother)=delete;
-				ogriterator & operator=(const ogriterator & rhs)=delete;
-				ogriterator(OGRIArchive * in):ArPtr_(in){
-					//load the first geeometry by incrementing
-					++*this;
-				}
-				ogriterator& operator++(){
-					//destroy feature if not nullptr
-					freefeat();
-					//get next feature
-					poFeat_ = ArPtr_->poLayer->GetNextFeature();
-					if (poFeat_  != NULL) {
-						//set pointer to OGRGeometry
-						elVal = poFeat_->GetGeometryRef();
-					}else{
-						elVal= nullptr;
-					}
-					return *this;
-				};
-			private:
-				void freefeat(){
-					if (poFeat_) {
-						OGRFeature::DestroyFeature(poFeat_);
-					}
-				}
-				OGRIArchive * ArPtr_=nullptr;
-				OGRFeature *poFeat_ = nullptr;
-			};
-			std::shared_ptr<geometry::OGRiteratorBase>  ogrbegin(){
-				return std::shared_ptr<ogriterator>(new ogriterator(this));
-			}
-
-			std::shared_ptr<geometry::OGRiteratorBase>  ogrend()const{
-				return std::shared_ptr<ogriterator>(new ogriterator());
-			}
+//			//@brief nested iterator class
+//			class ogriterator:public geometry::OGRiteratorBase{
+//			public:
+//				ogriterator(){}
+//				~ogriterator(){
+//					freefeat();
+//				}
+//				ogriterator(const ogriterator & ogrother)=delete;
+//				ogriterator & operator=(const ogriterator & rhs)=delete;
+//				ogriterator(OGRIArchive * in):ArPtr_(in){
+//					//load the first geeometry by incrementing
+//					++*this;
+//				}
+//				ogriterator& operator++(){
+//					//destroy feature if not nullptr
+//					freefeat();
+//					//get next feature
+//					poFeat_ = ArPtr_->poLayer->GetNextFeature();
+//					if (poFeat_  != NULL) {
+//						//set pointer to OGRGeometry
+//						elVal = poFeat_->GetGeometryRef();
+//					}else{
+//						elVal= nullptr;
+//					}
+//					return *this;
+//				};
+//			private:
+//				void freefeat(){
+//					if (poFeat_) {
+//						OGRFeature::DestroyFeature(poFeat_);
+//					}
+//				}
+//				OGRIArchive * ArPtr_=nullptr;
+//				OGRFeature *poFeat_ = nullptr;
+//			};
+//			std::shared_ptr<geometry::OGRiteratorBase>  ogrbegin(){
+//				return std::shared_ptr<ogriterator>(new ogriterator(this));
+//			}
+//
+//			std::shared_ptr<geometry::OGRiteratorBase>  ogrend()const{
+//				return std::shared_ptr<ogriterator>(new ogriterator());
+//			}
 
 		private:
+			friend OGRGroup;
+			GroupRef  at(const std::string & groupName)const;
+			GroupRef  at(const int nGroup)const;
+
 			void setOpts(const ArchiveOpts &Opts, const std::string sourceName);
-			void checkValidity();
 			GDALDataset *poDS = nullptr;
-			OGRLayer *poLayer = nullptr;
-			OGRFeatureDefn *poFDefn=nullptr;
 		};
 
+		class OGRGroup:public GroupBase{
+		public:
+			OGRGroup(const std::string & gname, const OGRIArchive *  const inAr):GroupBase(gname,inAr){}
+			OGRGroup(const OGRIArchive * const inAr):GroupBase(inAr){
+
+			}
+			//@brief load the next layer
+			OGRGroup & operator++(){
+				auto lyr=static_cast<const OGRIArchive*>(Arptr_)->poDS->GetLayer(++gid_);
+				if (lyr){
+					loadlayer(lyr);
+				}else{
+					//reset layer to end
+					gid_=-1;
+				}
+				return *this;
+			}
+			OGRSpatialReference * getOGRspatialRef()const;
+		private:
+			friend OGRIArchive;
+			void loadlayer( OGRLayer * const lyr,const int gid=-1);
+			OGRLayer *layer_ = nullptr;
+			OGRFeatureDefn *layerdef_=nullptr;
+		};
 	}
 }
 
