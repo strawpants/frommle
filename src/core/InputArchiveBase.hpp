@@ -28,6 +28,7 @@
 #include <memory>
 #include <boost/serialization/split_free.hpp>
 #include "geometry/OGRiteratorBase.hpp"
+#include "io/GroupBase.hpp"
 
 namespace frommle {
 	namespace io {
@@ -61,15 +62,31 @@ namespace frommle {
 			InputArchiveBase & operator & ( T & t){
 				return *this >> t;
 			}
+
+			Groupiterator begin()const;
+			Groupiterator end()const;
+
+
+
 			using ogriter=geometry::OGRiteratorBase;
 			virtual std::shared_ptr<ogriter> ogrbegin(){return std::shared_ptr<ogriter>(new ogriter());}
 			virtual std::shared_ptr<ogriter> ogrend()const{return std::shared_ptr<ogriter>(new ogriter());}
+
+			//Functions which allow to navigate through the groups of an Archive
+			GroupBase & operator[](const std::string & Groupname){return this->at(Groupname);}
+			GroupBase & operator[](const int & nGroup){return this->at(nGroup);}
 		protected:
 			virtual unsigned int file_version(){return 0;};
 			std::string currentgroup_{};
 			std::string currentvar_{};
+
+			virtual GroupBase & at(const std::string & groupname)=0;
+			virtual GroupBase & at(const int & nGroup)=0;
+
 		private:
+//			virtual GroupBase nextGroup()=0;
 		};
+
 
 	}
 }

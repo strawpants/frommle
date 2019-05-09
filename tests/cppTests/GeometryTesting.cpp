@@ -93,15 +93,19 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    frommle::core::Logging::setInfoLevel();
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRIArchive iAr;
-    frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
+
+    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
+    frommle::io::OGRIArchive iAr(Opts);
+    iAr.changeGroup("oceanobs.orsifronts");
+//        frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
     auto itbeg = iAr.ogrbegin();
     auto itend=iAr.ogrend();
     OGRGeometry * geom;
     for(auto it=iAr.ogrbegin();*it != *(iAr.ogrend()); ++(*it)){
         geom = **it;
-//        LOGINFO << geom->getGeometryName() <<std::endl;
+        LOGINFO << geom->getGeometryName() <<std::endl;
     }
-//    iAr.listLayers();
+    iAr.listLayers();
     BOOST_TEST(1 == 1);
 }
 

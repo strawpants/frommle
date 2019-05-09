@@ -20,7 +20,7 @@
 #include <io/OGRIArchive.hpp>
 #include "core/Logging.hpp"
 #include "OGRIArchive.hpp"
-
+#include <cstring>
 #include <gdal.h>
 namespace frommle {
 	namespace io {
@@ -34,11 +34,26 @@ namespace frommle {
 
 
 		void OGRIArchive::setOpts(const ArchiveOpts &Opts, const std::string sourceName) {
+
+			std::string source_=sourceName;
+			const char ** driver=NULL;
+
+			if (Opts.count("Driver") >0 ){
+//				auto driver2=boost::any_cast<char *>(&Opts["Driver"]);
+				auto gdaldriver=Opts.at("Driver");
+				driver = boost::any_cast<const char *>(&gdaldriver);
+			}
+			if (driver) {
+				if (strcmp(*driver, "PostGIS") == 0) {
+					source_ = GDALPOSTGISSource(sourceName);
+				}
+			}
+
 			//first all OGR data formats must be dynamically initiated (this needs to be done only once per program call)
 			GDALinit::get();
 
 			//open the ogr source (e.g. a directory containing shapefiles)
-			poDS = static_cast<GDALDataset *>(GDALOpenEx(sourceName.c_str(), GDAL_OF_VECTOR,NULL,NULL,NULL));
+			poDS = static_cast<GDALDataset *>(GDALOpenEx(source_.c_str(), GDAL_OF_VECTOR,NULL,NULL,NULL));
 			if (!poDS) {
 				throw core::IOException("Error opening OGR source");
 			}

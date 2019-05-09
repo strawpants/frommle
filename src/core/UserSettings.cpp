@@ -54,6 +54,7 @@ namespace frommle {
 				config_["Contact"]= username + "@unknown";
 
 				config_["Authstore"]="libsecret";
+				config_["Defaultdb"]="geoslurp";
 				config_["geoslurp"]["db"]= std::string("geoslurp");
 				config_["geoslurp"]["host"]= std::string("hostname");
 				config_["geoslurp"]["port"]= std::string("5432");

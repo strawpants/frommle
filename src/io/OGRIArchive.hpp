@@ -25,11 +25,34 @@
 #include <ogrsf_frmts.h>
 #include <memory>
 #include "geometry/OGRiteratorBase.hpp"
+#include "core/UserSettings.hpp"
 
 #ifndef SRC_CORE_OGRIARCHIVE_HPP_
 #define SRC_CORE_OGRIARCHIVE_HPP_
+
+
+
+
 namespace frommle {
 	namespace io {
+
+		std::string GDALPOSTGISSource(const std::string PGname="",const std::string schemas="") {
+			using us=core::UserSettings;
+			std::string pgname_=PGname;
+			if (PGname.empty()){
+				//search for a default postgis database entry
+				pgname_=us::at("Defaultdb").as<std::string>();
+			}
+			std::string source = std::string("PG:dbname='") + us::at(pgname_)["db"].as<std::string>() +
+								 "' host='" + us::at(pgname_)["host"].as<std::string>() +
+								 "' port='" + us::at(pgname_)["port"].as<std::string>() +
+								 "' user='" + us::at(pgname_)["user"].as<std::string>() +
+								 "' password='" + us::getAuth(pgname_) + "'";
+			if(!schemas.empty()){
+				source+= "schemas="+schemas;
+			}
+			return source;
+		}
 
 		///@brief small singleton class which calls GDAL initialization routines (needs to be called only once)
 	class GDALinit : public core::Singleton<GDALinit> {
@@ -50,7 +73,13 @@ namespace frommle {
 			OGRIArchive(const std::string &sourceName) {
 				setOpts(ArchiveOpts(), sourceName);
 			};
+			OGRIArchive(const ArchiveOpts & Opts) {
+				setOpts(Opts,"");
+			}
 
+			OGRIArchive(const std::string sourceName, const ArchiveOpts & Opts) {
+				setOpts(Opts,sourceName);
+			}
 
 
 
