@@ -17,9 +17,8 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#define BOOST_TEST_MAIN
 #define BOOST_TEST_MODULE GeometryTesting
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include "geometry/GeoGrid.hpp"
 #include "geometry/OGRGuide.hpp"
 #include "core/Logging.hpp"
@@ -94,7 +93,7 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    frommle::core::Logging::setInfoLevel();
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRIArchive iAr;
-    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+    frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
     auto itbeg = iAr.ogrbegin();
     auto itend=iAr.ogrend();
     OGRGeometry * geom;
@@ -105,3 +104,5 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    iAr.listLayers();
     BOOST_TEST(1 == 1);
 }
+
+

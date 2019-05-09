@@ -23,6 +23,7 @@
 # include "core/Singleton.hpp"
 //#include "core/Logging.hpp"
 #include <ogrsf_frmts.h>
+#include <memory>
 #include "geometry/OGRiteratorBase.hpp"
 
 #ifndef SRC_CORE_OGRIARCHIVE_HPP_

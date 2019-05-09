@@ -25,6 +25,7 @@
 #include <map>
 #include <boost/any.hpp>
 #include <cassert>
+#include <memory>
 #include <boost/serialization/split_free.hpp>
 #include "geometry/OGRiteratorBase.hpp"
 

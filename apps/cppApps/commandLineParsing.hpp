@@ -32,7 +32,7 @@ namespace po = boost::program_options;
 
 namespace frommle{
 
-namespace helpers {
+namespace cli {
 
 
 //@brief abstract struct to setup a common options

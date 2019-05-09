@@ -18,9 +18,10 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "helpers/commandLineParsing.hpp"
+#include "commandLineParsing.hpp"
 namespace frommle{
-    namespace helpers {
+    namespace cli {
+
 
         FrommleOpts::FrommleOpts(const std::string usageString):CustomOpts_("Program options"),vm(),
             ComOpts_("Common options"),AllOptions_(""),PosOpts_(),Usage(usageString) {
@@ -31,14 +32,14 @@ namespace frommle{
         }
 
 
-        void frommle::helpers::FrommleOpts::printHelp() const {
+        void frommle::cli::FrommleOpts::printHelp() const {
             std::cout << Usage << std::endl;
             std::cout << CustomOpts_ << std::endl;
             std::cout << ComOpts_ << std::endl;
         }
 
 
-        void frommle::helpers::FrommleOpts::parseCommandLine(int argc, char **argv) {
+        void frommle::cli::FrommleOpts::parseCommandLine(int argc, char **argv) {
             //merge all possible option description groups
             AllOptions_.add(ComOpts_).add(CustomOpts_);
             try{

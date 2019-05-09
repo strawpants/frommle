@@ -35,11 +35,7 @@ namespace frommle {
 		public:
 			template<class T>
 			static YAML::Node at(const T & key){
-				if (UserSettings::get().config_[key]){
 					return UserSettings::get().config_[key];
-				}else{
-					throw InputException("Cannot find the key in the YAML::node");
-				}
 			}
 			static void write();
 			static void write(const std::string filename);

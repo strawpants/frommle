@@ -18,20 +18,20 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "helpers/commandLineParsing.hpp"
+#include "commandLineParsing.hpp"
 #include "core/UserSettings.hpp"
 
-namespace fo=frommle::helpers;
+namespace fcli=frommle::cli;
 
 int main(int argc, char **argv) {
 
     //setup Usage info for the program
-    fo::FrommleOpts frOpts("Display and change userspace settings for frommle\n"
+    fcli::FrommleOpts frOpts("Display and change userspace settings for frommle\n"
                            "Usage: frommleinfo [options]");
 
     //Add some default options (positional independent input filename)
-    frOpts.addCommonOpts<fo::ConfigOpt>();
-    frOpts.addCommonOpts<fo::ConfigwriteOpt>();
+    frOpts.addCommonOpts<fcli::ConfigOpt>();
+    frOpts.addCommonOpts<fcli::ConfigwriteOpt>();
     //try command line argument parsing
     try {
         frOpts.parseCommandLine(argc, argv);
