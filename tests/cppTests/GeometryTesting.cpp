@@ -94,17 +94,22 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRIArchive iAr;
 
-//    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
-//    frommle::io::OGRIArchive iAr(Opts);
+    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
+    frommle::io::OGRIArchive iAr(Opts);
 //    iAr.changeGroup("oceanobs.orsifronts");
 //        frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
-    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+//    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
 
-    for (auto const & grplayer:iAr){
-        LOGINFO << grplayer->getName() <<std::endl;
+//    for (auto const & grplayer:iAr){
+//        LOGINFO << "layer name " << grplayer->getName() <<std::endl;
+//    }
+    auto grp=iAr[0];
+
+    for (auto const & var:*grp){
+        LOGINFO << "variable name " <<var->getName() <<std::endl;
     }
-     LOGINFO << iAr[0]->getName();
-    LOGINFO <<iAr["ne_110m_land"]->getName();
+
+    LOGINFO <<(*grp)['the_geom']->getName();
 //    auto itbeg = iAr.ogrbegin();
 //    auto itend=iAr.ogrend();
 //    OGRGeometry * geom;

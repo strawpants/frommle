@@ -18,15 +18,20 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "core/InputArchiveBase.cpp"
+#include "io/Group.hpp"
+
 namespace frommle{
     namespace io{
+//        VarIterator Group::begin() const {
+//            return VarIterator(this);}
 
-
-
-        Groupiterator::Groupiterator(const InputArchiveBase * const inAr) {
-            grpPtr_=inAr->operator[](0);
-        }
+//        VarIterator Group::end() const {
+//            return VarIterator();
+//        }
+//
+//        VarRef Group::operator[](const std::string &VarName) const {return this->at(VarName);}
+//
+//        VarRef Group::operator[](const int nVar) const {return this->at(nVar);}
     }
 
 }

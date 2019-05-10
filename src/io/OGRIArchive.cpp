@@ -24,6 +24,8 @@
 #include <gdal.h>
 namespace frommle {
 	namespace io {
+
+
 		///@brief Destructor needs to take care on closing the OGR datasource correctly
 		OGRIArchive::~OGRIArchive() {
 			if (poDS) {
@@ -125,21 +127,12 @@ namespace frommle {
 
 
 
-        GroupRef OGRIArchive::at(const std::string &groupName)const {
-			OGRGroup * grptr = new OGRGroup(groupName,this);
-			grptr->loadlayer(poDS->GetLayerByName(groupName.c_str()));
-            return GroupRef(new GroupBase());
+        GrpRef OGRIArchive::at(const std::string &groupName)const {
+			return GrpRef(new OGRGroup(groupName,this));
 		}
 
-		GroupRef OGRIArchive::at(const int nGroup)const {
-			OGRGroup * grptr = new OGRGroup(this);
-			if (nGroup > poDS->GetLayerCount()){
-				throw core::IOException("OGRsource does not have layer with this number");
-			}
-			//Now we load the layer in the
-			grptr->loadlayer(poDS->GetLayer(nGroup),nGroup);
-
-			return GroupRef(grptr);
+		GrpRef OGRIArchive::at(const int nGroup)const {
+			return GrpRef(new OGRGroup(nGroup,this));
 		}
 
 		void OGRGroup::loadlayer( OGRLayer *const lyr, const int gid) {
@@ -148,10 +141,8 @@ namespace frommle {
 				layerdef_ = layer_->GetLayerDefn();
 				layer_->ResetReading();
 				//also update name and id
-				gname_ = layer_->GetName();
-				if (gid >= 0) {
-					gid_ = gid;
-				}
+				name_ = layer_->GetName();
+				id_ = gid;
 			}else{
 				throw core::IOException("invalid OGRlayer requested");
 			}
@@ -167,6 +158,125 @@ namespace frommle {
 			return layer_->GetSpatialRef();
 		}
 
+		VarRef OGRGroup::at(const std::string &VarName) const {
+			return VarRef(new OGRVar(VarName, this));
+		}
+
+		VarRef OGRGroup::at(const int nvar) const {
+			return VarRef(new OGRVar(nvar, this));
+		}
+
+		OGRGroup &OGRGroup::operator++() {
+			//get the next layer
+			if(++id_ < layerlookup_.size()){
+				loadlayer(id_);
+			}else{
+				id_=-1;
+			}
+			return *this;
+		}
+
+		void OGRGroup::loadlayer(const std::string &gname) {
+			auto gid=layerlookup_[gname];
+			loadlayer(gid);
+		}
+
+		void OGRGroup::loadlayer(const int gid) {
+			layer_=static_cast<const OGRIArchive *>(Arptr_)->poDS->GetLayer(gid);
+
+			if (layer_) {
+				layerdef_ = layer_->GetLayerDefn();
+				layer_->ResetReading();
+				//also update name and id
+				name_ = layer_->GetName();
+				id_ = gid;
+
+
+			}else{
+				throw core::IOException("invalid OGRLayer requested");
+			}
+		}
+
+		void OGRGroup::indexlayers() {
+			auto OGRptr=static_cast<const OGRIArchive*>(Arptr_);
+			auto nlyrs=OGRptr->poDS->GetLayerCount();
+			OGRLayer * layer=nullptr;
+			for(int i=0;i< nlyrs;++i ){
+		        layer=OGRptr->poDS->GetLayer(i);
+				layerlookup_[layer->GetName()]=i;
+			}
+
+
+
+		}
+
+
+		OGRVar::OGRVar(const Group *parent) :VarItem(parent){
+			this->loadvar(0);
+
+
+		}
+
+		OGRVar::OGRVar(const std::string &varname, const Group *parent) : VarItem(varname, parent){
+			loadvar(varname);
+		}
+
+		OGRVar::OGRVar(const int varid, const Group *parent) : VarItem(parent) {
+			loadvar(varid);
+		}
+
+		OGRVar &OGRVar::operator++() {
+			//get the next field
+			if ( ++id_ < nField()+nGeom()) {
+				loadvar(id_);
+			}else{
+				id_=-1;
+			}
+			return *this;
+		}
+
+		void OGRVar::loadvar(const int varid){
+			if (varid < nField()){
+
+				fielddef_ = static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldDefn(varid);
+				name_ = fielddef_->GetNameRef();
+				id_ = varid;
+			}else if (varid < (nGeom()+nField())){
+				loadgeom(varid-nField());
+			}else{
+				throw core::IOException("variable number is not supported");
+			}
+
+
+
+		}
+
+		void OGRVar::loadvar(const std::string &varName) {
+			auto featdef=static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef();
+			int varid =featdef->GetFieldIndex(varName.c_str());
+			if (varid!=-1) {
+				loadvar(varid);
+			}else{
+				//try searching for a geometry field
+				auto geomid=featdef->GetGeomFieldIndex(varName.c_str());
+				if (geomid !=-1){
+					loadgeom(geomid);
+				}
+
+			}
+		}
+
+		void OGRVar::loadgeom(const int ngeom){
+			auto featdef=static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef();
+			if (ngeom < nGeom()){
+				geomfielddef_=featdef->GetGeomFieldDefn(ngeom);
+				name_=geomfielddef_->GetNameRef();
+				id_=ngeom+nField();
+			}else{
+				throw core::IOException(" No (geometry) layer found with this number");
+			}
+
+		}
 	}
 }
 

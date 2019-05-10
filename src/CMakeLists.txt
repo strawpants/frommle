@@ -1,4 +1,4 @@
-LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp core/InputArchiveBase.hpp
+LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp io/InputArchiveBase.hpp
     core/OutputArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp )
 
 LIST(APPEND COREOBJS core/TimeGuide.cpp )
@@ -12,8 +12,8 @@ LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp )
 
-LIST(APPEND IOHEADERS io/getpass.hpp io/OGRIArchive.hpp io/GroupBase.hpp)
-LIST(APPEND IOOBJS io/getpass.cpp io/OGRIArchive.cpp io/GroupBase.cpp)
+LIST(APPEND IOHEADERS io/getpass.hpp io/OGRIArchive.hpp io/ArItem.hpp io/Group.hpp io/VarItem.hpp io/ArIO.hpp)
+LIST(APPEND IOOBJS io/getpass.cpp io/OGRIArchive.cpp io/ArItem.cpp io/Group.cpp)
 
 LIST(APPEND SEAHEADERS sealevel/OceanFunction.hpp)
 #LIST(APPEND SEAOBJS sealevel/)

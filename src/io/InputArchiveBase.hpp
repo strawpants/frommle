@@ -28,7 +28,7 @@
 #include <memory>
 #include <boost/serialization/split_free.hpp>
 #include "geometry/OGRiteratorBase.hpp"
-#include "io/GroupBase.hpp"
+#include "io/Group.hpp"
 
 namespace frommle {
 	namespace io {
@@ -41,35 +41,34 @@ namespace frommle {
 			virtual ~InputArchiveBase() = default;
 
 			//@brief this template calls serialization calls of  Y object
-			template<class Y>
-			InputArchiveBase & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
+//			template<class Y>
+//			InputArchiveBase & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
 
-
-			Groupiterator begin()const{return Groupiterator(this);}
-			Groupiterator end()const{return Groupiterator();}
+			GrpIterator begin()const{return GrpIterator(this);}
+			GrpIterator end()const{return GrpIterator();}
 
 
 			//Functions which allow to navigate through the groups of an Archive
-			GroupRef operator[](const std::string & Groupname)const{return this->at(Groupname);}
-			GroupRef operator[](const int & nGroup)const{return this->at(nGroup);}
+			GrpRef operator[](const std::string & Groupname)const{return this->at(Groupname);}
+			GrpRef operator[](const int nGroup)const{return this->at(nGroup);}
 		protected:
 			virtual unsigned int file_version(){return 0;};
 
-			virtual GroupRef  at(const std::string & groupname)const=0;
-			virtual GroupRef  at(const int nGroup)const=0;
+			virtual GrpRef at(const std::string & groupname)const=0;
+			virtual GrpRef at(const int nGroup)const=0;
 
 		private:
-			friend boost::serialization::access;
-			typedef boost::mpl::bool_<false> is_saving;
-			typedef boost::mpl::bool_<true> is_loading;
-			//needed to be compatible with the boost serialization library(don't ask me why)
-			void load_binary(void * address,std::size_t count){assert(0);};
-
-			template <class T>
-			InputArchiveBase & operator & ( T & t){
-				return *this >> t;
-			}
-//			virtual GroupBase nextGroup()=0;
+//			friend boost::serialization::access;
+//			typedef boost::mpl::bool_<false> is_saving;
+//			typedef boost::mpl::bool_<true> is_loading;
+//			//needed to be compatible with the boost serialization library(don't ask me why)
+//			void load_binary(void * address,std::size_t count){assert(0);};
+//
+//			template <class T>
+//			InputArchiveBase & operator & ( T & t){
+//				return *this >> t;
+//			}
+//			virtual Group nextGroup()=0;
 		};
 
 
