@@ -19,7 +19,6 @@
  */
 
 #include "io/Group.hpp"
-
 namespace frommle{
     namespace io{
 //        VarIterator Group::begin() const {

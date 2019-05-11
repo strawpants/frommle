@@ -135,18 +135,6 @@ namespace frommle {
 			return GrpRef(new OGRGroup(nGroup,this));
 		}
 
-		void OGRGroup::loadlayer( OGRLayer *const lyr, const int gid) {
-			if (lyr) {
-				layer_ = lyr;
-				layerdef_ = layer_->GetLayerDefn();
-				layer_->ResetReading();
-				//also update name and id
-				name_ = layer_->GetName();
-				id_ = gid;
-			}else{
-				throw core::IOException("invalid OGRlayer requested");
-			}
-		}
 
 
 		///@brief returns the spatial reference of the current layer (group)
@@ -210,6 +198,8 @@ namespace frommle {
 
 		}
 
+		VarRef OGRGroup::geoVar() {return VarRef(new OGRVar(0,this,true));}
+
 
 		OGRVar::OGRVar(const Group *parent) :VarItem(parent){
 			this->loadvar(0);
@@ -221,8 +211,12 @@ namespace frommle {
 			loadvar(varname);
 		}
 
-		OGRVar::OGRVar(const int varid, const Group *parent) : VarItem(parent) {
-			loadvar(varid);
+		OGRVar::OGRVar(const int varid, const Group *parent, const bool geo) : VarItem(parent) {
+			if (geo){
+				loadgeom(varid);
+			}else {
+				loadvar(varid);
+			}
 		}
 
 		OGRVar &OGRVar::operator++() {
@@ -276,6 +270,55 @@ namespace frommle {
 				throw core::IOException(" No (geometry) layer found with this number");
 			}
 
+		}
+
+		ValueRef OGRVar::at(const size_t nVal) const {
+			return ValueRef(new OGRValue(nVal,this));
+		}
+
+//		//extracts the geometry values from the OGR archive
+//		OGRVar &OGRVar::operator>>(std::vector<std::shared_ptr<OGRGeometry> > &geovec) {
+//				geovec=std::vector<OGRGeometry*>();
+//				auto layer=static_cast<const OGRGroup*>(grpParentPtr_)->getLayer();
+//				OGRFeature * feat=nullptr;
+//
+//				while(feat=layer->GetNextFeature()){
+//					geovec.push_back(new )
+//				}
+//				auto nfeat=layer->GetFeatureCount();
+//				for (auto size_t i=0;i<nfeat<++i){
+//					layer->getFgrpParentPtr_->getLayer){
+//
+//		}
+//				}
+
+//		}
+
+		OGRValue::OGRValue(const size_t i,const OGRVar *const parent):ValueItem(parent){
+			layer=static_cast<const OGRGroup*>(parent_->parent())->getLayer();
+
+			feat=layer->GetFeature(i);
+
+			if(feat) {
+				anyval_ = feat->GetGeometryRef();
+				id_=i;
+			}
+
+		}
+
+		OGRValue &OGRValue::operator++() {
+			if(feat) {
+				OGRFeature::DestroyFeature(feat);
+			}
+			feat=layer->GetNextFeature();
+
+			if(feat) {
+				anyval_ = feat->GetGeometryRef();
+				++id_;
+			}else{
+				id_=-1;
+			}
+			return *this;
 		}
 	}
 }

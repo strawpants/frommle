@@ -20,12 +20,12 @@
 #include <string>
 #include <memory>
 #include "io/ArIO.hpp"
+#include "core/Exceptions.hpp"
 
 #ifndef FROMMLE_VARITEM_HPP
 #define FROMMLE_VARITEM_HPP
 namespace frommle{
     namespace io{
-        class InputArchiveBase;
 
         //@brief Holds information about a group in an archive (e.g. name, attributes, Archive pointer). This can also be used as an index to refer to navigate to a certain group within an Archive
         class VarItem:public ArItemBase  {
@@ -37,10 +37,20 @@ namespace frommle{
             VarItem(const Group * const Grpptr):ArItemBase(),grpParentPtr_(Grpptr){}
             VarItem(const std::string & name,const Group * const Grpptr):ArItemBase(name),grpParentPtr_(Grpptr){}
 
+            //retrieve as 1D-vector container
+            virtual VarItem & operator >>( std::vector<OGRGeometry*> & geovec ){throw core::IOException("vectorized geometry is not supported");}
+
+            ValueIterator begin()const{return ValueIterator(this);}
+            ValueIterator end()const{return ValueIterator();}
+            inline ValueRef operator[](const size_t n)const{return at(n);}
+            const Group* parent()const{return grpParentPtr_;}
         protected:
             //keep track of the Archive group to which this variable belongs to
             const Group * grpParentPtr_=nullptr;
+        private:
+            virtual ValueRef at(const size_t nVar)const{return ValueRef();}
         };
+
 
     }
 

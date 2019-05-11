@@ -21,6 +21,7 @@
 #include "core/Exceptions.hpp"
 #include "io/InputArchiveBase.hpp"
 #include "io/VarItem.hpp"
+#include "io/ValueItem.hpp"
 # include "core/Singleton.hpp"
 //#include "core/Logging.hpp"
 #include <ogrsf_frmts.h>
@@ -167,14 +168,16 @@ namespace frommle {
 				loadlayer(gid);
 			}
 
+			VarRef geoVar();
 			//@brief load the next layer
 			OGRGroup & operator++();
 			OGRSpatialReference * getOGRspatialRef()const;
-			OGRFeatureDefn * const  getOGRFeatDef()const{return layerdef_;}
+			OGRFeatureDefn * getOGRFeatDef()const{return layerdef_;}
+			OGRLayer * getLayer()const{return layer_;}
 		private:
 			VarRef at(const std::string & VarName)const;
 			VarRef at(const int nvar)const;
-			void loadlayer( OGRLayer * const lyr,const int gid=-1);
+
 			void loadlayer(const std::string & gname);
 			void loadlayer(const int gid);
 			void indexlayers();
@@ -188,10 +191,9 @@ namespace frommle {
 		public:
 			OGRVar(const Group * parent);
 			OGRVar(const std::string &varname, const Group *parent);
-			OGRVar(const int varid, const Group *parent);
-
+			OGRVar(const int varid, const Group *parent, const bool geo=false);
 			OGRVar & operator ++();
-
+//			OGRVar & operator >> (std::vector<OGRGeometry*> & geovec);
 		private:
 			friend OGRIArchive;
 			void loadvar(const int varid);
@@ -199,10 +201,21 @@ namespace frommle {
 			void loadgeom(const int ngeom=0);
 			inline int nField(){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldCount();}
 			inline int nGeom(){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetGeomFieldCount();}
+			ValueRef at(const size_t nVal)const;
+
 			OGRFieldDefn * fielddef_=nullptr;
 			OGRGeomFieldDefn * geomfielddef_=nullptr;
 		};
 
+		class OGRValue:public ValueItem{
+		public:
+			OGRValue():ValueItem(){}
+			OGRValue(const size_t i, const OGRVar * const parent);
+			OGRValue & operator++();
+		private:
+			OGRLayer * layer=nullptr;
+			OGRFeature* feat=nullptr;
+		};
 	}
 }
 

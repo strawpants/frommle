@@ -21,6 +21,9 @@ namespace frommle{
         using VarRef=std::shared_ptr<VarItem>;
         using VarIterator=ArItemiterator<VarItem,Group>;
 
+        class ValueItem;
+        using ValueRef=std::shared_ptr<ValueItem>;
+        using ValueIterator=ArItemiterator<ValueItem,VarItem>;
 
 
     }

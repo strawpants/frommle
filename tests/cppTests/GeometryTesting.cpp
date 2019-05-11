@@ -94,22 +94,33 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRIArchive iAr;
 
-    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
-    frommle::io::OGRIArchive iAr(Opts);
+//    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
+//    frommle::io::OGRIArchive iAr(Opts);
 //    iAr.changeGroup("oceanobs.orsifronts");
 //        frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
-//    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+
+    //Load POLYGON OGRguide from Archive
+    using GeoPoly=OGRGuide<OGRPolygon>;
+    GeoPoly geopoly=GeoPoly();
+    *(iAr[0]) >> geopoly;
+    for (auto & poly:geopoly){
+        LOGINFO << "loaded " << poly.getGeometryName() <<std::endl;
+    }
 
 //    for (auto const & grplayer:iAr){
 //        LOGINFO << "layer name " << grplayer->getName() <<std::endl;
 //    }
-    auto grp=iAr[0];
+//    auto geovar=iAr[0]->geoVar();
+//    for(auto const & geom:*geovar){
+//        LOGINFO<< geom->as<OGRGeometry*>()->getGeometryName() << std::endl;
+//    }
 
-    for (auto const & var:*grp){
-        LOGINFO << "variable name " <<var->getName() <<std::endl;
-    }
-
-    LOGINFO <<(*grp)['the_geom']->getName();
+//    for (auto const & var:*grp){
+//        LOGINFO << "variable name " <<var->getName() <<std::endl;
+//    }
+//
+//    LOGINFO <<(*grp)['the_geom']->getName();
 //    auto itbeg = iAr.ogrbegin();
 //    auto itend=iAr.ogrend();
 //    OGRGeometry * geom;

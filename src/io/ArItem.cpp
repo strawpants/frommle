@@ -22,6 +22,7 @@
 #include "ArItem.hpp"
 #include "io/Group.hpp"
 #include "io/VarItem.hpp"
+#include "io/ValueItem.hpp"
 namespace frommle{
     namespace io{
 
@@ -43,6 +44,9 @@ namespace frommle{
         //also instantiate a varitem iterator
         template
         class ArItemiterator<VarItem,Group>;
+
+        template
+        class ArItemiterator<ValueItem,VarItem>;
 
     }
 

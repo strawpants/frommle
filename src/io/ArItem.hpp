@@ -20,7 +20,6 @@
 
 #ifndef FROMMLE_ARITEM_HPP
 #define FROMMLE_ARITEM_HPP
-
 namespace frommle{
     namespace io{
         //We only need to forwad declare this class here
@@ -29,6 +28,7 @@ namespace frommle{
         class ArItemiterator;
         class Group;
         class VarItem;
+        class ValueItem;
 
         class ArItemBase{
             public:
@@ -47,8 +47,9 @@ namespace frommle{
             protected:
                 friend ArItemiterator<Group,InputArchiveBase>;
                 friend ArItemiterator<VarItem,Group>;
+                friend ArItemiterator<ValueItem,VarItem>;
                 std::string name_="";
-                int id_=-1;
+                ptrdiff_t id_=-1;
                 //possibly add attributes and variables names here
         private:
         };

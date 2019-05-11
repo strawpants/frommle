@@ -21,6 +21,7 @@
 #include "core/GuideBase.hpp"
 #include <boost/serialization/split_member.hpp>
 #include "io/OGRIArchive.hpp"
+#include "memory"
 #ifndef FROMMLE_OGRGUIDE_HPP
 #define FROMMLE_OGRGUIDE_HPP
 
@@ -63,6 +64,19 @@ namespace frommle{
         template<class Archive>
         void OGRGuide<T>::load(Archive &Ar,const unsigned int file_version){
 
+            //retrieve the variable which holds geometry info
+            const auto geovar=Ar.geoVar();
+            for (auto const & geom:*geovar ){
+                auto geomref=dynamic_cast<T*>(geom->template as<OGRGeometry*>());
+                geoms_.push_back(T(*geomref));
+            }
+////            do while (tref=geoVar.next<T>()){
+////
+////            }
+//
+//            for(const auto & val:geoVar){
+//                    geoms_.push_back(val.as<T>);
+//            }
             //loop over OGRgeometries from the Archive
 
 
