@@ -61,32 +61,6 @@ namespace frommle {
 			}
 		}
 
-/////@brief opens up a OGR layer by name
-//		void OGRIArchive::changeGroup(const std::string &GroupName){
-//			checkValidity();
-//			InputArchiveBase::changeGroup(GroupName);
-//			poLayer = poDS->GetLayerByName(GroupName.c_str());
-//			poFDefn = poLayer->GetLayerDefn();
-//			poLayer->ResetReading();
-//		}
-
-/////@brief loads the next feature in the layer (note that the variable name is irrelevant)
-//		void OGRIArchive::changeVar(const std::string &VarName){
-//			InputArchiveBase::changeVar(VarName);
-//
-////			poFeat = poLayer->GetNextFeature();
-//			//also load the attribute field descriptions
-////			poFDefn = poLayer->GetLayerDefn();
-//		}
-
-//		void OGRIArchive::listLayers() {
-//		    checkValidity();
-//			OGRLayer * layer;
-//		    for(int i=0;i<poDS->GetLayerCount();++i){
-//		        layer=poDS->GetLayer(i);
-//				LOGINFO << "Layer:  "<< layer->GetName() << " type: " << OGRGeometryTypeToName(layer->GetGeomType()) << std::endl;
-//		    }
-//		}
 
 //		///@brief reads in a attributmap from the current feature
 //		OGRIArchive &OGRIArchive::operator>>(frommle::AttribsMap &out) {
@@ -235,6 +209,9 @@ namespace frommle {
 				fielddef_ = static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldDefn(varid);
 				name_ = fielddef_->GetNameRef();
 				id_ = varid;
+
+				//also load attributes
+				loadAttributes();
 			}else if (varid < (nGeom()+nField())){
 				loadgeom(varid-nField());
 			}else{
@@ -276,25 +253,27 @@ namespace frommle {
 			return ValueRef(new OGRValue(nVal,this));
 		}
 
-//		//extracts the geometry values from the OGR archive
-//		OGRVar &OGRVar::operator>>(std::vector<std::shared_ptr<OGRGeometry> > &geovec) {
-//				geovec=std::vector<OGRGeometry*>();
-//				auto layer=static_cast<const OGRGroup*>(grpParentPtr_)->getLayer();
-//				OGRFeature * feat=nullptr;
+        void OGRVar::loadAttributes() {
+//			for (int iField = 0; iField <  nField(); iField++) {
+//				OGRFieldDefn *poField = getFieldDef(iField);
+//				boost::any tmp;
+//				if (poField->GetType() == OFTInteger)
+//					tmp = boost::any(poFeat->GetFieldAsInteger(iField));
+//				else if (poField->GetType() == OFTInteger64)
+//					tmp = boost::any(poFeat->GetFieldAsInteger64(iField));
+//				else if (poField->GetType() == OFTReal)
+//					tmp = boost::any(poFeat->GetFieldAsDouble(iField));
+//				else if (poField->GetType() == OFTString)
+//					tmp = boost::any(std::string(poFeat->GetFieldAsString(iField)));
+//				else
+//					tmp = boost::any(std::string(poFeat->GetFieldAsString(iField)));
 //
-//				while(feat=layer->GetNextFeature()){
-//					geovec.push_back(new )
-//				}
-//				auto nfeat=layer->GetFeatureCount();
-//				for (auto size_t i=0;i<nfeat<++i){
-//					layer->getFgrpParentPtr_->getLayer){
-//
-//		}
-//				}
+//				attribs_[poField->GetNameRef()] = tmp;
+//			}
 
-//		}
+        }
 
-		OGRValue::OGRValue(const size_t i,const OGRVar *const parent):ValueItem(parent){
+        OGRValue::OGRValue(const size_t i,const OGRVar *const parent):ValueItem(parent){
 			layer=static_cast<const OGRGroup*>(parent_->parent())->getLayer();
 
 			feat=layer->GetFeature(i);

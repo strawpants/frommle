@@ -101,49 +101,6 @@ namespace frommle {
 
 			OGRSpatialReference *getOGRspatialRef();
 
-//			//@brief nested iterator class
-//			class ogriterator:public geometry::OGRiteratorBase{
-//			public:
-//				ogriterator(){}
-//				~ogriterator(){
-//					freefeat();
-//				}
-//				ogriterator(const ogriterator & ogrother)=delete;
-//				ogriterator & operator=(const ogriterator & rhs)=delete;
-//				ogriterator(OGRIArchive * in):ArPtr_(in){
-//					//load the first geeometry by incrementing
-//					++*this;
-//				}
-//				ogriterator& operator++(){
-//					//destroy feature if not nullptr
-//					freefeat();
-//					//get next feature
-//					poFeat_ = ArPtr_->poLayer->GetNextFeature();
-//					if (poFeat_  != NULL) {
-//						//set pointer to OGRGeometry
-//						elVal = poFeat_->GetGeometryRef();
-//					}else{
-//						elVal= nullptr;
-//					}
-//					return *this;
-//				};
-//			private:
-//				void freefeat(){
-//					if (poFeat_) {
-//						OGRFeature::DestroyFeature(poFeat_);
-//					}
-//				}
-//				OGRIArchive * ArPtr_=nullptr;
-//				OGRFeature *poFeat_ = nullptr;
-//			};
-//			std::shared_ptr<geometry::OGRiteratorBase>  ogrbegin(){
-//				return std::shared_ptr<ogriterator>(new ogriterator(this));
-//			}
-//
-//			std::shared_ptr<geometry::OGRiteratorBase>  ogrend()const{
-//				return std::shared_ptr<ogriterator>(new ogriterator());
-//			}
-
 		private:
 			friend OGRGroup;
 			GrpRef  at(const std::string & groupName)const;
@@ -199,8 +156,10 @@ namespace frommle {
 			void loadvar(const int varid);
 			void loadvar(const std::string & varName);
 			void loadgeom(const int ngeom=0);
+			void loadAttributes();
 			inline int nField(){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldCount();}
 			inline int nGeom(){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetGeomFieldCount();}
+			inline OGRFieldDefn * getFieldDef(const int ifield){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldDefn(ifield);}
 			ValueRef at(const size_t nVal)const;
 
 			OGRFieldDefn * fielddef_=nullptr;

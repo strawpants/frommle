@@ -27,7 +27,7 @@
 
 namespace frommle{
     namespace geometry{
-        template<class T>
+        template<class T,class Rtree=void>
         class OGRGuide:public core::GuideBase{
         public:
             using Element=T;
@@ -48,7 +48,8 @@ namespace frommle{
 
             typename std::vector<Element>::iterator begin() { return geoms_.begin(); }
             typename std::vector<Element>::iterator end() { return geoms_.end(); }
-
+            //spatial queries
+            //...
         private:
             friend class boost::serialization::access;
             BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -57,6 +58,9 @@ namespace frommle{
             template<class Archive>
             void save(Archive & Ar,const unsigned int file_version)const{}
             std::vector <Element> geoms_={};
+            //Rtree stuff
+            void buildRtree();
+
 
         };
 

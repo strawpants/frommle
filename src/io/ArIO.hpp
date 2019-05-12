@@ -25,6 +25,7 @@ namespace frommle{
         using ValueRef=std::shared_ptr<ValueItem>;
         using ValueIterator=ArItemiterator<ValueItem,VarItem>;
 
+        using Attribs=std::map<std::string,boost::any>;
 
     }
 }
