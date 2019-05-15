@@ -45,7 +45,7 @@ namespace frommle{
             inline ValueRef operator[](const size_t n)const{return at(n);}
             const Group* parent()const{return grpParentPtr_;}
             template<class T>
-            T getAttribute(const std::string & name)const{return boost::any_cast<T>(attribs_[name]);}
+            const T getAttribute(const std::string & name)const{return boost::any_cast<const T >(attribs_.at(name));}
             template<class T>
             void setAttribute(const std::string & name, T & in){ attribs_[name]=in;}
         protected:

@@ -3,6 +3,8 @@
 //
 
 #include "io/ArItem.hpp"
+#include <map>
+#include <boost/any.hpp>
 
 #ifndef FROMMLE_ARIO_HPP
 #define FROMMLE_ARIO_HPP

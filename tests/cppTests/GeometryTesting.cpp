@@ -21,6 +21,8 @@
 #include <boost/test/unit_test.hpp>
 #include "geometry/GeoGrid.hpp"
 #include "geometry/OGRGuide.hpp"
+//#include "geometry/OGRiteratorBase.hpp"
+#include "geometry/OGR2boost.hpp"
 #include "core/Logging.hpp"
 
 using namespace frommle::geometry;
@@ -94,19 +96,33 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRIArchive iAr;
 
-//    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,gnss"}};
-//    frommle::io::OGRIArchive iAr(Opts);
+    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,oceanobs"}};
+    frommle::io::OGRIArchive iAr(Opts);
 //    iAr.changeGroup("oceanobs.orsifronts");
 //        frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
-    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+//    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
 
     //Load POLYGON OGRguide from Archive
     using GeoPoly=OGRGuide<OGRPolygon>;
     GeoPoly geopoly=GeoPoly();
-    *(iAr[0]) >> geopoly;
-    for (auto & poly:geopoly){
-        LOGINFO << "loaded " << poly.getGeometryName() <<std::endl;
+    *(iAr["globalgis.gshhs_c"]) >> geopoly;
+
+    auto polygon=geopoly[0];
+    auto pbegin=OGRiterator<OGRPolygon>(&polygon);
+    auto pend=OGRiterator<OGRPolygon>(&polygon);
+    auto polyrange=OGRpolyRange(polygon);
+    for(auto & pit:polyrange){
+        auto nvert=pit.getNumPoints();
+        LOGINFO << nvert <<std::endl;
     }
+
+
+//    for (auto ring=polygon& poly:geopoly){
+//        LOGINFO << "loaded " << poly.getGeometryName() <<std::endl;
+//    }
+//    for (auto & poly:geopoly){
+//        LOGINFO << "loaded " << poly.getGeometryName() <<std::endl;
+//    }
 
 //    for (auto const & grplayer:iAr){
 //        LOGINFO << "layer name " << grplayer->getName() <<std::endl;

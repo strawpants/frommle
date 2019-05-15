@@ -21,13 +21,14 @@
 #include "core/GuideBase.hpp"
 #include <boost/serialization/split_member.hpp>
 #include "io/OGRIArchive.hpp"
-#include "memory"
+#include <memory>
+#include <ogr_geometry.h>
 #ifndef FROMMLE_OGRGUIDE_HPP
 #define FROMMLE_OGRGUIDE_HPP
 
 namespace frommle{
     namespace geometry{
-        template<class T,class Rtree=void>
+        template<class T>
         class OGRGuide:public core::GuideBase{
         public:
             using Element=T;
@@ -48,6 +49,8 @@ namespace frommle{
 
             typename std::vector<Element>::iterator begin() { return geoms_.begin(); }
             typename std::vector<Element>::iterator end() { return geoms_.end(); }
+            Element & operator[](const index idx){return geoms_.at(idx);}
+            Element & operator[](const index idx)const{return geoms_.at(idx);}
             //spatial queries
             //...
         private:

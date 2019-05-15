@@ -275,9 +275,12 @@ namespace frommle {
 
         OGRValue::OGRValue(const size_t i,const OGRVar *const parent):ValueItem(parent){
 			layer=static_cast<const OGRGroup*>(parent_->parent())->getLayer();
-
-			feat=layer->GetFeature(i);
-
+			//Tables in postgis ,may not necessarily start with an internal 0 index so in that case we interpret i=0 here as "the first available feature"
+			if (i ==0 ){
+				feat=layer->GetNextFeature();
+			}else{;
+				feat=layer->GetFeature(i);
+			}
 			if(feat) {
 				anyval_ = feat->GetGeometryRef();
 				id_=i;
