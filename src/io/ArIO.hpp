@@ -12,12 +12,14 @@
 namespace frommle{
     namespace io{
 
+        using ArchiveOpts=std::map<std::string,boost::any>;
+
         //forward declare some goodies here to prevent recursive header lookups
-        class InputArchiveBase;
+        class ArchiveBase;
         
         class Group;
         using GrpRef=std::shared_ptr<Group>;
-        using GrpIterator=ArItemiterator<Group,InputArchiveBase>;
+        using GrpIterator=ArItemiterator<Group,ArchiveBase>;
 
         class VarItem;
         using VarRef=std::shared_ptr<VarItem>;

@@ -26,7 +26,8 @@
 #include "core/Logging.hpp"
 
 using namespace frommle::geometry;
-BOOST_AUTO_TEST_CASE(GeoGridGuide,*boost::unit_test::tolerance(1e-11)){
+using namespace utf=boost::unit_test;
+BOOST_AUTO_TEST_CASE(GeoGridGuide,*utf::tolerance(1e-11)){
     //Test the functionality of a GeoGrid (equidistant grid)
     std::array<double,4> wesn={-180,180,-90,90};
     double dlon=0.49;//make this increment not fit on purpose
@@ -90,17 +91,35 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
     }
 }
 
+OGRGuide<OGRPolygon> makeTestOGRGuide(){
+    OGRGuide<OGRPolygon> polyGuide();
+    //add a test polygon with 2 inner rings
+    polyGuide.push_back("POLYGON((-10 50, 20 45, 19.3 -2.4, -9 10),(-2 45, 2 40, 1 30, -1 38),(5 30, 10 29, 9 15, 4 18))");
+    return polyGuide;
+}
+
 //Test writing & reading OGR geometries from shapefiles / database
 BOOST_AUTO_TEST_CASE(OGRArchive){
+
+    auto PolyGd=makeTestOGRGuide();
+
+
+
+
+
+    //write to a file (e.g. shapefile)
+
+
+
 //    frommle::core::Logging::setInfoLevel();
 //    using GeoPoly=OGRGuide<geopoly>;
-//    frommle::io::OGRIArchive iAr;
+//    frommle::io::OGRArchive iAr;
 
     frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,oceanobs"}};
-    frommle::io::OGRIArchive iAr(Opts);
+    frommle::io::OGRArchive iAr(Opts);
 //    iAr.changeGroup("oceanobs.orsifronts");
-//        frommle::io::OGRIArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
-//    frommle::io::OGRIArchive iAr("/home/roelof/Downloads/ne");
+//        frommle::io::OGRArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
+//    frommle::io::OGRArchive iAr("/home/roelof/Downloads/ne");
 
     //Load POLYGON OGRguide from Archive
     using GeoPoly=OGRGuide<OGRPolygon>;
@@ -108,10 +127,10 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
     *(iAr["globalgis.gshhs_c"]) >> geopoly;
 
     auto polygon=geopoly[0];
-    auto pbegin=OGRiterator<OGRPolygon>(&polygon);
-    auto pend=OGRiterator<OGRPolygon>(&polygon);
+//    auto pbegin=OGRiterator<OGRPolygon>(&polygon);
+//    auto pend=OGRiterator<OGRPolygon>(&polygon);
     auto polyrange=OGRpolyRange(polygon);
-    for(auto & pit:polyrange){
+    for(auto const & pit:polyrange){
         auto nvert=pit.getNumPoints();
         LOGINFO << nvert <<std::endl;
     }
@@ -148,4 +167,8 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
     BOOST_TEST(1 == 1);
 }
 
+//@brief test the retrieval of OGR geometries from a PostGIS-enabled database
+BOOST_AUTO_TEST_CASE(OGRPostGIS,* utf::disabled()){
+
+}
 

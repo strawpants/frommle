@@ -32,6 +32,7 @@ namespace frommle{
             OGRiteratorBase(Derived * Derivptr ):Derivptr_(Derivptr){
                 ncount_=count();
             }
+            OGRiteratorBase(){}
             virtual ~OGRiteratorBase(){}
         private:
             ptrdiff_t id_=-1;
@@ -40,8 +41,9 @@ namespace frommle{
             Derived * Derivptr_=nullptr;
 
             friend class boost::iterator_core_access;
-            T & dereference() {return *OGRelem_;}
-            bool equal(const OGRiteratorBase & other){return id_==other.id_;}
+
+            T & dereference()const {return *OGRelem_;}
+            bool equal(const OGRiteratorBase & other)const{return id_==other.id_;}
             void increment(){
                 ++id_;
                 if(id_>= 0 && id_<ncount_)
@@ -71,7 +73,7 @@ namespace frommle{
             }
             ptrdiff_t distance_to(const OGRiteratorBase& other) const{return other.id_-id_;};
             //we need to forawad the load and count call to the dervied type
-            inline const T * load(const ptrdiff_t ith){return Derivptr_->load(ith);}
+            inline T * load(const ptrdiff_t ith)const{return Derivptr_->load(ith);}
             inline ptrdiff_t count()const{return Derivptr_->count();}
         };
 
@@ -86,7 +88,7 @@ namespace frommle{
         private:
             friend btype;
             OGRlinelike* parent_=nullptr;
-            const OGRPoint * load(const ptrdiff_t ith) {
+            OGRPoint * load(const ptrdiff_t ith) {
                 parent_->getPoint(ith,&ogrpnt_);
                 return &ogrpnt_;
             }
@@ -96,14 +98,15 @@ namespace frommle{
 
 
         template<class OGRlinelike>
-        class const_OGRiterator:public boost::iterator_adaptor<const_OGRiterator<OGRlinelike>,OGRiteratorBase<const_OGRiterator<OGRlinelike>,OGRPoint,OGRlinelike>>{
+        class const_OGRiterator:public boost::iterator_adaptor<const_OGRiterator<OGRlinelike>,OGRiteratorBase<const_OGRiterator<OGRlinelike>,const OGRPoint,OGRlinelike>>{
         public:
-            using btype=OGRiteratorBase<const_OGRiterator<OGRlinelike>,OGRPoint,OGRlinelike>;
+            using btype=OGRiteratorBase<const_OGRiterator<OGRlinelike>,const OGRPoint,OGRlinelike>;
             const_OGRiterator(const OGRlinelike * parent):const_OGRiterator<OGRlinelike>::iterator_adaptor_(btype(this)),parent_(parent){}
 
         private:
+            friend btype;
             const OGRlinelike * parent_=nullptr;
-            const OGRPoint * load(const ptrdiff_t ith) {
+            OGRPoint * load(const ptrdiff_t ith){
                 parent_->getPoint(ith,&ogrpnt_);
                 return &ogrpnt_;
             }
@@ -117,11 +120,11 @@ namespace frommle{
         public:
             using btype=OGRiteratorBase<OGRiterator<OGRPolygon>,OGRLinearRing,OGRPolygon>;
             OGRiterator(OGRPolygon * parent):OGRiterator::iterator_adaptor_(btype(this)),parent_(parent){}
-
+            OGRiterator(){}
         private:
             friend btype;
             OGRPolygon *parent_=nullptr;
-            const OGRLinearRing * load(const ptrdiff_t ith) {
+            OGRLinearRing * load(const ptrdiff_t ith) {
                 return parent_->getInteriorRing(ith);
             }
             ptrdiff_t count()const{return parent_->getNumInteriorRings();}
@@ -131,11 +134,11 @@ namespace frommle{
 
         //partial template specialization when the parent is a OGRpolygon (iterates over inner ringsi, instead of points)
         template<>
-        class const_OGRiterator<OGRPolygon>:public boost::iterator_adaptor<const_OGRiterator<OGRPolygon>,OGRiteratorBase<const_OGRiterator<OGRPolygon>,OGRLinearRing,OGRPolygon>>{
+        class const_OGRiterator<OGRPolygon>:public boost::iterator_adaptor<const_OGRiterator<OGRPolygon>,OGRiteratorBase<const_OGRiterator<OGRPolygon>,const OGRLinearRing,OGRPolygon>>{
         public:
-            using btype=OGRiteratorBase<const_OGRiterator<OGRPolygon>,OGRLinearRing,OGRPolygon>;
+            using btype=OGRiteratorBase<const_OGRiterator<OGRPolygon>,const OGRLinearRing,OGRPolygon>;
             const_OGRiterator(const OGRPolygon * parent):const_OGRiterator::iterator_adaptor_(btype(this)),parent_(parent){}
-
+            const_OGRiterator(){}
         private:
             friend btype;
             const OGRPolygon * parent_=nullptr;
@@ -152,21 +155,21 @@ namespace frommle{
             OGRiterator<T> _begin;
             OGRiterator<T> _end;
 
-            bool isIterSet;
+            bool isIterSet=false;
 
             const_OGRiterator<T> _cbegin;
             const_OGRiterator<T> _cend;
 
-            bool isCIterSet;
+            bool isCIterSet=false;
 
         public:
 
-            OGRiterRange(T & parent) : _begin(parent), _end(parent), isIterSet(true) {
+            OGRiterRange(T & parent) : _begin(&parent), _end(&parent), isIterSet(true) {
                 //increment so we start at the beginning
                 ++_begin;
             }
 
-            OGRiterRange( const T & parent) : _cbegin(parent), _cend(parent), isCIterSet(true) {
+            OGRiterRange( const T & parent) : _cbegin(&parent), _cend(&parent), isCIterSet(true) {
                 ++_cbegin;
             }
 

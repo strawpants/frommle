@@ -27,7 +27,6 @@
 #define FROMMLE_GROUPBASE_HPP
 namespace frommle{
     namespace io{
-        class InputArchiveBase;
 
         //@brief Holds information about a group in an archive (e.g. name, attributes, Archive pointer). This can also be used as an index to refer to navigate to a certain group within an Archive
         class Group:public ArItemBase  {
@@ -36,9 +35,9 @@ namespace frommle{
             //construct when only the groupname is known
             Group(const std::string & name ):ArItemBase(name){}
             //construct when both the name and open Archive are known
-            Group(const std::string & name, const InputArchiveBase * const Arptr ):ArItemBase(name),Arptr_(Arptr){}
+            Group(const std::string & name, const ArchiveBase * const Arptr ):ArItemBase(name),Arptr_(Arptr){}
             //only the Archive is known at this stage
-            Group(const InputArchiveBase * const Arptr):ArItemBase(),Arptr_(Arptr){}
+            Group(const ArchiveBase * const Arptr):ArItemBase(),Arptr_(Arptr){}
 
             VarIterator begin()const{return VarIterator(this);}
             VarIterator end()const{return VarIterator();}
@@ -56,7 +55,7 @@ namespace frommle{
             Group & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
 
             const InputArchiveBase* parent()const{return Arptr_;}
-            typedef boost::mpl::bool_<false> is_saving;
+            typedef boost::mpl::bool_<true> is_saving;
             typedef boost::mpl::bool_<true> is_loading;
         protected:
             friend boost::serialization::access;
@@ -74,7 +73,7 @@ namespace frommle{
             virtual VarRef at(const std::string & VarName)const{return VarRef();}
             virtual VarRef at(const int nVar)const{return VarRef();}
             //Note: this class does not own the memory of the Archive pointer
-            const InputArchiveBase * Arptr_=nullptr;
+            const ArchiveBase * Arptr_=nullptr;
             //possibly add attributes and variables names here
         };
 

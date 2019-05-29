@@ -18,26 +18,41 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef SRC_CPP_OUTARCHIVEBASE_HPP_
-#define SRC_CPP_OUTARCHIVEBASE_HPP_
+#ifndef SRC_IO_ARCHIVEBASE_HPP_
+#define SRC_IO_ARCHIVEBASE_HPP_
 
 #include<string>
+#include "io/Group.hpp"
 
 namespace frommle {
-
+namespace io {
 
 /*!
  * \brief Abstract base class for an output archive
  */
-	class OutputArchiveBase {
-public:
-	virtual ~OutputArchiveBase() {
-	}
-private:
-protected:
 
-};
+		class ArchiveBase {
+		public:
+			virtual ~ArchiveBase() = default;
+
+			GrpIterator begin()const{return GrpIterator(this);}
+			GrpIterator end()const{return GrpIterator();}
+
+
+			//Functions which allow to navigate through the groups of an Archive
+			GrpRef operator[](const std::string & Groupname)const{return this->at(Groupname);}
+			GrpRef operator[](const int nGroup)const{return this->at(nGroup);}
+
+		protected:
+			virtual unsigned int file_version(){return 0;};
+
+			virtual GrpRef at(const std::string & groupname)const=0;
+			virtual GrpRef at(const int nGroup)const=0;
+
+		private:
+		};
 
 }
+}
 
-#endif /* SRC_CPP_OUTARCHIVEBASE_HPP_*/
+#endif /* SRC_IO_ARCHIVEBASE_HPP_*/

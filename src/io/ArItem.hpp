@@ -23,7 +23,7 @@
 namespace frommle{
     namespace io{
         //We only need to forwad declare this class here
-        class InputArchiveBase;
+        class ArchiveBase;
         template<class T,class P>
         class ArItemiterator;
         class Group;
@@ -45,7 +45,7 @@ namespace frommle{
                 virtual ArItemBase & operator ++(){++id_;}
 
             protected:
-                friend ArItemiterator<Group,InputArchiveBase>;
+                friend ArItemiterator<Group,ArchiveBase>;
                 friend ArItemiterator<VarItem,Group>;
                 friend ArItemiterator<ValueItem,VarItem>;
                 std::string name_="";

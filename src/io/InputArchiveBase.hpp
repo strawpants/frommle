@@ -26,12 +26,10 @@
 #include <boost/any.hpp>
 #include <cassert>
 #include <memory>
-#include "geometry/OGRiteratorBase.hpp"
 #include "io/Group.hpp"
 
 namespace frommle {
 	namespace io {
-		using ArchiveOpts=std::map<std::string,boost::any>;
 /*!
  * \brief Abstract base class for an input archive
  */
@@ -50,6 +48,8 @@ namespace frommle {
 			//Functions which allow to navigate through the groups of an Archive
 			GrpRef operator[](const std::string & Groupname)const{return this->at(Groupname);}
 			GrpRef operator[](const int nGroup)const{return this->at(nGroup);}
+			constexpr bool is_saving(){return false;}
+			constexpr bool is_loading(){return true;}
 		protected:
 			virtual unsigned int file_version(){return 0;};
 
@@ -57,17 +57,6 @@ namespace frommle {
 			virtual GrpRef at(const int nGroup)const=0;
 
 		private:
-//			friend boost::serialization::access;
-//			typedef boost::mpl::bool_<false> is_saving;
-//			typedef boost::mpl::bool_<true> is_loading;
-//			//needed to be compatible with the boost serialization library(don't ask me why)
-//			void load_binary(void * address,std::size_t count){assert(0);};
-//
-//			template <class T>
-//			InputArchiveBase & operator & ( T & t){
-//				return *this >> t;
-//			}
-//			virtual Group nextGroup()=0;
 		};
 
 

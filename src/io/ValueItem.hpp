@@ -36,26 +36,6 @@ namespace frommle {
         const VarItem * parent_=nullptr;
         boost::any anyval_;
 
-
-//         template<class T,class Tfirst, class...Trem>
-//          std::shared_ptr<T> try_cast(ValueItem * in){
-//             if(Tfirst* ptr=dynamic_cast<const Tfirst*>(in){
-//                 return ptr->as<T>();
-//             }else{
-//                 return try_cast<T,Trem...>(in);
-//             }
-//        }
-//        template<class T, class Tfirst>
-//                std::shared_ptr<T> try_cast(ValueItem *in){
-//            if(Tfirst* ptr=dynamic_cast<const Tfirst*>(in){
-//                return ptr->as<T>();
-//            }else{
-//                throw core::IOException("No suitable cast found");
-//            }
-//
-//        }
-//
-//        ptrdiff_t id_=-1;
     };
 
 

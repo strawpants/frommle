@@ -20,8 +20,9 @@
 
 #include "core/GuideBase.hpp"
 #include <boost/serialization/split_member.hpp>
-#include "io/OGRIArchive.hpp"
+#include "io/OGRArchive.hpp"
 #include <memory>
+#include <vector>
 #include <ogr_geometry.h>
 #ifndef FROMMLE_OGRGUIDE_HPP
 #define FROMMLE_OGRGUIDE_HPP
@@ -44,6 +45,14 @@ namespace frommle{
                 ++size_;
             }
 
+            //@brief push back a new geometry from a well-known test representation
+            void push_back(const std::string & WKT){
+                geoms_.push_back(Element())
+                geoms.back().ImportFromWkt(WKT.c_str());
+                ++size_;
+
+            }
+
            typename std::vector<Element>::const_iterator begin() const { return geoms_.begin(); }
            typename std::vector<Element>::const_iterator end() const { return geoms_.end(); }
 
@@ -63,6 +72,7 @@ namespace frommle{
             std::vector <Element> geoms_={};
             //Rtree stuff
             void buildRtree();
+            OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();
 
 
         };

@@ -22,7 +22,7 @@
  */
 
 #define BOOST_TEST_MODULE SHtesting
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include "sh/Legendre_nm.hpp"
 #include "sh/SHGuide.hpp"
 #include <math.h>

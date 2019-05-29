@@ -22,7 +22,7 @@
  */
 
 #define BOOST_TEST_MODULE coretesting
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include "core/GArrayBase.hpp"
 #include "core/TimeGuide.hpp"
 #include <boost/date_time.hpp>
