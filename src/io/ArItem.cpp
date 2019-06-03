@@ -18,11 +18,11 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "InputArchiveBase.cpp"
 #include "ArItem.hpp"
 #include "io/Group.hpp"
 #include "io/VarItem.hpp"
 #include "io/ValueItem.hpp"
+#include "io/ArchiveBase.hpp"
 namespace frommle{
     namespace io{
 
@@ -40,7 +40,7 @@ namespace frommle{
         //explicitly initiate templates for a Group item. This is needed to prevent circular header file includes
         // and since the amount of Aritems is expected to be limited (Groups versus variables, this is not such a problem)
         template
-        class ArItemiterator<Group, InputArchiveBase>;
+        class ArItemiterator<Group, ArchiveBase>;
         //also instantiate a varitem iterator
         template
         class ArItemiterator<VarItem,Group>;

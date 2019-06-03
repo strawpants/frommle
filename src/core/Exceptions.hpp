@@ -49,6 +49,13 @@ namespace frommle{
         public:
             IOException(const std::string message):std::runtime_error(message){}
         };
+
+        ///@brief Exception thrown when class methods are requested which don't exist for this runtime instance
+        class MethodException:public std::runtime_error{
+        public:
+            MethodException(const std::string message):std::runtime_error(message){}
+        };
+
     }
 }
 

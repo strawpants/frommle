@@ -19,11 +19,16 @@
  */
 #include <string>
 #include <memory>
+#include <vector>
 #include "io/ArIO.hpp"
 #include "core/Exceptions.hpp"
 
 #ifndef FROMMLE_VARITEM_HPP
 #define FROMMLE_VARITEM_HPP
+
+//forward declare gdal class here
+class OGRGeometry;
+
 namespace frommle{
     namespace io{
 

@@ -30,6 +30,7 @@
 #include "core/MarrayEig.hpp"
 #include "core/UserSettings.hpp"
 #include <cstdio>
+#include "core/TreeNode.hpp"
 
 using namespace frommle::core;
 namespace bg=boost::gregorian;
@@ -110,4 +111,71 @@ BOOST_AUTO_TEST_CASE(Settings) {
         BOOST_TEST_MESSAGE("Error deleting file");
         BOOST_TEST( false);
     }
+}
+
+//Tree node testing
+//forward declare node types
+class rootNode;
+class subNode;
+class endNode;
+
+class rootNode:public TreeNode<rootNode,subNode,void>{
+public:
+    rootNode(const std::string && name):TreeNode<rootNode,subNode,void>(name){}
+    virtual TreeNodeRef<subNode> operator[](const std::string & name);
+    virtual TreeNodeRef<subNode> operator[](const size_t & indx);
+private:
+};
+
+
+class subNode:public TreeNode<subNode,endNode,rootNode>{
+    virtual TreeNodeRef<endNode> operator[](const std::string & name);
+    virtual TreeNodeRef<endNode> operator[](const size_t & indx);
+
+};
+
+
+class endNode:public TreeNode<endNode,void,subNode>{
+//    virtual TreeNodeRef<void> operator[](const std::string & name);
+//    virtual TreeNodeRef<void> operator[](const size_t & indx);
+
+};
+
+
+//implementation of the functions (once all classes have been defined)
+TreeNodeRef<subNode> rootNode::operator[](const std::string &name) {return TreeNodeRef<subNode>();}
+
+TreeNodeRef<subNode> rootNode::operator[](const size_t &indx) {return TreeNodeRef<subNode>();}
+
+TreeNodeRef<endNode> subNode::operator[](const std::string &name) {
+    return TreeNodeRef<endNode>();
+}
+
+TreeNodeRef<endNode> subNode::operator[](const size_t &indx) {
+    return TreeNodeRef<endNode>();
+}
+
+
+BOOST_AUTO_TEST_CASE(TreeNodes){
+
+    rootNode root("noparentnode");
+
+    //add subnodes to the root node
+    root["test"]=subNode();
+
+    root["test2"]=subNode();
+
+    //add endnodes to the subnodes
+    root["test"]["end1"]=endNode();
+
+    root["test"]["end2"]=endNode();
+
+
+
+
+
+    std::cout << root.getName() <<std::endl;
+
+
+
 }

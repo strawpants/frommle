@@ -54,7 +54,7 @@ namespace frommle{
             template<class Y>
             Group & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
 
-            const InputArchiveBase* parent()const{return Arptr_;}
+            const ArchiveBase* parent()const{return Arptr_;}
             typedef boost::mpl::bool_<true> is_saving;
             typedef boost::mpl::bool_<true> is_loading;
         protected:
