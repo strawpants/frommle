@@ -119,41 +119,23 @@ class rootNode;
 class subNode;
 class endNode;
 
-class rootNode:public TreeNode<rootNode,subNode,void>{
+class rootNode:public TreeNodeCollection{
 public:
-    rootNode(const std::string && name):TreeNode<rootNode,subNode,void>(name){}
-    virtual TreeNodeRef<subNode> operator[](const std::string & name);
-    virtual TreeNodeRef<subNode> operator[](const size_t & indx);
+    rootNode(const std::string && name):TreeNodeCollection(name){}
 private:
 };
 
 
-class subNode:public TreeNode<subNode,endNode,rootNode>{
-    virtual TreeNodeRef<endNode> operator[](const std::string & name);
-    virtual TreeNodeRef<endNode> operator[](const size_t & indx);
-
+class subNode:public TreeNodeCollection{
 };
 
 
-class endNode:public TreeNode<endNode,void,subNode>{
+class endNode:public TreeNodeItem{
 //    virtual TreeNodeRef<void> operator[](const std::string & name);
 //    virtual TreeNodeRef<void> operator[](const size_t & indx);
 
 };
 
-
-//implementation of the functions (once all classes have been defined)
-TreeNodeRef<subNode> rootNode::operator[](const std::string &name) {return TreeNodeRef<subNode>();}
-
-TreeNodeRef<subNode> rootNode::operator[](const size_t &indx) {return TreeNodeRef<subNode>();}
-
-TreeNodeRef<endNode> subNode::operator[](const std::string &name) {
-    return TreeNodeRef<endNode>();
-}
-
-TreeNodeRef<endNode> subNode::operator[](const size_t &indx) {
-    return TreeNodeRef<endNode>();
-}
 
 
 BOOST_AUTO_TEST_CASE(TreeNodes){

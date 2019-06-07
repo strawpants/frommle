@@ -104,7 +104,7 @@ namespace frommle{
         }
 
         TreeNodeRef &TreeNodeCollection::operator[](const std::string &name) {
-            loadCollection();
+            loadCollection(name);
             auto idx=findidx(name);
             if (idx == -1){
                 //create a new item
@@ -114,7 +114,7 @@ namespace frommle{
         }
 
         TreeNodeRef &TreeNodeCollection::operator[](const size_t &idx) {
-            loadCollection();
+            loadCollection(idx);
             if (idx >= collection_.size()){
                 return upsertChild(idx,TreeNodeItem());
             }else if(!collection_[idx]){

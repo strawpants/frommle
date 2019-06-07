@@ -25,8 +25,9 @@
 #include "geometry/OGR2boost.hpp"
 #include "core/Logging.hpp"
 #include "io/OGRArchive.hpp"
+#include "io/OGRIOArchives.hpp"
+
 #include <boost/variant.hpp>
-#include <ogrsf_frmts.h>
 using namespace frommle::geometry;
 using namespace frommle;
 namespace utf=boost::unit_test;
@@ -94,16 +95,23 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
     }
 }
 
-//OGRGuide<OGRPolygon> makeTestOGRGuide(){
-//    OGRGuide<OGRPolygon> polyGuide();
-//    //add a test polygon with 2 inner rings
-//    polyGuide.push_back("POLYGON((-10 50, 20 45, 19.3 -2.4, -9 10),(-2 45, 2 40, 1 30, -1 38),(5 30, 10 29, 9 15, 4 18))");
-//    return polyGuide;
-//}
+OGRGuide<OGRPolygon> makeTestOGRGuide(){
+    OGRGuide<OGRPolygon> polyGuide{};
+    //add a test polygon with 2 inner rings
+    polyGuide.push_back("POLYGON((-10 50, 20 45, 19.3 -2.4, -9 10),(-2 45, 2 40, 1 30, -1 38),(5 30, 10 29, 9 15, 4 18))");
+    return polyGuide;
+}
 
 //Test writing & reading OGR geometries from shapefiles / database
 BOOST_AUTO_TEST_CASE(OGRArchive){
-//    auto PolyGd=makeTestOGRGuide();
+    auto PolyGd=makeTestOGRGuide();
+
+    //open an gdal file for writing
+    std::string gdalfile("OGRtestdat");
+    io::OGRArchive oAr(gdalfile,{{"amode","w"},{"Driver","ESRI Shapefile"}});
+    oAr["newlayer"]=io::OGRGroup();
+
+
     //write to a file (e.g. shapefile)
 //    frommle::core::Logging::setInfoLevel();
 //    using GeoPoly=OGRGuide<geopoly>;
@@ -123,10 +131,10 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
             LOGINFO << "Layer: " << grp->getName();
 //            for (auto &var:grp){
                 auto &tmp=grp["geom"];
-                auto & var=grp["geom"].as<io::Variable>();
+                auto & var=grp["geom"].as<io::Variable<>>();
                 auto is_saving=var.writable();
                 auto is_loading=var.readable();
-                LOGINFO << "    Var: "<<var.getName();
+                LOGINFO << "Var: "<<var.getName();
 
 //                for (auto &val:*(static_cast<io::Variable*>(var.get()))){
 //                for (auto &val:var){

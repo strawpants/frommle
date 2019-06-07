@@ -207,14 +207,15 @@ namespace frommle{
         template<class T>
         TreeNodeRef &TreeNodeRef::operator=(T &&in) {
             std::string iname=ptr_->getName();
-
+            auto currentParent=ptr_->getParent();
             ptr_=std::make_shared<T>(std::move(in));
 
             if (!iname.empty()){
                 //Note existing name takes precedence so here we put it back in
                 ptr_->setName(iname);
             }
-
+            //also inherit the parent from the current TreeNodeRef
+            ptr_->setParent(currentParent);
             return *this;
         }
 
@@ -272,7 +273,12 @@ namespace frommle{
             TreeNodeRef & upsertChild(const size_t idx,T && in);
 
         protected:
+            //@brief optional virtual function to load all or specific available children
+            // call loadCollection() to load all, or specify either an id or name
             virtual void loadCollection(){};
+            //other overloads which maye be implemented in derived classes (default calls back to loading the entire collection
+            virtual void loadCollection(const size_t id){loadCollection();}
+            virtual void loadCollection(const std::string name ){loadCollection();}
         private:
             ///@brief callback function which prepares an iteration (default does nothing)
             ptrdiff_t findidx(const std::string name)const;

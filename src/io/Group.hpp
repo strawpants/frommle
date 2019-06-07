@@ -33,7 +33,6 @@ class OGRGeometry;
 namespace frommle{
     namespace io{
 
-        class Variable;
         //@brief Holds information about a group in an archive (e.g. name, attributes, Archive pointer). This can also be used as an index to refer to navigate to a certain group within an Archive
     class Group:public core::TreeNodeCollection {
         public:
@@ -55,8 +54,8 @@ namespace frommle{
 
 //            typedef boost::mpl::bool_<true> is_saving;
 //            typedef boost::mpl::bool_<true> is_loading;
-            using const_iterator = core::iteratorWrap<Variable,cvec::const_iterator>;
-            using iterator = core::iteratorWrap<Variable,cvec::iterator>;
+//            using const_iterator = core::iteratorWrap<Variable,cvec::const_iterator>;
+//            using iterator = core::iteratorWrap<Variable,cvec::iterator>;
 //            const_iterator cbegin()const{ return const_iterator(this->TreeNodeCollection::cbegin());}
 //            const_iterator cend()const{return const_iterator(this->TreeNodeCollection::cend()); }
 //            iterator begin(){return iterator(this->TreeNodeCollection::begin()); }
@@ -107,18 +106,20 @@ namespace frommle{
             bool is_saving=false;
         };
 
-
-
+    using valueVariant=boost::variant<double,int,long long int,std::string,std::unique_ptr<OGRGeometry>>;
+    template<class T=valueVariant>
     class Variable:public core::TreeNodeItem{
     public:
-        using single=boost::variant<double,int,long long int,std::string,std::unique_ptr<OGRGeometry>>;
+        using single=T;
         using singlePtr=std::shared_ptr<single>;
 
         Variable():TreeNodeItem(){}
         Variable(const std::string & name):TreeNodeItem(name){}
         Variable(const std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
-        virtual singlePtr getValue()const=0;
-        virtual void setValue(singlePtr & val)=0;
+        virtual singlePtr getValue(const size_t idx=-1)const=0;
+        virtual void setValue(singlePtr & val,const size_t idx)=0;
+        virtual void push_back(singlePtr &val){setValue(val,-1);}
+        singlePtr operator[](const size_t idx)const{return getValue(idx);}
         bool readable()const{return static_cast<const Group *>(getParent())->readable();}
         bool writable()const{return static_cast<const Group *>(getParent())->writable();}
         ///@brief iterator which loops over the values in this variable
@@ -130,7 +131,7 @@ namespace frommle{
             using difference_type = std::ptrdiff_t;
             using pointer = single*;
             using reference = single&;
-            iterator& operator++(){value_=parent_->getValue();return *this;};
+            iterator& operator++(){value_=parent_->getValue(-1);return *this;};
             bool operator==(const iterator & other) const {return value_ == other.value_;}
             bool operator!=(const iterator & other) const {return !(*this == other);}
             single & operator*() {return *value_;}

@@ -48,7 +48,8 @@ namespace frommle{
             //@brief push back a new geometry from a well-known test representation
             void push_back(const std::string & WKT){
                 geoms_.push_back(Element());
-                geoms_.back().ImportFromWkt(WKT.c_str());
+                auto wkt=WKT.c_str();
+                geoms_.back().importFromWkt(&wkt);
                 ++size_;
 
             }

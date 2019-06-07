@@ -36,7 +36,12 @@ namespace frommle {
 
 
         void OGRArchive::init() {
+            //first all OGR data formats must be dynamically initiated (this needs to be done only once per program call)
+            //So we use a singleton for that which calls it's constructor only once
+            GDALinit::get();
 
+
+            GDALDriver* gdalDriver=nullptr;
 
             if (getAttributeCount("Driver") > 0) {
                 auto driver = getAttribute<std::string>("Driver");
@@ -44,33 +49,39 @@ namespace frommle {
                     //modify the input sourceName to refer to a valid POSTGIS resource
                     setName(GDALPOSTGISSource(getName()));
                 }
+                gdalDriver = GetGDALDriverManager()->GetDriverByName(driver.c_str());
             }
 
-            //first all OGR data formats must be dynamically initiated (this needs to be done only once per program call)
-            //So we use a singleton for that which calls it's constructor only once
-            GDALinit::get();
+
             auto gdalaccess = GDAL_OF_READONLY | GDAL_OF_VECTOR;
 
             if (writable() and  readable()){
                 gdalaccess= GDAL_OF_UPDATE | GDAL_OF_VECTOR;
             }
 
+            if (readable()) {
+                //open the ogr source (e.g. a directory containing shapefiles)
+                poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
+            }
 
+            if(writable() and ! readable()){
+                //create a new data source. A driver must be explictly set
+                if( ! gdalDriver){
+                    throw core::InputException("A GDAL driver must be set explicitly when creating files. Set the 'Driver' attribute of the Archive to a valid GDAL driver");
+                }
+                poDS = gdalDriver->Create( getName().c_str(), 0, 0, 0, GDT_Unknown, NULL );
+            }
 
-
-
-            //open the ogr source (e.g. a directory containing shapefiles)
-            poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
             if (!poDS) {
                 throw core::IOException("Error opening OGR source");
             }
-            //load all available layers
-            loadChildren();
         }
 
 
         ///@brief indexes all available layers
-        void OGRArchive::loadChildren() {
+        void OGRArchive::loadCollection() {
+            //We just load all available layers
+            //@todo only load layer on demand
             if( size() != 0){
             //nothing to be done (do a quick return)
                 return;
@@ -80,6 +91,23 @@ namespace frommle {
                 upsertChild(i,OGRGroup(poDS->GetLayer(i)));
             }
         }
+
+        OGRLayer *OGRArchive::createLayer(const std::string &layername,const OGRwkbGeometryType geotype)  {
+            if(!poDS){
+                throw core::IOException("No datasource open");
+            }
+            return poDS->CreateLayer(layername.c_str(),&poRef,geotype,NULL);
+
+        }
+
+        OGRLayer *OGRArchive::loadLayer(const std::string & layername) {
+            if(!poDS){
+                throw core::IOException("No datasource open");
+            }
+            return poDS->GetLayerByName(layername.c_str());
+        }
+
+        OGRSpatialReference *OGRArchive::getOGRspatialRef() {}
     }
 }
 
