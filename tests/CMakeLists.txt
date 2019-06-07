@@ -1,4 +1,4 @@
-list(APPEND ALLTESTS GeometryTesting SHtesting coretesting )
+list(APPEND ALLTESTS GeometryTesting SHtesting coretesting IOtesting)
 
 #add all the tests to Ctest
 foreach(tester ${ALLTESTS})

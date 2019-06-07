@@ -21,16 +21,7 @@
 #include "io/Group.hpp"
 namespace frommle{
     namespace io{
-//        VarIterator Group::begin() const {
-//            return VarIterator(this);}
 
-//        VarIterator Group::end() const {
-//            return VarIterator();
-//        }
-//
-//        VarRef Group::operator[](const std::string &VarName) const {return this->at(VarName);}
-//
-//        VarRef Group::operator[](const int nVar) const {return this->at(nVar);}
     }
 
 }

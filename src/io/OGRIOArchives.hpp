@@ -19,33 +19,17 @@
  */
 
 #include "core/Singleton.hpp"
-#include "core/UserSettings.cpp"
+#include "core/UserSettings.hpp"
 #include <ogrsf_frmts.h>
 #include <string>
-#include "geometry/OGRiteratorBase.hpp"
-
+//#include "geometry/OGRiteratorBase.hpp"
+#include "io/Group.hpp"
 #ifndef FROMMLE_OGRIOARCHIVES_HPP
 #define FROMMLE_OGRIOARCHIVES_HPP
 namespace frommle{
     namespace io{
 
-        std::string GDALPOSTGISSource(const std::string PGname="",const std::string schemas="") {
-            using us=core::UserSettings;
-            std::string pgname_=PGname;
-            if (PGname.empty()){
-                //search for a default postgis database entry
-                pgname_=us::at("Defaultdb").as<std::string>();
-            }
-            std::string source = std::string("PG:dbname='") + us::at(pgname_)["db"].as<std::string>() +
-                                 "' host='" + us::at(pgname_)["host"].as<std::string>() +
-                                 "' port='" + us::at(pgname_)["port"].as<std::string>() +
-                                 "' user='" + us::at(pgname_)["user"].as<std::string>() +
-                                 "' password='" + us::getAuth(pgname_) + "'";
-            if(!schemas.empty()){
-                source+= "schemas="+schemas;
-            }
-            return source;
-        }
+        std::string GDALPOSTGISSource(const std::string PGname="",const std::string schemas="");
 
         ///@brief small singleton class which calls GDAL initialization routines (needs to be called only once)
         class GDALinit : public core::Singleton<GDALinit> {
@@ -59,79 +43,59 @@ namespace frommle{
 
         };
 
-        class OGRArchive;
-
-
-        class OGRGroup:public Group{
+///@brief an OGRGroup points to a certain layer in an GDAL data source
+    class OGRGroup:public Group{
         public:
-            OGRGroup(const std::string & gname, const OGRArchive *  const inAr):Group(gname,inAr){
-                indexlayers();
-                loadlayer(gname);
-            }
-            OGRGroup(const OGRArchive * const inAr):Group(inAr){
-                indexlayers();
-                loadlayer(0);
-            }
-            OGRGroup(const int gid, const OGRArchive * const inAr):Group(inAr){
-                indexlayers();
-                loadlayer(gid);
-            }
+            ~OGRGroup(){}
+            OGRGroup(OGRLayer * const layer):Group(layer->GetName()),layer_(layer){
+                if (layer_) {
+                    layerdef_ = layer_->GetLayerDefn();
+                }
 
-            VarRef geoVar();
-            //@brief load the next layer
-            OGRGroup & operator++();
+            }
             OGRSpatialReference * getOGRspatialRef()const;
-            OGRFeatureDefn * getOGRFeatDef()const{return layerdef_;}
-            OGRLayer * getLayer()const{return layer_;}
-        private:
-            VarRef at(const std::string & VarName)const;
-            VarRef at(const int nvar)const;
+//            OGRFeatureDefn * getOGRFeatDef()const{return layerdef_;}
 
-            void loadlayer(const std::string & gname);
-            void loadlayer(const int gid);
-            void indexlayers();
+
+            OGRLayer* getLayer()const{return layer_;}
+        private:
+            virtual void loadChildren();
+            void parentHook(){
+                setAmode();
+            }
             OGRLayer *layer_ = nullptr;
             OGRFeatureDefn *layerdef_=nullptr;
-            std::map<std::string,int> layerlookup_{};
-
         };
 
-        class OGRVar:public VarItem{
-        public:
-            OGRVar(const Group * parent);
-            OGRVar(const std::string &varname, const Group *parent);
-            OGRVar(const int varid, const Group *parent, const bool geo=false);
-            OGRVar & operator ++();
-//			OGRVar & operator >> (std::vector<OGRGeometry*> & geovec);
-        private:
-            friend OGRArchive;
-            void loadvar(const int varid);
-            void loadvar(const std::string & varName);
-            void loadgeom(const int ngeom=0);
-            void loadAttributes();
-            inline int nField(){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldCount();}
-            inline int nGeom(){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetGeomFieldCount();}
-            inline OGRFieldDefn * getFieldDef(const int ifield){return static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldDefn(ifield);}
-            ValueRef at(const size_t nVal)const;
 
-            OGRFieldDefn * fielddef_=nullptr;
+        class OGRVar:public Variable{
+        public:
+            ~OGRVar(){}
+            OGRVar(OGRFieldDefn * const fieldef,const int id):Variable(fieldef->GetNameRef()),fieldef_(fieldef), fieldid_(id){
+            }
+            OGRVar(OGRGeomFieldDefn * const geomfieldef, const int id):Variable(geomfieldef->GetNameRef()),geomfielddef_(geomfieldef),fieldid_(id){
+                if(getName().empty()){
+                    //force default name for geometry when not set
+                    setName("geom");
+                }
+            }
+            bool isGeom()const{return bool(geomfielddef_);}
+            OGRFieldType getType()const{return fieldef_->GetType();}
+            int getFieldId()const{return fieldid_;}
+            singlePtr getValue()const;
+            void setValue(singlePtr & in);
+        private:
+            void parentHook(){
+                auto parent=static_cast<OGRGroup*>(getParent());
+                layer_=parent->getLayer();
+            }
+
+            OGRFieldDefn * fieldef_=nullptr;
             OGRGeomFieldDefn * geomfielddef_=nullptr;
+            OGRLayer* layer_=nullptr; //copy of the relevant layer pointer
+//            OGRFeature* feat=nullptr;
+            int fieldid_=-1;
         };
-
-        class OGRValue:public ValueItem{
-        public:
-            OGRValue():ValueItem(){}
-            OGRValue(const size_t i, const OGRVar * const parent);
-            OGRValue & operator++();
-        private:
-            OGRLayer * layer=nullptr;
-            OGRFeature* feat=nullptr;
-        };
-
-
-
-
-
     }
 }
 #endif //FROMMLE_OGRIOARCHIVES_HPP

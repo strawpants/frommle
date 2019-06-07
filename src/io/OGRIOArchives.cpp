@@ -1,6 +1,24 @@
-//
-// Created by roelof on 16-5-19.
-//
+/*! \file
+ \brief Holds the implementation for OGR groups and variable items
+ \copyright Roelof Rietbroek 2019
+ \license
+ This file is part of Frommle.
+ frommle is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later version.
+
+ Frommle is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with Frommle; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+#include "io/OGRIOArchives.hpp"
+#include "core/Exceptions.hpp"
 
 namespace frommle{
     namespace io{
@@ -14,188 +32,88 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
     return layer_->GetSpatialRef();
 }
 
-VarRef OGRGroup::at(const std::string &VarName) const {
-    return VarRef(new OGRVar(VarName, this));
-}
+        void OGRGroup::loadChildren() {
 
-VarRef OGRGroup::at(const int nvar) const {
-    return VarRef(new OGRVar(nvar, this));
-}
+            if (size() != 0){
+                //quick return when already loaded
+                return;
+            }
+            auto nfields=layerdef_->GetFieldCount();
 
-OGRGroup &OGRGroup::operator++() {
-    //get the next layer
-    if(++id_ < layerlookup_.size()){
-        loadlayer(id_);
-    }else{
-        id_=-1;
-    }
-    return *this;
-}
+            for(int i=0 ;i<nfields;++i){
+                upsertChild(i,OGRVar(layerdef_->GetFieldDefn(i),i));
+            }
+            //also load the geometry fields
+            auto ngeom=layerdef_->GetGeomFieldCount();
+            for(int i=0 ;i<ngeom;++i){
+                upsertChild(i+nfields,OGRVar(layerdef_->GetGeomFieldDefn(i),i));
+            }
 
-void OGRGroup::loadlayer(const std::string &gname) {
-    auto gid=layerlookup_[gname];
-    loadlayer(gid);
-}
-
-void OGRGroup::loadlayer(const int gid) {
-    layer_=static_cast<const OGRArchive *>(Arptr_)->poDS->GetLayer(gid);
-
-    if (layer_) {
-        layerdef_ = layer_->GetLayerDefn();
-        layer_->ResetReading();
-        //also update name and id
-        name_ = layer_->GetName();
-        id_ = gid;
-
-
-    }else{
-        throw core::IOException("invalid OGRLayer requested");
-    }
-}
-
-void OGRGroup::indexlayers() {
-    auto OGRptr=static_cast<const OGRArchive*>(Arptr_);
-    auto nlyrs=OGRptr->poDS->GetLayerCount();
-    OGRLayer * layer=nullptr;
-    for(int i=0;i< nlyrs;++i ){
-        layer=OGRptr->poDS->GetLayer(i);
-        layerlookup_[layer->GetName()]=i;
-    }
-
-
-
-}
-
-VarRef OGRGroup::geoVar() {return VarRef(new OGRVar(0,this,true));}
-
-
-OGRVar::OGRVar(const Group *parent) :VarItem(parent){
-    this->loadvar(0);
-
-
-}
-
-OGRVar::OGRVar(const std::string &varname, const Group *parent) : VarItem(varname, parent){
-    loadvar(varname);
-}
-
-OGRVar::OGRVar(const int varid, const Group *parent, const bool geo) : VarItem(parent) {
-    if (geo){
-        loadgeom(varid);
-    }else {
-        loadvar(varid);
-    }
-}
-
-OGRVar &OGRVar::operator++() {
-    //get the next field
-    if ( ++id_ < nField()+nGeom()) {
-        loadvar(id_);
-    }else{
-        id_=-1;
-    }
-    return *this;
-}
-
-void OGRVar::loadvar(const int varid){
-    if (varid < nField()){
-
-        fielddef_ = static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef()->GetFieldDefn(varid);
-        name_ = fielddef_->GetNameRef();
-        id_ = varid;
-
-        //also load attributes
-        loadAttributes();
-    }else if (varid < (nGeom()+nField())){
-        loadgeom(varid-nField());
-    }else{
-        throw core::IOException("variable number is not supported");
-    }
-
-
-
-}
-
-void OGRVar::loadvar(const std::string &varName) {
-    auto featdef=static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef();
-    int varid =featdef->GetFieldIndex(varName.c_str());
-    if (varid!=-1) {
-        loadvar(varid);
-    }else{
-        //try searching for a geometry field
-        auto geomid=featdef->GetGeomFieldIndex(varName.c_str());
-        if (geomid !=-1){
-            loadgeom(geomid);
         }
 
-    }
-}
 
-void OGRVar::loadgeom(const int ngeom){
-    auto featdef=static_cast<const OGRGroup *>(grpParentPtr_)->getOGRFeatDef();
-    if (ngeom < nGeom()){
-        geomfielddef_=featdef->GetGeomFieldDefn(ngeom);
-        name_=geomfielddef_->GetNameRef();
-        id_=ngeom+nField();
-    }else{
-        throw core::IOException(" No (geometry) layer found with this number");
-    }
+        std::string GDALPOSTGISSource(const std::string PGname, const std::string schemas) {
+            using us=core::UserSettings;
+            std::string pgname_=PGname;
+            if (PGname.empty()){
+                //search for a default postgis database entry
+                pgname_=us::at("Defaultdb").as<std::string>();
+            }
+            std::string source = std::string("PG:dbname='") + us::at(pgname_)["db"].as<std::string>() +
+                                 "' host='" + us::at(pgname_)["host"].as<std::string>() +
+                                 "' port='" + us::at(pgname_)["port"].as<std::string>() +
+                                 "' user='" + us::at(pgname_)["user"].as<std::string>() +
+                                 "' password='" + us::getAuth(pgname_) + "'";
+            if(!schemas.empty()){
+                source+= "schemas="+schemas;
+            }
+            return source;
+        }
 
-}
+        OGRVar::singlePtr OGRVar::getValue()const {
 
-ValueRef OGRVar::at(const size_t nVal) const {
-    return ValueRef(new OGRValue(nVal,this));
-}
+            if (!layer_){
+                throw core::InputException("OGR layer from parent has not been set");
+            }
+            OGRFeature * feat=layer_->GetNextFeature();
 
-void OGRVar::loadAttributes() {
-//			for (int iField = 0; iField <  nField(); iField++) {
-//				OGRFieldDefn *poField = getFieldDef(iField);
-//				boost::any tmp;
-//				if (poField->GetType() == OFTInteger)
-//					tmp = boost::any(poFeat->GetFieldAsInteger(iField));
-//				else if (poField->GetType() == OFTInteger64)
-//					tmp = boost::any(poFeat->GetFieldAsInteger64(iField));
-//				else if (poField->GetType() == OFTReal)
-//					tmp = boost::any(poFeat->GetFieldAsDouble(iField));
-//				else if (poField->GetType() == OFTString)
-//					tmp = boost::any(std::string(poFeat->GetFieldAsString(iField)));
-//				else
-//					tmp = boost::any(std::string(poFeat->GetFieldAsString(iField)));
-//
-//				attribs_[poField->GetNameRef()] = tmp;
-//			}
+            singlePtr val(new single());
 
-}
+            //load data in variant
+            if (isGeom()){
+                *val=std::unique_ptr<OGRGeometry>(feat->StealGeometry());
+            }else{
+                auto type=getType();
+                auto iField=getFieldId();
+				if (type == OFTInteger) {
+                    *val = feat->GetFieldAsInteger(iField);
+                }else if (type == OFTInteger64) {
+                    *val = feat->GetFieldAsInteger64(iField);
+                }else if (type == OFTReal) {
+                    *val = feat->GetFieldAsDouble(iField);
+                }else if (type == OFTString) {
+				    *val=std::string(feat->GetFieldAsString(iField));
+				}else{
+				    throw core::MethodException("cannot cast OGR type to registered values");
+				}
+            }
 
-OGRValue::OGRValue(const size_t i,const OGRVar *const parent):ValueItem(parent){
-    layer=static_cast<const OGRGroup*>(parent_->parent())->getLayer();
-    //Tables in postgis ,may not necessarily start with an internal 0 index so in that case we interpret i=0 here as "the first available feature"
-    if (i ==0 ){
-        feat=layer->GetNextFeature();
-    }else{;
-        feat=layer->GetFeature(i);
-    }
-    if(feat) {
-        anyval_ = feat->GetGeometryRef();
-        id_=i;
-    }
+            OGRFeature::DestroyFeature(feat);
+        return val;
+        }
 
-}
+        void OGRVar::setValue(singlePtr & in){
+            if (!writable()){
+                throw core::IOException("Archive not opened for writing");
+            }
 
-OGRValue &OGRValue::operator++() {
-    if(feat) {
-        OGRFeature::DestroyFeature(feat);
-    }
-    feat=layer->GetNextFeature();
+        }
 
-    if(feat) {
-        anyval_ = feat->GetGeometryRef();
-        ++id_;
-    }else{
-        id_=-1;
-    }
-    return *this;
-}
+
+
     }
 
+
+
 }
+

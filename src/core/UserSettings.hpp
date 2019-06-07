@@ -18,15 +18,15 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-
-#ifndef SRC_CORE_USER_SETTINGS_HPP_
-#define SRC_CORE_USER_SETTINGS_HPP_
-
 #include "core/Singleton.hpp"
 #include "core/Exceptions.hpp"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
 #include <ostream>
+
+#ifndef SRC_CORE_USER_SETTINGS_HPP_
+#define SRC_CORE_USER_SETTINGS_HPP_
+
 
 namespace frommle {
 	namespace core {

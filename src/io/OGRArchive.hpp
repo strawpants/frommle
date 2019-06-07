@@ -20,8 +20,6 @@
 
 #include "core/Exceptions.hpp"
 #include "io/ArchiveBase.hpp"
-#include "io/VarItem.hpp"
-#include "io/ValueItem.hpp"
 #include "io/OGRIOArchives.hpp"
 //#include "core/Logging.hpp"
 #include <ogrsf_frmts.h>
@@ -29,8 +27,8 @@
 #include "geometry/OGRiteratorBase.hpp"
 #include "core/UserSettings.hpp"
 
-#ifndef SRC_CORE_OGRIARCHIVE_HPP_
-#define SRC_CORE_OGRIARCHIVE_HPP_
+#ifndef SRC_CORE_OGRARCHIVE_HPP_
+#define SRC_CORE_OGRARCHIVE_HPP_
 
 
 
@@ -40,38 +38,28 @@ namespace frommle {
 
 	class OGRArchive : public ArchiveBase {
 		public:
-			OGRArchive(){}
+			OGRArchive():ArchiveBase(){}
 			//default constructor opens a source location in the form of string (e.g. directory containing shapefiles)
-			OGRArchive(const std::string &sourceName) {
-				setOpts(ArchiveOpts(), sourceName);
+			OGRArchive(const std::string &sourceName):ArchiveBase(sourceName) {
+				init();
 			};
-			OGRArchive(const ArchiveOpts & Opts) {
-				setOpts(Opts,"");
-			}
-
-
-		//possibly parse options first before opening a file
-			OGRArchive(const std::string &sourceName, const ArchiveOpts &Opts) {
-				//Process options and open files
-				setOpts(Opts, sourceName);
-			}
+			OGRArchive(const std::string sourceName,core::Attribs && attrib ):ArchiveBase(sourceName,std::move(attrib)) {
+				init();
+			};
 
 			~OGRArchive();
 
-//			using InputArchiveBase::operator>>;
-
 			OGRSpatialReference *getOGRspatialRef();
 
-		private:
-			friend OGRGroup;
-			GrpRef  at(const std::string & groupName)const;
-			GrpRef  at(const int nGroup)const;
+//        	OGRArchive * getSelf()const { return this;}
 
-			void setOpts(const ArchiveOpts &Opts, const std::string sourceName);
+		private:
+			void init();
+			void loadChildren();
 			GDALDataset *poDS = nullptr;
 		};
 
 	}
 }
 
-#endif /* SRC_CORE_OGRIARCHIVE_HPP_ */
+#endif /* SRC_CORE_OGRARCHIVE_HPP_ */

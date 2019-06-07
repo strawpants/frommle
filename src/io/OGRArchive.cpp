@@ -23,97 +23,65 @@
 #include <cstring>
 #include <gdal.h>
 namespace frommle {
-	namespace io {
+    namespace io {
 
 
-		///@brief Destructor needs to take care on closing the OGR datasource correctly
-		OGRArchive::~OGRArchive() {
-			if (poDS) {
-				GDALClose(poDS);
-				poDS = nullptr;
-			}
-		}
+        ///@brief Destructor needs to take care on closing the OGR datasource correctly
+        OGRArchive::~OGRArchive() {
+            if (poDS) {
+                GDALClose(poDS);
+                poDS = nullptr;
+            }
+        }
 
 
-		void OGRArchive::setOpts(const ArchiveOpts &Opts, const std::string sourceName) {
-
-			std::string source_=sourceName;
-			const char ** driver=NULL;
-
-			if (Opts.count("Driver") >0 ){
-//				auto driver2=boost::any_cast<char *>(&Opts["Driver"]);
-				auto gdaldriver=Opts.at("Driver");
-				driver = boost::any_cast<const char *>(&gdaldriver);
-			}
-			if (driver) {
-				if (strcmp(*driver, "PostGIS") == 0) {
-					source_ = GDALPOSTGISSource(sourceName);
-				}
-			}
-
-			//first all OGR data formats must be dynamically initiated (this needs to be done only once per program call)
-			GDALinit::get();
-
-			//open the ogr source (e.g. a directory containing shapefiles)
-			poDS = static_cast<GDALDataset *>(GDALOpenEx(source_.c_str(), GDAL_OF_READONLY | GDAL_OF_VECTOR,NULL,NULL,NULL));
-			if (!poDS) {
-				throw core::IOException("Error opening OGR source");
-			}
-		}
+        void OGRArchive::init() {
 
 
-//		///@brief reads in a attributmap from the current feature
-//		OGRArchive &OGRArchive::operator>>(frommle::AttribsMap &out) {
-//			if (!poFeat) {
-//				//reads in the next feature if not already doen so
-//				varHook();
-//			}
-//			for (int iField = 0; iField < poFDefn->GetFieldCount(); iField++) {
-//				OGRFieldDefn *poField = poFDefn->GetFieldDefn(iField);
-//				boost::any tmp;
-//				if (poField->GetType() == OFTInteger)
-//					tmp = boost::any(poFeat->GetFieldAsInteger(iField));
-//				else if (poField->GetType() == OFTInteger64)
-//					tmp = boost::any(poFeat->GetFieldAsInteger64(iField));
-//				else if (poField->GetType() == OFTReal)
-//					tmp = boost::any(poFeat->GetFieldAsDouble(iField));
-//				else if (poField->GetType() == OFTString)
-//					tmp = boost::any(std::string(poFeat->GetFieldAsString(iField)));
-//				else
-//					tmp = boost::any(std::string(poFeat->GetFieldAsString(iField)));
-//
-//				out[poField->GetNameRef()] = tmp;
-//			}
-//		}
-//
-//		///@brief returns a reference to the current geometry object
-//		OGRGeometry *OGRArchive::getOGRGeometry() {
-//			if (!poFeat) {
-//				varHook();
-//			}
-//			OGRGeometry *tmp = nullptr;
-//			if (poFeat) {
-//				tmp = poFeat->GetGeometryRef();
-//			}
-//
-//			return tmp;
-//		}
+            if (getAttributeCount("Driver") > 0) {
+                auto driver = getAttribute<std::string>("Driver");
+                if (driver == "PostGIS") {
+                    //modify the input sourceName to refer to a valid POSTGIS resource
+                    setName(GDALPOSTGISSource(getName()));
+                }
+            }
+
+            //first all OGR data formats must be dynamically initiated (this needs to be done only once per program call)
+            //So we use a singleton for that which calls it's constructor only once
+            GDALinit::get();
+            auto gdalaccess = GDAL_OF_READONLY | GDAL_OF_VECTOR;
+
+            if (writable() and  readable()){
+                gdalaccess= GDAL_OF_UPDATE | GDAL_OF_VECTOR;
+            }
 
 
 
-        GrpRef OGRArchive::at(const std::string &groupName)const {
-			return GrpRef(new OGRGroup(groupName,this));
-		}
-
-		GrpRef OGRArchive::at(const int nGroup)const {
-			return GrpRef(new OGRGroup(nGroup,this));
-		}
 
 
+            //open the ogr source (e.g. a directory containing shapefiles)
+            poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
+            if (!poDS) {
+                throw core::IOException("Error opening OGR source");
+            }
+            //load all available layers
+            loadChildren();
+        }
 
-	}
+
+        ///@brief indexes all available layers
+        void OGRArchive::loadChildren() {
+            if( size() != 0){
+            //nothing to be done (do a quick return)
+                return;
+            }
+            auto nlyrs = poDS->GetLayerCount();
+            for (int i = 0; i < nlyrs; ++i) {
+                upsertChild(i,OGRGroup(poDS->GetLayer(i)));
+            }
+        }
+    }
 }
-
 
 
 

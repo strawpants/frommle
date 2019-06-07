@@ -1,6 +1,6 @@
 /*! \file
  \brief
- \copyright Roelof Rietbroek 2018
+ \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -21,155 +21,333 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <vector>
 #include <boost/any.hpp>
 #include "core/Exceptions.hpp"
+#include <cassert>
+#include <functional>
 #ifndef FROMMLE_TREENODE_HPP
 #define FROMMLE_TREENODE_HPP
 
 namespace frommle{
     namespace core{
-        class TreeNodebase{
+
+        class TreeNodeRef;
+        using Attribs=std::map<std::string,boost::any>;
+
+        class TreeNodeBase{
         public:
-            TreeNodebase(const std::string & name):name_(name){}
-            TreeNodebase(const std::string && name):name_(std::move(name)){}
+            TreeNodeBase(){}
+            ~TreeNodeBase(){}
+            TreeNodeBase(const std::string & name):name_(name){}
+            TreeNodeBase(const std::string && name):name_(std::move(name)){}
+            TreeNodeBase(const std::string name, Attribs && attr):name_(name),attrib_(std::move(attr)){}
+            TreeNodeBase(const TreeNodeBase & in){
+                name_=in.name_;
+                attrib_=in.attrib_;
+            }
+
             std::string getName()const{return name_;}
             void setName(const std::string name){name_=name;}
-            virtual bool isCollection();//dynamically determines whether this is a collection or whether it holds a single value
-            TreeNodebase & operator[](const std::string & name)const;
-            TreeNodebase & operator[](const std::string & name);
-
-            template<class T>
-            T & as(){
-                if (isCollection()){
-                    throw MethodException("Cannot cast a collection Treenode to a single value");
-                }
-                return boost::any_cast<T>(val_);
-            }
+            virtual bool isCollection()const=0;//dynamically determines whether this is a collection or whether it holds a single value
 
             template<class Value>
             void setAttribute(const std::string & name,const Value & val){
                 attrib_[name]=boost::any(val);
             }
 
+//            template<class Value>
+//           Value getAttribute(const std::string &name){
+//                return boost::any_cast<Value>(attrib_[name]);
+//            }
+
+            size_t getAttributeCount(const std::string & name){return attrib_.count(name);}
+
+            template <class T>
+            bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval){
+                if (!testfunc(this,retval)){
+                    if (parent_) {
+                        return parent_->findUpstream(testfunc, retval);
+                    }else{
+                        return false;
+                    }
+                }else{
+                    return true;
+                }
+            }
+            ///@brief standard way to retrieve an attribute
             template<class Value>
-            Value getAttribute(const std::string & name){
-                return boost::any_cast<Value>(attrib_["name"]);
+            typename std::enable_if<!std::is_same<Value,std::string>::value,Value>::type getAttribute(const std::string &name){
+                return boost::any_cast<Value>(attrib_[name]);
             }
 
+            ///@brief special treatment of std::string attribute retrieval
+            template<class Value>
+            typename std::enable_if<std::is_same<Value,std::string>::value,Value>::type getAttribute(const std::string &name){
+                try{
+                    return boost::any_cast<std::string>(attrib_[name]);
+                }catch(boost::bad_any_cast & excep){
+                    return std::string(boost::any_cast<char const * >(attrib_[name]));
+                }
+            }
+
+            virtual const TreeNodeRef & operator[](const std::string & name)const{throwMethExcept();};
+            virtual const TreeNodeRef & operator[](const size_t & idx)const{throwMethExcept();};
+
+            virtual TreeNodeRef & operator[](const std::string & name){throwMethExcept();}
+            virtual TreeNodeRef & operator[](const size_t & idx){throwMethExcept();};
+
+//            virtual std::shared_ptr<TreeNodeBase> getSelf()const=0;
+//            virtual const TreeNodeRef & ref()const=0;
+            TreeNodeBase* getParent()const{return parent_;}
+//            std::shared_ptr<TreeNodeBase> getParent()const{return parent_;}
+            template<class T>
+            void setParent(T* const parent){
+                parent_=parent;
+                parentHook();
+            }
+//            void setParent(std::shared_ptr<T> && parent){
+//                parent_=std::move(parent);
+//                parentHook();
+//            }
         protected:
-//            void setParent(const TreeNodebase & parent){parent_=&parent}
+
         private:
-            std::string name_="TreeNode";
-            TreeNodebase * parent_=nullptr;
-            std::map<std::string,boost::any> attrib_{};
-            boost::any val_{};
+            void throwMethExcept()const;
+            ///@brief possibly overload this function to perform actions after assigning a new parent
+            virtual void parentHook(){};
+            std::string name_="";
+            Attribs attrib_{};
+//            std::shared_ptr<TreeNodeBase> parent_{};
+            TreeNodeBase *parent_=nullptr;
         };
 
-        //@brief wrapper class around a shared_ptr which also forwards operator[] to the pointee. Note that this is implemented in the shared_ptr from c++17
-        template<class T>
+
+        //@brief wrapper class around a shared_ptr which also forwards operator[] to the pointee. Note that this is implemented in the shared_ptr from c++11
         class TreeNodeRef{
         public:
-            TreeNodeRef(T* Tptr):ptr_(Tptr){}// note: this takes ownership of  the passed pointer (i.e. it will be destructed when the TreeNodeRef goes out of scope)
+            using cvec=std::vector<TreeNodeRef>;
+//            TreeNodeRef(TreeNodeBase* Tptr):ptr_(Tptr){}// note: this takes ownership of  the passed pointer (i.e. it will be destructed when the TreeNodeRef goes out of scope)
             TreeNodeRef(){}
-            T & operator *()const{return *ptr_;}
-            T * operator ->()const{return ptr_.get();}
-            T * get()const{return ptr_.get();}
-            //forward [] operator to the underlying pointer
-            template<class I, class child=typename T::child_type>
-            typename std::enable_if<!std::is_void<child>::value, child>::type operator[](const I & idx) {return *(ptr_)[idx];}
-        private:
-            std::shared_ptr<T> ptr_{};
-        };
-
-        template<class T,class P>
-        class TreeNodeIterator{
-            //iterator traits
-            using iterator_category = std::forward_iterator_tag;
-            using value_type = T;
-            using difference_type = std::ptrdiff_t;
-            using pointer = T*;
-            using reference = T&;
-            using Parent=P;
-            TreeNodeIterator& operator++(){++*ptr_;return *this;};
-            bool operator==(const TreeNodeIterator & other) const {return ptr_->id_ == other.ptr_->id_;}
-            bool operator!=(const TreeNodeIterator & other) const {return !(*this == other);}
-            T * operator*() {return ptr_.get();}
-            ~TreeNodeIterator(){}
-            TreeNodeIterator(const TreeNodeIterator & in){
-                    ptr_=in.ptr_;
+            template<class T>
+            TreeNodeRef(T && nodeIn)noexcept{
+                ptr_=std::make_shared<T>(std::move(nodeIn));
             }
-            TreeNodeIterator();
-            TreeNodeIterator(const P* const parentPtr);
-        private:
-            TreeNodeRef<T>  ptr_{};
+            TreeNodeRef(const std::string name){
 
+            }
+
+            void operator=(TreeNodeRef && in){
+                ptr_=in.ptr_;
+            }
+
+            void operator=(const TreeNodeRef & in){
+                ptr_=in.ptr_;
+            }
+
+            TreeNodeRef(const TreeNodeRef & in){
+                ptr_=in.ptr_;
+            }
+
+            TreeNodeRef(TreeNodeRef && in)noexcept{
+                ptr_=in.ptr_;
+            }
+//            TreeNodeRef(TreeNodeRef && in){
+//                *this=std::move(in);
+//            }
+
+            cvec::const_iterator cbegin()const;
+            cvec::const_iterator cend()const;
+
+            cvec::iterator begin();
+            cvec::iterator end();
+
+
+            template<class T>
+            TreeNodeRef & upsertChild(const std::string name,T && in);
+            template<class T>
+            TreeNodeRef & upsertChild(const size_t idx,T && in);
+
+
+
+            template<class T>
+            TreeNodeRef & operator =( T && in);
+
+            TreeNodeBase & operator *()const{return *ptr_;}
+            TreeNodeBase * operator ->()const{return ptr_.get();}
+            TreeNodeBase * get()const{return ptr_.get();}
+            template<class T>
+            T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
+//            //forward [] operator to the underlying pointer
+//            template<class I,class C=Child>
+//            typename std::enable_if<!std::is_void<C>::value,C>::type & operator[](const I & idx) {return ptr_->operator[](idx);}
+            template<class I>
+            const TreeNodeRef & operator[](const I &idx) const {
+                if (!ptr_) {
+                    throw IndexingException("TreeNodeRef points to nothing");
+                }
+                return ptr_->operator[](idx);
+            }
+
+            template<class I>
+            TreeNodeRef & operator[](const I &idx) {
+                if (!ptr_) {
+                    throw IndexingException("TreenodeRef points to nothing");
+                }
+                return ptr_->operator[](idx);
+            }
+
+            explicit operator bool()const{
+                return bool(ptr_);
+            }
+        private:
+            std::shared_ptr<TreeNodeBase> ptr_{};
         };
 
+        template<class T>
+        TreeNodeRef &TreeNodeRef::operator=(T &&in) {
+            std::string iname=ptr_->getName();
+
+            ptr_=std::make_shared<T>(std::move(in));
+
+            if (!iname.empty()){
+                //Note existing name takes precedence so here we put it back in
+                ptr_->setName(iname);
+            }
+
+            return *this;
+        }
 
 
 
-        template<class T, class K, class P>
-        class TreeNode: public TreeNodebase{
+        class TreeNodeItem:public TreeNodeBase{
         public:
-            //refers to the iterator containing elements of T itself
-            using iterator=TreeNodeIterator<K,T>;
-            using child_type=K;
-            TreeNode(const std::string name):TreeNodebase(name){}
-            TreeNode(const std::string && name):TreeNodebase(std::move(name)){}
-            TreeNode(const std::string name,const P * parent ):TreeNodebase(name),parent_(parent){}
+            TreeNodeItem(){}
+            TreeNodeItem(const std::string & name):TreeNodeBase(name){}
+            TreeNodeItem(const std::string name, Attribs && attr):TreeNodeBase(name,std::move(attr)){}
+            //            template<class T>
+//            T & as(){
+//                return boost::any_cast<T>(val_);
+//            }
+            bool isCollection()const final{return false;}
 
-            iterator begin()const{return iterator(this);}
-            iterator end()const{return iterator();}
-
-            virtual TreeNodeRef<K> operator[](const std::string & name)=0;
-            virtual TreeNodeRef<K> operator[](const size_t & indx)=0;
-            virtual TreeNode & operator ++(){++id_;}
-            const P* parent()const{return parent_;}
-//            TreeNodeRef<T> ref();
+//            virtual TreeNodeRef  & operator[](const std::string & name)const{throwMethExcept();}
+//            virtual TreeNodeRef  & operator[](const size_t & idx)const{throwMethExcept();}
+//
+//            virtual const TreeNodeRef & operator[](const std::string & name){throwMethExcept();}
+//            virtual const TreeNodeRef & operator[](const size_t & idx){throwMethExcept();}
+//            virtual std::shared_ptr<TreeNodeBase> getSelf()const;
         private:
-            P* parent_=nullptr;
-            ptrdiff_t id_=-1;
-            std::vector<TreeNodeRef<K>> children_{};
         };
 
-        //specialization when a Treenode has no parent
-        template<class T,class K>
-        class TreeNode<T,K,void>:public TreeNodebase{
+
+        class TreeNodeCollection: public TreeNodeBase{
         public:
-            using iterator=TreeNodeIterator<K,T>;
-            using child_type=K;
+            using cvec=std::vector<TreeNodeRef>;
+            TreeNodeCollection():TreeNodeBase(){}
+            TreeNodeCollection(const std::string & name):TreeNodeBase(name){}
+            TreeNodeCollection(const std::string && name):TreeNodeBase(std::move(name)){}
+            TreeNodeCollection(const std::string name, Attribs && attr):TreeNodeBase(name,std::move(attr)){}
+            typename cvec::const_iterator cbegin()const{return collection_.cbegin();}
+            typename cvec::const_iterator cend()const{return collection_.cend();}
+            typename cvec::iterator begin(){ loadCollection();return collection_.begin();}
+            typename cvec::iterator end(){return collection_.end();}
+            size_t size()const{return collection_.size();}
 
-            TreeNode(const std::string name):TreeNodebase(name){}
-            TreeNode(const std::string && name):TreeNodebase(std::move(name)){}
+            virtual const TreeNodeRef & operator[](const std::string & name)const;
+            virtual const TreeNodeRef & operator[](const size_t & idx)const;
 
-            iterator begin()const{return iterator(this);}
-            iterator end()const{return iterator();}
+            virtual TreeNodeRef & operator[](const std::string & name);
+            virtual TreeNodeRef & operator[](const size_t & idx);
 
-            virtual TreeNodeRef<K> operator[](const std::string & name)=0;
-            virtual TreeNodeRef<K> operator[](const size_t & indx)=0;
-            virtual TreeNode & operator ++(){++id_;}
+            bool isCollection()const final{return true;}
+//            virtual std::shared_ptr<TreeNodeBase> getSelf()const;
 
+//            virtual TreeNodeRef ref()const{
+//                return TreeNodeRef(new TreeNodeCollection(*this));
+//            }
+            template<class T>
+            TreeNodeRef & upsertChild(const std::string name,T && in);
+            template<class T>
+            TreeNodeRef & upsertChild(const size_t idx,T && in);
+
+        protected:
+            virtual void loadCollection(){};
         private:
-            ptrdiff_t id_=-1;
+            ///@brief callback function which prepares an iteration (default does nothing)
+            ptrdiff_t findidx(const std::string name)const;
+            cvec collection_{};
+            TreeNodeRef ref_{};
         };
 
-        //specialization when a Treenode has no children
-        template<class T,class P>
-        class TreeNode<T,void,P>:public TreeNodebase{
-        public:
-            using child_type=void;
-            TreeNode(const std::string name):TreeNodebase(name){}
-            TreeNode(const std::string && name):TreeNodebase(std::move(name)){}
-            TreeNode(const std::string name,const P * parent ):TreeNodebase(name),parent_(parent){}
-            virtual TreeNode & operator ++(){++id_;}
+        template<class T>
+        TreeNodeRef & TreeNodeCollection::upsertChild(const std::string name, T &&in) {
+            //dynamically check for the names of the children
+            auto idx=findidx(name);
+            if (idx == -1){
+                collection_.push_back(TreeNodeRef(std::move(in)));
+                idx=collection_.size()-1;
+                //and overwrite the name of the node
+                collection_.back()->setName(name);
+            }else{
+                collection_[idx]=TreeNodeRef(std::move(in));
+            }
+            collection_[idx]->setParent(this);
+//            collection_[idx]->setParent((*this).getSelf());
 
-        private:
-            P* parent_=nullptr;
-            ptrdiff_t id_=-1;
-        };
+            return collection_[idx];
 
 
+        }
 
+        template<class T>
+        TreeNodeRef & TreeNodeCollection::upsertChild(const size_t idx,T && in){
+            std::string name=in.getName();
+            if (idx >= collection_.size()) {
+                    //first resize the continer to accomodate the placement at idx}
+                    collection_.resize(idx+1);
+            }
+            collection_[idx]=TreeNodeRef(std::move(in));
+            collection_[idx]->setParent(this);
+//            collection_[idx]->setParent((*this).getSelf());
+            return collection_[idx];
+
+        }
+
+        template<class T>
+        TreeNodeRef & TreeNodeRef::upsertChild(const size_t idx, T &&in) {
+            if(!ptr_->isCollection()) {
+                throw MethodException("Can only upsert a child in a TreeNodecollection");
+
+            }
+            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(idx,std::move(in));
+            //also set the parent of the child
+//            ref.parent_=ptr_;
+//            return ref;
+        }
+
+        template<class T>
+        TreeNodeRef & TreeNodeRef::upsertChild(const std::string name, T &&in) {
+
+            if(!ptr_->isCollection()) {
+                throw MethodException("Can only upsert a child in a TreeNodecollection");
+
+            }
+            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(name,std::move(in));
+//            ref.setParent(ptr_);
+//            return ref;
+
+        }
+
+        template<class T, class It>
+        class iteratorWrap: public It{
+            public:
+                //wrap some calls to derefence the values
+            T & operator*() {return static_cast<T&>((this->It::operator*()));}
+            iteratorWrap():It(){}
+            template<class ...Args>
+            iteratorWrap(Args && ...args):It(std::forward<Args>(args)...){}
+            };
     }
 }
 

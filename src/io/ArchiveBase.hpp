@@ -28,29 +28,25 @@ namespace frommle {
 namespace io {
 
 /*!
- * \brief Abstract base class for an output archive
+ * \brief Abstract base class for an output archive (i.e. a top level group)
  */
 
-		class ArchiveBase {
-		public:
-			virtual ~ArchiveBase() = default;
+class ArchiveBase:public Group {
+public:
+	ArchiveBase() : Group() {}
 
-			GrpIterator begin()const{return GrpIterator(this);}
-			GrpIterator end()const{return GrpIterator();}
+	ArchiveBase(const std::string &name) : Group(name) {
+	}
 
+	ArchiveBase(const std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {
+		if (getAttributeCount("amode") != 0){
+		    setAmode(getAttribute<std::string>("amode"));
+        }
 
-			//Functions which allow to navigate through the groups of an Archive
-			GrpRef operator[](const std::string & Groupname)const{return this->at(Groupname);}
-			GrpRef operator[](const int nGroup)const{return this->at(nGroup);}
+	}
 
-		protected:
-			virtual unsigned int file_version(){return 0;};
-
-			virtual GrpRef at(const std::string & groupname)const=0;
-			virtual GrpRef at(const int nGroup)const=0;
-
-		private:
-		};
+private:
+};
 
 }
 }

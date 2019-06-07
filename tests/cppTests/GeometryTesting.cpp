@@ -24,8 +24,11 @@
 //#include "geometry/OGRiteratorBase.hpp"
 #include "geometry/OGR2boost.hpp"
 #include "core/Logging.hpp"
-
+#include "io/OGRArchive.hpp"
+#include <boost/variant.hpp>
+#include <ogrsf_frmts.h>
 using namespace frommle::geometry;
+using namespace frommle;
 namespace utf=boost::unit_test;
 BOOST_AUTO_TEST_CASE(GeoGridGuide,*utf::tolerance(1e-11)){
     //Test the functionality of a GeoGrid (equidistant grid)
@@ -100,27 +103,40 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
 
 //Test writing & reading OGR geometries from shapefiles / database
 BOOST_AUTO_TEST_CASE(OGRArchive){
-
 //    auto PolyGd=makeTestOGRGuide();
-
-
-
-
-
     //write to a file (e.g. shapefile)
-
-
-
 //    frommle::core::Logging::setInfoLevel();
 //    using GeoPoly=OGRGuide<geopoly>;
 //    frommle::io::OGRArchive iAr;
-
 //    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,oceanobs"}};
-//    frommle::io::OGRArchive iAr(Opts);
+//        io::OGRArchive iAr();
 ////    iAr.changeGroup("oceanobs.orsifronts");
 ////        frommle::io::OGRArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
-////    frommle::io::OGRArchive iAr("/home/roelof/Downloads/ne");
+
+        io::OGRArchive iAr("/home/roelof/Downloads/ne",{{"amode","r"}});
+
+//        for(auto & var:iAr[0][0]){
 //
+//        }
+
+        for(auto & grp:iAr){
+            LOGINFO << "Layer: " << grp->getName();
+//            for (auto &var:grp){
+                auto &tmp=grp["geom"];
+                auto & var=grp["geom"].as<io::Variable>();
+                auto is_saving=var.writable();
+                auto is_loading=var.readable();
+                LOGINFO << "    Var: "<<var.getName();
+
+//                for (auto &val:*(static_cast<io::Variable*>(var.get()))){
+//                for (auto &val:var){
+//                    LOGINFO << boost::get<std::unique_ptr<OGRGeometry>>(val)->exportToJson();
+//                }
+//            }
+        }
+
+
+        
 //    //Load POLYGON OGRguide from Archive
 //    using GeoPoly=OGRGuide<OGRPolygon>;
 //    GeoPoly geopoly=GeoPoly();
