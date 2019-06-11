@@ -39,26 +39,29 @@ namespace frommle {
 	class OGRArchive : public ArchiveBase {
 		public:
 			OGRArchive():ArchiveBase(){
-//				poRef.importFromEPSG(4326);
 
 			}
-			//default constructor opens a source location in the form of string (e.g. directory containing shapefiles)
-			OGRArchive(const std::string &sourceName):ArchiveBase(sourceName){
-//				poRef.importFromEPSG(4326);
+			OGRArchive(const std::string name,core::Attribs && attr):ArchiveBase(name,std::move(attr)){
 				init();
-			};
-			OGRArchive(const std::string sourceName,core::Attribs && attrib ):ArchiveBase(sourceName,std::move(attrib)){
-//				poRef.importFromEPSG(4326);
-				init();
-			};
+			}
 
 			~OGRArchive();
 
 			OGRSpatialReference *getOGRspatialRef();;
 
-//        	OGRArchive * getSelf()const { return this;}
 			OGRLayer* loadLayer(const std::string & layername);
 			OGRLayer * createLayer(const std::string & layername, const OGRwkbGeometryType geotype=wkbUnknown);
+
+//			virtual core::TreeNodeRef & operator[](const std::string & name){
+//				return upsertChild(name,OGRGroup());
+//			}
+//			virtual core::TreeNodeRef & operator[](const size_t & idx){
+//				return upsertChild(idx,OGRGroup());
+//			}
+
+			core::TreeNodeRef convertChild(core::TreeNodeRef &&in){
+				return core::TreeNodeRef(OGRGroup(std::move(in)));
+			}
 
 		private:
 			void init();

@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
     geopnts.push_back(pnt);
     unsigned int idx=0;
     for (const auto & loc:geopnts){
-        BOOST_TEST(lon[idx] == loc.getX());
-        BOOST_TEST(lat[idx] == loc.getY());
+        BOOST_TEST(lon[idx] == loc->getX());
+        BOOST_TEST(lat[idx] == loc->getY());
         ++idx;
     }
 }
@@ -105,90 +105,49 @@ OGRGuide<OGRPolygon> makeTestOGRGuide(){
 //Test writing & reading OGR geometries from shapefiles / database
 BOOST_AUTO_TEST_CASE(OGRArchive){
     auto PolyGd=makeTestOGRGuide();
+    std::string gdalfile("OGRtestdata");
 
-    //open an gdal file for writing
-    std::string gdalfile("OGRtestdat");
-    io::OGRArchive oAr(gdalfile,{{"amode","w"},{"Driver","ESRI Shapefile"}});
-    oAr["newlayer"]=io::OGRGroup();
+    {//open an gdal file for writing
+        io::OGRArchive oAr(gdalfile, {{"mode",   "w"},
+                                      {"Driver", "ESRI Shapefile"}});
+        auto &grp = oAr.getGroup("newlayer");
+        grp << PolyGd;
+    }
+
+    OGRGuide<OGRPolygon> PolyGdTest{};
+    //now read the same stuff backin
+    {
+
+        io::OGRArchive iAr(gdalfile, {{"mode",   "r"}});
+        auto &grp = iAr.getGroup("newlayer");
+        grp >> PolyGdTest;
+
+    }
 
 
-    //write to a file (e.g. shapefile)
-//    frommle::core::Logging::setInfoLevel();
-//    using GeoPoly=OGRGuide<geopoly>;
-//    frommle::io::OGRArchive iAr;
-//    frommle::io::ArchiveOpts Opts={{"Driver","PostGIS"},{"Group","globalgis,oceanobs"}};
-//        io::OGRArchive iAr();
-////    iAr.changeGroup("oceanobs.orsifronts");
-////        frommle::io::OGRArchive iAr("/scratch/roelof/geoslurp/cache/globalGIS/WriBasin");
 
-        io::OGRArchive iAr("/home/roelof/Downloads/ne",{{"amode","r"}});
+    //check whether the 2 OGR guides have the same length
+    BOOST_TEST(PolyGd.size() == PolyGdTest.size());
+    //check the actual polygons
+    auto tgeo=PolyGdTest.begin();
+    bool GeomsAretheSame=true;
 
-//        for(auto & var:iAr[0][0]){
-//
-//        }
-
-        for(auto & grp:iAr){
-            LOGINFO << "Layer: " << grp->getName();
-//            for (auto &var:grp){
-                auto &tmp=grp["geom"];
-                auto & var=grp["geom"].as<io::Variable<>>();
-                auto is_saving=var.writable();
-                auto is_loading=var.readable();
-                LOGINFO << "Var: "<<var.getName();
-
-//                for (auto &val:*(static_cast<io::Variable*>(var.get()))){
-//                for (auto &val:var){
-//                    LOGINFO << boost::get<std::unique_ptr<OGRGeometry>>(val)->exportToJson();
-//                }
-//            }
+    for(const auto geo:PolyGd ){
+        GeomsAretheSame=(*geo == **tgeo);
+        if (not GeomsAretheSame){
+            break;
         }
+        ++tgeo;
+    }
+
+    BOOST_TEST(GeomsAretheSame);
 
 
-        
-//    //Load POLYGON OGRguide from Archive
-//    using GeoPoly=OGRGuide<OGRPolygon>;
-//    GeoPoly geopoly=GeoPoly();
-//    *(iAr["globalgis.gshhs_c"]) >> geopoly;
-//
-//    auto polygon=geopoly[0];
-////    auto pbegin=OGRiterator<OGRPolygon>(&polygon);
-////    auto pend=OGRiterator<OGRPolygon>(&polygon);
-//    auto polyrange=OGRpolyRange(polygon);
-//    for(auto const & pit:polyrange){
-//        auto nvert=pit.getNumPoints();
-//        LOGINFO << nvert <<std::endl;
-//    }
+    //delete dataset
 
 
-//    for (auto ring=polygon& poly:geopoly){
-//        LOGINFO << "loaded " << poly.getGeometryName() <<std::endl;
-//    }
-//    for (auto & poly:geopoly){
-//        LOGINFO << "loaded " << poly.getGeometryName() <<std::endl;
-//    }
 
-//    for (auto const & grplayer:iAr){
-//        LOGINFO << "layer name " << grplayer->getName() <<std::endl;
-//    }
-//    auto geovar=iAr[0]->geoVar();
-//    for(auto const & geom:*geovar){
-//        LOGINFO<< geom->as<OGRGeometry*>()->getGeometryName() << std::endl;
-//    }
 
-//    for (auto const & var:*grp){
-//        LOGINFO << "variable name " <<var->getName() <<std::endl;
-//    }
-//
-//    LOGINFO <<(*grp)['the_geom']->getName();
-//    auto itbeg = iAr.ogrbegin();
-//    auto itend=iAr.ogrend();
-//    OGRGeometry * geom;
-//    for(auto it=iAr.ogrbegin();*it != *(iAr.ogrend()); ++(*it)){
-//        geom = **it;
-//        LOGINFO << geom->getGeometryName() <<std::endl;
-//    }
-//    iAr.listLayers();
-    BOOST_TEST(1 == 1);
 }
 
 //@brief test the retrieval of OGR geometries from a PostGIS-enabled database

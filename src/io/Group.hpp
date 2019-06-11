@@ -32,28 +32,42 @@ class OGRGeometry;
 
 namespace frommle{
     namespace io{
+        class Group;
+        struct serialize{
+            template<class G,class T>
+            inline static void save(const G & grp, T & val){val.save(const_cast<Group&>(grp));}
+
+            template<class G,class T>
+            inline static void load(const G & grp, T & val){val.load(const_cast<Group&>(grp));}
+        };
+
+        //forward declare a variable here
+        template<class T>
+        class Variable;
 
         //@brief Holds information about a group in an archive (e.g. name, attributes, Archive pointer). This can also be used as an index to refer to navigate to a certain group within an Archive
-    class Group:public core::TreeNodeCollection {
+        class Group:public core::TreeNodeCollection {
         public:
             Group():TreeNodeCollection(){}
             //construct when only the groupname is known
             Group(const std::string & name ):TreeNodeCollection(name){}
-            Group(const std::string && name ):TreeNodeCollection(std::move(name)){}
+//            Group(const std::string && name ):TreeNodeCollection(std::move(name)){}
             Group(const std::string name, core::Attribs && attr):TreeNodeCollection(name,std::move(attr)){}
             //construct when both the name and parent are known
             template<class P>
             Group(const std::string & name, const P * const parent ):TreeNodeCollection(name,parent){}
-
-            //@brief convenience function to get the first OGR 'geom' variable in a group (defautl takes the one called 'geom')
-            virtual core::TreeNodeRef & geomVar(){return this->operator[]("geom");};
+            Group(core::TreeNodeRef && in):TreeNodeCollection(std::move(in)){};
 
             //serialization goodies (objects can be read/written to groups by implementing a serialization function
             template<class Y>
-            Group & operator >> (Y & out){boost::serialization::serialize(*this,out,file_version()); return *this;}
+            Group & operator >> (Y & out){ serialize::load(*this,out); return *this;}
 
-//            typedef boost::mpl::bool_<true> is_saving;
-//            typedef boost::mpl::bool_<true> is_loading;
+            template<class Y>
+            Group & operator << (Y & out){ serialize::save(*this,out); return *this;}
+
+//            template<class Y>
+//            Group & operator << (Y & in){boost::serialization::serialize(*this,in,file_version()); return *this;}
+
 //            using const_iterator = core::iteratorWrap<Variable,cvec::const_iterator>;
 //            using iterator = core::iteratorWrap<Variable,cvec::iterator>;
 //            const_iterator cbegin()const{ return const_iterator(this->TreeNodeCollection::cbegin());}
@@ -61,19 +75,30 @@ namespace frommle{
 //            iterator begin(){return iterator(this->TreeNodeCollection::begin()); }
 //            iterator end(){return iterator(this->TreeNodeCollection::end()); }
 
-            bool readable()const{return is_loading;}
-            bool writable()const{return is_saving;}
+            bool readable()const{return openForReading;}
+            bool writable()const{return openForWriting;}
+            Group & getGroup(const std::string &name){
+                auto idx=findidx(name);
+                if (idx == -1){
+                    //create a new group
+                    this->operator[](name)=Group();
+                }
+                return this->operator[](name).as<Group>();
+            }
+
+            template<class T>
+            Variable<T> & getVariable(const std::string & name);
             void setAmode(const std::string & mode){
 
                 if (mode == "r"){
-                    is_loading=true;
-                    is_saving=false;
+                    openForReading=true;
+                    openForWriting=false;
                 }else if( mode == "w"){
-                    is_loading=false;
-                    is_saving=true;
+                    openForReading=false;
+                    openForWriting=true;
                 }else if(mode == "rw"){
-                    is_loading=true;
-                    is_saving=true;
+                    openForReading=true;
+                    openForWriting=true;
                 }else{
                     throw core::InputException("cannot understand the access mode of the group");
                 }
@@ -84,70 +109,82 @@ namespace frommle{
                 if (ogrgrp){
                     //take the accessmode from above
                     ogrgrp->setAmode();
-                    is_loading=ogrgrp->readable();
-                    is_saving=ogrgrp->writable();
+                    openForReading=ogrgrp->readable();
+                    openForWriting=ogrgrp->writable();
                 }
 
             }
 
         protected:
-            friend boost::serialization::access;
-
+            friend serialize;
             //needed to be compatible with the boost serialization library(don't ask me why)
             void load_binary(void * address,std::size_t count){assert(0);};
-            template <class T>
-            core::TreeNodeRef & operator & ( T & t){
-                return *this >> t;
-            }
-
-            virtual unsigned int file_version(){return 0;};
+            bool openForReading=true;
+            bool openForWriting=false;
     private:
-            bool is_loading=true;
-            bool is_saving=false;
         };
 
-    using valueVariant=boost::variant<double,int,long long int,std::string,std::unique_ptr<OGRGeometry>>;
-    template<class T=valueVariant>
+
+//        using valueVariant=boost::variant<double,int,long long int,std::string,OGRGeometry*>;
+    template<class T>
     class Variable:public core::TreeNodeItem{
     public:
         using single=T;
         using singlePtr=std::shared_ptr<single>;
-
+        Variable(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
         Variable():TreeNodeItem(){}
         Variable(const std::string & name):TreeNodeItem(name){}
         Variable(const std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
-        virtual singlePtr getValue(const size_t idx=-1)const=0;
-        virtual void setValue(singlePtr & val,const size_t idx)=0;
-        virtual void push_back(singlePtr &val){setValue(val,-1);}
-        singlePtr operator[](const size_t idx)const{return getValue(idx);}
-        bool readable()const{return static_cast<const Group *>(getParent())->readable();}
-        bool writable()const{return static_cast<const Group *>(getParent())->writable();}
+        virtual void getValue(T* in,const ptrdiff_t idx)const{throw core::MethodException("getValue not implemented");}
+        virtual void setValue(const T* val,const ptrdiff_t idx){throw core::MethodException("setValue not implemented");}
+        constexpr bool readable()const{
+            return static_cast<Group*>(getParent())->readable();
+        }
+
+        bool writable()const {
+            return static_cast<Group *>(getParent())->writable();
+        }
         ///@brief iterator which loops over the values in this variable
         class iterator{
         public:
             //iterator traits
+
             using iterator_category = std::forward_iterator_tag;
-            using value_type = single;
+            using value_type = singlePtr;
             using difference_type = std::ptrdiff_t;
-            using pointer = single*;
-            using reference = single&;
-            iterator& operator++(){value_=parent_->getValue(-1);return *this;};
+            using pointer = singlePtr*;
+            using reference = singlePtr&;
+            iterator& operator++(){parent_->getValue(value_.get(),-1);return *this;};
             bool operator==(const iterator & other) const {return value_ == other.value_;}
             bool operator!=(const iterator & other) const {return !(*this == other);}
-            single & operator*() {return *value_;}
+            singlePtr & operator*() {return value_;}
             iterator(){}
-            iterator(singlePtr firstValue, Variable *parent):value_(firstValue),parent_(parent){}
+            iterator(const Variable *parent):value_(std::make_shared<single>()),parent_(parent){
+                parent_->getValue(value_.get(),0);
+            }
         protected:
-            //note the iterator may not necessarily own the resource of the pointer!!
-            singlePtr value_{};
+            //note the iterator does not own the resource of the pointer!!
+//            single* value_=nullptr;
+            std::shared_ptr<single> value_{};
         private:
             const Variable *parent_{};
         };
-        iterator begin(){return iterator(getValue(),this);}
+        iterator begin(){return iterator(this);}
         iterator end(){return iterator();}
     private:
 
     };
+
+    template<class T>
+        Variable<T> & Group::getVariable(const std::string &name) {
+        auto idx=findidx(name);
+        if (idx == -1){
+            //create a new Variable
+            this->operator[](name)=Variable<T>();
+        }
+        return this->operator[](name).as<Variable<T>>();
+
+        }
 
     }
 

@@ -20,7 +20,6 @@
 #include "io/OGRIOArchives.hpp"
 #include "io/OGRArchive.hpp"
 #include "core/Exceptions.hpp"
-
 namespace frommle{
     namespace io{
 
@@ -39,15 +38,18 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
                 //quick return when already loaded
                 return;
             }
+            if(writable() and !readable()){
+                return;
+            }
             auto nfields=layerdef_->GetFieldCount();
 
             for(int i=0 ;i<nfields;++i){
-                upsertChild(i,OGRVar(layerdef_->GetFieldDefn(i),i));
+                upsertChild(i,OGRVarfactory(layerdef_,i,false));
             }
             //also load the geometry fields
             auto ngeom=layerdef_->GetGeomFieldCount();
             for(int i=0 ;i<ngeom;++i){
-                upsertChild(i+nfields,OGRVar(layerdef_->GetGeomFieldDefn(i),i));
+                upsertChild(i+nfields,OGRVarfactory(layerdef_,i,true));
             }
 
         }
@@ -87,7 +89,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         }
 
         bool OGRGroup::createlayer() {
-            layer_=static_cast<OGRArchive*>(getParent())->loadLayer(getName());
+            layer_=static_cast<OGRArchive*>(getParent())->createLayer(getName(),wkbUnknown);
             layerdef_ = layer_->GetLayerDefn();
             if (!layerdef_){
                 throw core::IOException(" Cannot read layer definition");
@@ -95,30 +97,55 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
             return true;
         }
 
-        OGRGroup::OGRGroup(OGRLayer *const layer) :Group(layer->GetName()),layer_(layer){
+        OGRGroup::OGRGroup(OGRLayer *const layer) :Group(std::string(layer->GetName())),layer_(layer){
             if (layer_) {
                 layerdef_ = layer_->GetLayerDefn();
             }
 
         }
 
-        int OGRGroup::createField(OGRFieldDefn *infield) {
-            if(currentFeat){
+        int OGRGroup::getField(OGRFieldDefn *infield) {
+            if(currentFeat and writable()){
                 throw core::InputException("Cannot (re)create a GDAL field once a feature has been loaded");
             }
-            layer_->CreateField(infield);
-            return layerdef_->GetFieldIndex(infield->GetNameRef());
+            auto id=layerdef_->GetFieldIndex(infield->GetNameRef());
+            if (id ==-1 and not writable()){
+                throw core::InputException("cannot find requested OGR field");
+
+            }
+            if(id ==-1) {
+                layer_->CreateField(infield);
+                return layerdef_->GetFieldIndex(infield->GetNameRef());
+            }else{
+                return id;
+            }
         }
 
-        int OGRGroup::createField(OGRGeomFieldDefn *ingeofield) {
-            if(currentFeat){
+        int OGRGroup::getField(OGRGeomFieldDefn *ingeofield) {
+            if (currentFeat and writable()) {
                 throw core::InputException("Cannot (re)create a GDAL field once a feature has been loaded");
             }
-            layer_->CreateGeomField(ingeofield);
-            return layerdef_->GetGeomFieldIndex(ingeofield->GetNameRef());
+            auto id = layerdef_->GetGeomFieldIndex(ingeofield->GetNameRef());
+            if( id ==-1 and not writable()){
+                throw core::InputException("cannot find requested OGR field");
+            }
+
+            if (id == -1 ) {
+                if (layer_->TestCapability(OLCCreateGeomField)) {
+                    layer_->CreateGeomField(ingeofield);
+                }
+
+                return layerdef_->GetGeomFieldIndex(ingeofield->GetNameRef());
+            }else {
+                //possibly modify field
+                if(writable()) {
+                    layerdef_->SetGeomType(ingeofield->GetType());
+                }
+                 return id;
+            }
         }
 
-        const OGRFeature *OGRGroup::getFeature(const size_t idx)const {
+        const OGRFeature *OGRGroup::getFeature(const ptrdiff_t idx)const {
             assert(!writable());
 
             //only read existing feature
@@ -138,7 +165,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         }
 
 
-        OGRFeature *OGRGroup::getFeature(const size_t idx) {
+        OGRFeature *OGRGroup::getFeature(const ptrdiff_t idx) {
            if(currentFeat){
 
                //quick return if the feature is still the same
@@ -146,29 +173,79 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
 
                 if (writable()){
                     if( layer_->CreateFeature(currentFeat) != OGRERR_NONE){
-                        throw core::IOException("Cannot create feature in GDAl data source");
+                        throw core::IOException("Cannot set feature in GDAl data source");
                     }
                 }
-                OGRFeature::DestroyFeature(currentFeat);
+                if(writable()) {
+                    layer_->SetFeature(currentFeat);
+                }
+                    OGRFeature::DestroyFeature(currentFeat);
+           }
 
-            }else{
-                if(writable()){
-                    if (idx != -1){
+           if(writable()){
+                if (idx != -1){
                         throw core::InputException("Newly created features can currently only be appended");
-                    }
+                }
                     //create new feature
                     currentFeat=OGRFeature::CreateFeature(layerdef_);
-                }else{
-                    //read existing feature
-                    if(idx ==-1){
-                        currentFeat=layer_->GetNextFeature();}
-                    else{
-                        currentFeat=layer_->GetFeature(idx);
-                    }
+           }else{
+               //read existing feature
+                if(idx ==-1){
+                    currentFeat=layer_->GetNextFeature();}
+                else{
+                    currentFeat=layer_->GetFeature(idx);
+                }
+           }
+
+
+            return currentFeat;
+        }
+
+        template<class F, class ...Ts>
+        struct try_casts {
+            core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
+                auto tmp=dynamic_cast<Variable<F> *>(in.get());
+                if(tmp){
+                   //yeah, success let's proceed by returning a converted type
+                    return core::TreeNodeRef(OGRVarBase<F>(std::move(in)));
+                } else{
+                    //no success try the next type
+                    return try_casts<Ts...>()(std::move(in));
                 }
 
             }
-            return currentFeat;
+        };
+
+        template<class F>
+        struct try_casts<F> {
+            core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
+                auto tmp=dynamic_cast<Variable<F> *>(in.get());
+                if (tmp){
+                    //yeah, success let's proceed by returning a converted type
+                    return core::TreeNodeRef(OGRVarBase<F>(std::move(in)));
+                }else{
+                    //no success  and nothing left to try
+                    throw core::InputException("No more casting possibilities for OGRVarBase");
+                }
+
+            }
+        };
+
+
+        core::TreeNodeRef OGRGroup::convertChild(core::TreeNodeRef &&in) {
+            return try_casts<double,int,long long int, std::string, OGRPolygon, OGRGeometry >()(std::move(in));
+        }
+
+        OGRGroup::~OGRGroup() {
+            if(currentFeat and layer_ and writable()){
+                //write the last feature if it is still opened
+                auto geom=currentFeat->GetGeometryRef();
+                char ** wkt=new char*;
+                geom->exportToWkt(wkt);
+                layer_->CreateFeature(currentFeat);
+                OGRFeature::DestroyFeature(currentFeat);
+                layer_->SyncToDisk();
+            }
         }
 
 
@@ -190,112 +267,70 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
             return source;
         }
 
-        OGRVar::singlePtr OGRVar::getValue(const size_t idx)const {
+            core::TreeNodeRef OGRVarfactory(OGRFeatureDefn * featdef,const size_t id,const bool isgeo){
+                if(isgeo){
 
-            if (!layer_) {
-                throw core::InputException("OGR layer from parent has not been set");
-            }
-            OGRFeature* feat=ogrparent_->getFeature(idx);
-
-            if (!feat){
-                //nothing to iterate over enymore
-                return singlePtr();
-            }
-
-            singlePtr val(new single());
-
-            //load data in variant
-            if (isGeom()){
-                *val=std::unique_ptr<OGRGeometry>(feat->StealGeometry());
-            }else{
-                auto type=getType();
-                auto iField=getFieldId();
-				if (type == OFTInteger) {
-                    *val = feat->GetFieldAsInteger(iField);
-                }else if (type == OFTInteger64) {
-                    *val = feat->GetFieldAsInteger64(iField);
-                }else if (type == OFTReal) {
-                    *val = feat->GetFieldAsDouble(iField);
-                }else if (type == OFTString) {
-				    *val=std::string(feat->GetFieldAsString(iField));
-				}else{
-				    throw core::MethodException("cannot cast OGR type to registered values");
-				}
-            }
-
-        return val;
-        }
-
-        void OGRVar::setValue(singlePtr & ini, const size_t idx){
-            if (!writable()){
-                throw core::IOException("Archive not opened for writing");
-            }
-            if (idx != -1){
-                throw core::IOException("GDAl datasource currently only supports appending");
-
-            }
-
-            auto feat=ogrparent_->getFeature(idx);
-
-            auto type =getType();
-
-            if (type == OFTInteger) {
-                feat->SetField(fieldid_,boost::get<int>(*ini));
-            }else if (type == OFTInteger64) {
-                feat->SetField(fieldid_,boost::get<long long int>(*ini));
-            }else if (type == OFTReal) {
-                feat->SetField(fieldid_,boost::get<double>(*ini));
-            }else if (type == OFTString) {
-                feat->SetField(fieldid_,boost::get<std::string>(*ini).c_str());
-            }else{
-                throw core::MethodException("cannot cast  variant types to OGR type");
-            }
+                    OGRGeomFieldDefn * fielddef=featdef->GetGeomFieldDefn(id);
+                    auto type= fielddef->GetType();
+                    switch (type){
+                        case (wkbUnknown):
+                            return core::TreeNodeRef(OGRVarBase<OGRGeometry>(fielddef,id));
+                            break;
+                        case(wkbPolygon):
+                            return core::TreeNodeRef(OGRVarBase<OGRPolygon>(fielddef,id));
+                            break;
+                        default:
+                            throw core::InputException("Cannot handle this OGRwkbGeometryType");
+                    }
 
 
-        }
+                }else{
+                    OGRFieldDefn * fielddef=featdef->GetFieldDefn(id);
+                    auto type = fielddef->GetType();
+                    switch (type){
+                        case (OFTInteger):
+                            return core::TreeNodeRef(OGRVarBase<int>(fielddef,id));
+                            break;
+                        case (OFTInteger64):
+                            return core::TreeNodeRef(OGRVarBase<long long int>(fielddef,id));
+                            break;
+                        case (OFTReal):
+                            return core::TreeNodeRef(OGRVarBase<double>(fielddef,id));
+                            break;
+                        case (OFTString):
+                            return core::TreeNodeRef(OGRVarBase<std::string>(fielddef,id));
+                            break;
 
-        void OGRVar::parentHook() {
-            ogrparent_=static_cast<OGRGroup*>(getParent());
-            layer_=ogrparent_->getLayer();
+                        default:
+                            throw core::InputException("Cannot handle this OGRfieldType");
+                    }
 
-            if (writable()) {
-                //also create a field entry in the OGRGroup above
-                if (geomfielddef_) {
-                    fieldid_=ogrparent_->createField(geomfielddef_.get());
-                } else if (fieldef_) {
-                    fieldid_=ogrparent_->createField(fieldef_.get());
                 }
+
             }
 
+        
 
-        }
-        //Note that in this case the shared-ptr is constructed as an alias and is not owned by the class
-        OGRVar::OGRVar(OGRGeomFieldDefn *const geomfieldef, const int id)
-                :Variable(geomfieldef->GetNameRef()),geomfielddef_(geoFieldPtr(geoFieldPtr(),geomfieldef)),fieldid_(id){
-            if(getName().empty()){
-                //force default name for geometry when not set
-                setName("geom");
-            }
+        template<class T>
+        OGRVarBase<T>::OGRVarBase(fieldtype  *const fieldef, const int id):Variable<T>(std::string(fieldef->GetNameRef())),fieldef_(fieldPtr(fieldPtr(),fieldef)), fieldid_(id){
         }
 
-        ///fielddef is NOT owned by this class so we need to use the alias constructor of the shared_ptr
-        OGRVar::OGRVar(OGRFieldDefn *const fieldef, const int id)
-                :Variable(fieldef->GetNameRef()),fieldef_(fieldPtr(fieldPtr(),fieldef)), fieldid_(id){
-        }
-
-        template<class T, class F>
-        OGRVarBase<T, F>::OGRVarBase(F *const fieldef, const int id):Variable<T>(fieldef->GetNameRef()),fieldef_(fieldPtr(fieldPtr(),fieldef)), fieldid_(id){
-        }
-
-        template<class T, class F>
-        OGRVarBase<T, F>::OGRVarBase(const std::string &fieldName):Variable<T>(fieldName){
+        template<class T>
+        OGRVarBase<T>::OGRVarBase(const std::string &fieldName):Variable<T>(fieldName){
            //note: this class now owns fielddef_
-           fieldef_=std::make_shared<F>(getName().c_str(),OGRtype<T>::type());
+           fieldef_=std::make_shared<fieldtype>(getName().c_str(),OGRtype<T>::type());
 
         }
 
-        template<class T, class F>
-        void OGRVarBase<T, F>::setValue(OGRVarBase<T,F>::singlePtr &in, const size_t idx){
+        template<class T>
+        OGRVarBase<T>::OGRVarBase(core::TreeNodeRef &&in):Variable<T>(std::move(in)){
+            //note: this class now owns fielddef_
+            fieldef_=std::make_shared<fieldtype>(getName().c_str(),OGRtype<T>::type());
+
+        }
+
+        template<class T>
+        void OGRVarBase<T>::setValue( const T * in, const ptrdiff_t idx){
             if (!layer_) {
                 throw core::InputException("OGR layer from parent has not been set");
             }
@@ -308,13 +343,13 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
 
             }
 
-            OGRtype<T>::valueToFeat(ogrparent_->getFeature(idx),*in,fieldid_);
+           OGRtype<T>::valueToFeat(ogrparent_->getFeature(idx),*in,fieldid_);
 
         }
 
 
-        template<class T, class F>
-        typename OGRVarBase<T,F>::singlePtr OGRVarBase<T, F>::getValue(const size_t idx) const {
+        template<class T>
+        void OGRVarBase<T>::getValue( T* val,const ptrdiff_t idx) const {
             if (!layer_) {
                 throw core::InputException("OGR layer from parent has not been set");
             }
@@ -322,27 +357,24 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
 
             if (!feat){
                 //nothing to iterate over anymore
-                return singlePtr();
+                val=nullptr;
+                return;
             }
 
-            singlePtr val(new single());
-
             //load data in value
-            *val=OGRtype<T>::valueFromFeat(feat,fieldid_);
-            return val;
+            OGRtype<T>::valueFromFeat(feat,*val,fieldid_);
 
         }
 
-        template<class T, class F>
-        void OGRVarBase<T, F>::parentHook() {
+        template<class T>
+        void OGRVarBase<T>::parentHook() {
             ogrparent_=static_cast<OGRGroup*>(getParent());
             layer_=ogrparent_->getLayer();
 
-            if (writable()) {
             //also create a field entry in the OGRGroup above
-                fieldid_=ogrparent_->createField(fieldef_.get());
-            }
+           fieldid_=ogrparent_->getField(fieldef_.get());
         }
+
 
 
         //explicit instantiation of various templates
@@ -350,7 +382,8 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         template class OGRVarBase<int>;
         template class OGRVarBase<long long int>;
         template class OGRVarBase<std::string>;
-        template class OGRVarBase<std::unique_ptr<OGRGeometry>,OGRGeomFieldDefn>;
+        template class OGRVarBase<OGRGeometry>;
+        template class OGRVarBase<OGRPolygon>;
 
 
 

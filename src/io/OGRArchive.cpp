@@ -22,12 +22,17 @@
 #include "OGRArchive.hpp"
 #include <cstring>
 #include <gdal.h>
+#include <boost/filesystem.hpp>
 namespace frommle {
     namespace io {
 
 
         ///@brief Destructor needs to take care on closing the OGR datasource correctly
         OGRArchive::~OGRArchive() {
+            if (size() >0 ){
+                //delete children first
+                deleteCollection();
+            }
             if (poDS) {
                 GDALClose(poDS);
                 poDS = nullptr;
@@ -52,25 +57,29 @@ namespace frommle {
                 gdalDriver = GetGDALDriverManager()->GetDriverByName(driver.c_str());
             }
 
-
-            auto gdalaccess = GDAL_OF_READONLY | GDAL_OF_VECTOR;
-
-            if (writable() and  readable()){
-                gdalaccess= GDAL_OF_UPDATE | GDAL_OF_VECTOR;
+            if(writable() and not readable()){
+                //remove resource if it is a regular file or directory
+                boost::filesystem::path path(getName());
+                if (boost::filesystem::is_directory(path) or boost::filesystem::is_regular_file(path)){
+                    boost::filesystem::remove_all(path);
+                }
             }
 
-            if (readable()) {
-                //open the ogr source (e.g. a directory containing shapefiles)
+            if (writable() and  readable()) {
+                auto gdalaccess = GDAL_OF_UPDATE | GDAL_OF_VECTOR;
+                //try opening existing file
+                poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
+            }else if (writable()){
+                    if (!gdalDriver) {
+                        throw core::InputException(
+                                "A GDAL driver must be set explicitly when creating files. Set the 'Driver' attribute of the Archive to a valid GDAL driver");
+                    }
+                    poDS = gdalDriver->Create(getName().c_str(), 0, 0, 0, GDT_Unknown, NULL);
+            }else if (readable()){
+                auto gdalaccess = GDAL_OF_READONLY | GDAL_OF_VECTOR;
                 poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
             }
 
-            if(writable() and ! readable()){
-                //create a new data source. A driver must be explictly set
-                if( ! gdalDriver){
-                    throw core::InputException("A GDAL driver must be set explicitly when creating files. Set the 'Driver' attribute of the Archive to a valid GDAL driver");
-                }
-                poDS = gdalDriver->Create( getName().c_str(), 0, 0, 0, GDT_Unknown, NULL );
-            }
 
             if (!poDS) {
                 throw core::IOException("Error opening OGR source");

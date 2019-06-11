@@ -39,14 +39,30 @@ public:
 	}
 
 	ArchiveBase(const std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {
-		if (getAttributeCount("amode") != 0){
-		    setAmode(getAttribute<std::string>("amode"));
-        }
+		if (getAttributeCount("mode") != 0) {
+			auto mode = getAttribute<std::string>("mode");
+			if( mode == "r"){
+				openForReading=true;
+				openForWriting=false;
+			}else if (mode == "w"){
+				openForReading=false;
+				openForWriting=true;
 
+			}else if (mode == "rw"){
+				openForReading=true;
+				openForWriting=true;
+
+			}else{
+				throw core::InputException("cannot understand the access mode of Archive");
+			}
+		}
 	}
+
+
 
 private:
 };
+
 
 }
 }

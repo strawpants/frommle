@@ -19,11 +19,12 @@
  */
 
 #include "core/GuideBase.hpp"
-#include <boost/serialization/split_member.hpp>
-//#include "io/OGRArchive.hpp"
 #include <memory>
 #include <vector>
 #include <ogr_geometry.h>
+#include <io/Group.hpp>
+#include "core/Logging.hpp"
+
 #ifndef FROMMLE_OGRGUIDE_HPP
 #define FROMMLE_OGRGUIDE_HPP
 
@@ -33,44 +34,49 @@ namespace frommle{
         class OGRGuide:public core::GuideBase{
         public:
             using Element=T;
+            using ElementContainer=std::vector<std::shared_ptr<Element>>;
             OGRGuide(){}
 
             void push_back(Element &&geometry){
-                geoms_.push_back(std::move(geometry));
+                geoms_.push_back(std::make_shared<T>(std::move(geometry)));
                 ++size_;
             }
 
             void push_back(const Element &geometry){
-                geoms_.push_back(geometry);
+                geoms_.push_back(std::make_shared<T>(geometry));
                 ++size_;
             }
 
             //@brief push back a new geometry from a well-known test representation
             void push_back(const std::string & WKT){
-                geoms_.push_back(Element());
-                auto wkt=WKT.c_str();
-                geoms_.back().importFromWkt(&wkt);
+//                geoms_.push_back(std::make_shared<T>());
+                OGRGeometry ** geomptr= new OGRGeometry*;
+//                *geomptr=geoms_.back().get();
+                if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),&SpatialRef_,geomptr)){
+                    throw core::InputException("failed to create OGR geometry");
+                }
                 ++size_;
-
+                geoms_.push_back(std::make_shared<T>(static_cast<T&>(**geomptr)));
+                OGRGeometryFactory::destroyGeometry(*geomptr);
+                delete geomptr;
             }
 
-           typename std::vector<Element>::const_iterator begin() const { return geoms_.begin(); }
-           typename std::vector<Element>::const_iterator end() const { return geoms_.end(); }
+           typename ElementContainer::const_iterator begin() const { return geoms_.begin(); }
+           typename ElementContainer::const_iterator end() const { return geoms_.end(); }
 
-            typename std::vector<Element>::iterator begin() { return geoms_.begin(); }
-            typename std::vector<Element>::iterator end() { return geoms_.end(); }
-            Element & operator[](const index idx){return geoms_.at(idx);}
-            Element & operator[](const index idx)const{return geoms_.at(idx);}
+            typename ElementContainer::iterator begin() { return geoms_.begin(); }
+            typename ElementContainer::iterator end() { return geoms_.end(); }
+            Element & operator[](const index idx){return *(geoms_.at(idx));}
+            Element & operator[](const index idx)const{return *(geoms_.at(idx));}
             //spatial queries
             //...
         private:
-            friend class boost::serialization::access;
-            BOOST_SERIALIZATION_SPLIT_MEMBER()
+            friend class io::serialize;
             template<class Archive>
-            void load(Archive & Ar,const unsigned int file_version);
+            void load(Archive & Ar);
             template<class Archive>
-            void save(Archive & Ar,const unsigned int file_version)const{}
-            std::vector <Element> geoms_={};
+            void save(Archive & Ar)const;
+            std::vector <std::shared_ptr<Element>> geoms_={};
             //Rtree stuff
             void buildRtree();
             OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();
@@ -80,42 +86,26 @@ namespace frommle{
 
         template<class T>
         template<class Archive>
-        void OGRGuide<T>::load(Archive &Ar,const unsigned int file_version){
-
-            //retrieve the variable which holds geometry info
-            const auto geovar=Ar.geoVar();
-            for (auto const & geom:*geovar ){
-                auto geomref=dynamic_cast<T*>(geom->template as<OGRGeometry*>());
-                geoms_.push_back(T(*geomref));
+        void OGRGuide<T>::save(Archive &Ar)const {
+//            //create a new variable holding the geometry
+            Ar["geom"]=io::Variable<T>();
+            auto geovar= dynamic_cast<io::Variable<T>*>(Ar["geom"].get());
+            for (auto const & geom:geoms_){
+               geovar->setValue(geom.get(),-1);
             }
-////            do while (tref=geoVar.next<T>()){
-////
-////            }
-//
-//            for(const auto & val:geoVar){
-//                    geoms_.push_back(val.as<T>);
-//            }
-            //loop over OGRgeometries from the Archive
 
 
-//            OgrAr->setVar("dummy");
-//            tmp=OgrAr->getOGRGeometry();
-//            //get all features
-//            while(tmp){
-//
-//                //try a dynamic cast
-//                OGRGeotype * Gtype= dynamic_cast<OGRGeotype*>(tmp);
-//
-//                if (!Gtype){
-//                    throw frommle::IOException("ERROR: OGR geometry can not be cast to derived type");
-//                }
-//                //make a copy and append to the data vector
-//                data_.push_back(OGRGeotype(*Gtype));
-//
-//                OgrAr->setVar("dummy");
-//                tmp=OgrAr->getOGRGeometry();
-//            }
-//            transformSpatialReference(OgrAr->getOGRspatialRef());
+        }
+
+        template<class T>
+        template<class Archive>
+        void OGRGuide<T>::load(Archive &Ar){
+
+//            //retrieve the variable which holds geometry info
+            auto &geovar=Ar.template getVariable<T>("geom");
+            for (auto geom:geovar ){
+                geoms_.push_back(std::make_shared<T>(*geom));
+            }
 
         }
 
