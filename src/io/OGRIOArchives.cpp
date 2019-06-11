@@ -169,16 +169,16 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
            if(currentFeat){
 
                //quick return if the feature is still the same
-               if (currentFeat->GetFID() == idx){return currentFeat;}
+               if (idx != -1 and currentFeat->GetFID() == idx){return currentFeat;}
 
                 if (writable()){
                     if( layer_->CreateFeature(currentFeat) != OGRERR_NONE){
                         throw core::IOException("Cannot set feature in GDAl data source");
                     }
                 }
-                if(writable()) {
-                    layer_->SetFeature(currentFeat);
-                }
+//                if(writable()) {
+//                    layer_->SetFeature(currentFeat);
+//                }
                     OGRFeature::DestroyFeature(currentFeat);
            }
 
@@ -196,7 +196,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
                     //special case where we reset the features to start from the beginning
                     layer_->ResetReading();
                     currentFeat=layer_->GetNextFeature();
-
+                    currentFeat->SetFID(0);
                 }else{
                     currentFeat=layer_->GetFeature(idx);
 
@@ -239,7 +239,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
 
 
         core::TreeNodeRef OGRGroup::convertChild(core::TreeNodeRef &&in) {
-            return try_casts<double,int,long long int, std::string, OGRPolygon, OGRGeometry >()(std::move(in));
+            return try_casts<double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
         }
 
         OGRGroup::~OGRGroup() {
@@ -390,6 +390,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         template class OGRVarBase<std::string>;
         template class OGRVarBase<OGRGeometry>;
         template class OGRVarBase<OGRPolygon>;
+        template class OGRVarBase<OGRPoint>;
 
 
 

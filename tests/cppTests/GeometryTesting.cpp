@@ -28,6 +28,8 @@
 #include "io/OGRIOArchives.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
+#include "geometry/fibonacciGrid.hpp"
+
 using namespace frommle::geometry;
 using namespace frommle;
 namespace utf=boost::unit_test;
@@ -112,6 +114,13 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
                                       {"Driver", "ESRI Shapefile"}});
         auto &grp = oAr.getGroup("newlayer");
         grp << PolyGd;
+
+        //also create a layer with a fibonacci grid
+
+        auto &grp2 = oAr.getGroup("fibonacci");
+        grp2 << geometry::makeFibonacciGrid(2000);
+
+
     }
 
     OGRGuide<OGRPolygon> PolyGdTest{};

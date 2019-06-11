@@ -65,6 +65,9 @@ namespace frommle{
             template<class Y>
             Group & operator << (Y & out){ serialize::save(*this,out); return *this;}
 
+            template<class Y>
+            Group & operator << (Y && out){ serialize::save(*this,out); return *this;}
+
 //            template<class Y>
 //            Group & operator << (Y & in){boost::serialization::serialize(*this,in,file_version()); return *this;}
 

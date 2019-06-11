@@ -66,8 +66,8 @@ namespace frommle{
 
             typename ElementContainer::iterator begin() { return geoms_.begin(); }
             typename ElementContainer::iterator end() { return geoms_.end(); }
-            Element & operator[](const index idx){return *(geoms_.at(idx));}
-            Element & operator[](const index idx)const{return *(geoms_.at(idx));}
+            Element & operator[](const size_t idx){return *(geoms_.at(idx));}
+            Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
             //spatial queries
             //...
         private:
