@@ -23,7 +23,15 @@
 #include <vector>
 #include <ogr_geometry.h>
 #include <io/Group.hpp>
+#include "geometry/OGR2boost.hpp"
 #include "core/Logging.hpp"
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+
+namespace bg=boost::geometry;
+namespace bgi = boost::geometry::index;
 
 #ifndef FROMMLE_OGRGUIDE_HPP
 #define FROMMLE_OGRGUIDE_HPP
@@ -70,6 +78,7 @@ namespace frommle{
             Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
             //spatial queries
             //...
+            void createRtree();
         private:
             friend class io::serialize;
             template<class Archive>
@@ -78,6 +87,11 @@ namespace frommle{
             void save(Archive & Ar)const;
             std::vector <std::shared_ptr<Element>> geoms_={};
             //Rtree stuff
+            using point=bg::model::point<double,2,bg::cs::geographic<bg::degree>>;
+            using box=bg::model::box<point>;
+            using idxmap=std::pair<box, size_t>;
+            using rtree=bgi::rtree<idxmap,bgi::rstar<16,4>>;
+            std::unique_ptr<rtree> rtreeIndex{};
             void buildRtree();
             OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();
 
@@ -109,6 +123,22 @@ namespace frommle{
 
         }
 
+        ///@brief create a boost rtree index of the geometry using the packing algorithm
+        template<class T>
+        void geometry::OGRGuide<T>::buildRtree() {
+            //construct a vector with idxmap (box + index)
+            std::vector<idxmap> idxboxes{};
+            size_t indx=0;
+            OGREnvelope env{};
+            for(auto & geom:geoms_){
+                geom.getEnvelope(&env);
+
+                idxboxes.push_back(idxmap(box(point(env.MinX,env.MinY),point(env.MaxX,env.MaxY)),indx++));
+            }
+            rtreeIndex=rtree(idxboxes.cbegin(),idxboxes.cend());
+
+
+        }
 
 
     }

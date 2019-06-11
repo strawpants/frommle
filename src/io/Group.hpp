@@ -41,6 +41,8 @@ namespace frommle{
             inline static void load(const G & grp, T & val){val.load(const_cast<Group&>(grp));}
         };
 
+
+
         //forward declare a variable here
         template<class T>
         class Variable;

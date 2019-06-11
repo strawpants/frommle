@@ -97,74 +97,9 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
     }
 }
 
-OGRGuide<OGRPolygon> makeTestOGRGuide(){
-    OGRGuide<OGRPolygon> polyGuide{};
-    //add a test polygon with 2 inner rings (note the provided polygon rings are sorted in the way which is expected in an esri shapefile (outer: counter clockwise, inner: clockwise)
-    polyGuide.push_back("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
-    return polyGuide;
-}
-
-//Test writing & reading OGR geometries from shapefiles / database
-BOOST_AUTO_TEST_CASE(OGRArchive){
-    auto PolyGd=makeTestOGRGuide();
-    std::string gdalfile("OGRtestdata");
-
-    {//open an gdal file for writing
-        io::OGRArchive oAr(gdalfile, {{"mode",   "w"},
-                                      {"Driver", "ESRI Shapefile"}});
-        auto &grp = oAr.getGroup("newlayer");
-        grp << PolyGd;
-
-        //also create a layer with a fibonacci grid
-
-        auto &grp2 = oAr.getGroup("fibonacci");
-        grp2 << geometry::makeFibonacciGrid(2000);
-
-
-    }
-
-    OGRGuide<OGRPolygon> PolyGdTest{};
-    //now read the same stuff backin
-    {
-
-        io::OGRArchive iAr(gdalfile, {{"mode",   "r"}});
-        auto &grp = iAr.getGroup("newlayer");
-        grp >> PolyGdTest;
-
-    }
-
-
-
-    //check whether the 2 OGR guides have the same length
-    BOOST_TEST(PolyGd.size() == PolyGdTest.size());
-    //check the actual polygons
-    auto tgeo=PolyGdTest.begin();
-    bool GeomsAretheSame=true;
-    char ** wkt =new char*;
-    char ** wkt2 =new char*;
-    for(const auto geo:PolyGd ){
-        geo->exportToWkt(wkt);
-        (*tgeo)->exportToWkt(wkt2);
-
-        GeomsAretheSame=(*geo == **tgeo);
-        if (not GeomsAretheSame){
-            break;
-        }
-        ++tgeo;
-    }
-
-    BOOST_TEST(GeomsAretheSame);
-
-
-    //delete dataset
-    boost::filesystem::remove_all(boost::filesystem::path(gdalfile));
-
-
+///Test masking operations of geometries within other geometries
+BOOST_AUTO_TEST_CASE(MaskGeometry){
 
 }
 
-//@brief test the retrieval of OGR geometries from a PostGIS-enabled database
-BOOST_AUTO_TEST_CASE(OGRPostGIS,* utf::disabled()){
-
-}
 

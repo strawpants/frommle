@@ -24,35 +24,108 @@
 #define BOOST_TEST_MODULE IOtesting
 #include <boost/test/unit_test.hpp>
 #include <cstdio>
-#include "io/Group.hpp"
 #include "core/Exceptions.hpp"
+
+#include "io/OGRArchive.hpp"
+#include "io/OGRIOArchives.hpp"
+#include "geometry/OGRGuide.hpp"
+#include <boost/filesystem.hpp>
 using namespace frommle::io;
 
 using namespace frommle;
 
+namespace utf=boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(GroupsnVar){
-    core::TreeNodeRef root(new Group("rootgroup",{{"Testattr",3},{"other","attval"}}));
 
-    //add a subgroup by name
-    root["subgroup"]=Group();
+//BOOST_AUTO_TEST_CASE(GroupsnVar){
+//    core::TreeNodeRef root(new Group("rootgroup",{{"Testattr",3},{"other","attval"}}));
+//
+//    //add a subgroup by name
+//    root["subgroup"]=Group();
+//
+//    //add a variable by index
+//    root[3]=Variable("var1",{{"long_name",std::string("longitude")},{"values",5}});
+//
+//    BOOST_TEST(root->getName() == "rootgroup");
+//    BOOST_TEST(root[0]->getName() == "subgroup");
+//
+//    BOOST_CHECK_THROW(root["var1"]["thisshouldfail"],core::MethodException);
+//
+//    //check for correct parenting assignment
+//    BOOST_TEST(root["var1"]->getParent()->ref()->getName() == "rootgroup");
+//
+//    //test for attribute retrieval
+//    BOOST_TEST(root->getAttribute<int>("Testattr")==3);
+//    BOOST_TEST(root["var1"]->getAttribute<std::string>("long_name") == "longitude");
+//    }
+//
+//}
 
-    //add a variable by index
-    root[3]=Variable("var1",{{"long_name",std::string("longitude")},{"values",5}});
+geometry::OGRGuide<OGRPolygon> makeTestOGRGuide(){
+    geometry::OGRGuide<OGRPolygon> polyGuide{};
+    //add a test polygon with 2 inner rings (note the provided polygon rings are sorted in the way which is expected in an esri shapefile (outer: counter clockwise, inner: clockwise)
+    polyGuide.push_back("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
+    return polyGuide;
 
-    BOOST_TEST(root->getName() == "rootgroup");
-    BOOST_TEST(root[0]->getName() == "subgroup");
 
-    BOOST_CHECK_THROW(root["var1"]["thisshouldfail"],core::MethodException);
 
-    //check for correct parenting assignment
-    BOOST_TEST(root["var1"]->getParent()->ref()->getName() == "rootgroup");
+}
 
-    //test for attribute retrieval
-    BOOST_TEST(root->getAttribute<int>("Testattr")==3);
-    BOOST_TEST(root["var1"]->getAttribute<std::string>("long_name") == "longitude");
+//Test writing & reading OGR geometries from shapefiles / database
+BOOST_AUTO_TEST_CASE(RWOGRArchive){
+    auto PolyGd=makeTestOGRGuide();
+    std::string gdalfile("OGRtestdata");
+
+    {//open an gdal file for writing
+        io::OGRArchive oAr(gdalfile, {{"mode",   "w"},
+                                      {"Driver", "ESRI Shapefile"}});
+        auto &grp = oAr.getGroup("newlayer");
+        grp << PolyGd;
+    }
+
+    geometry::OGRGuide<OGRPolygon> PolyGdTest{};
+    //now read the same stuff backi in
+    {
+
+        io::OGRArchive iAr(gdalfile, {{"mode",   "r"}});
+        auto &grp = iAr.getGroup("newlayer");
+        grp >> PolyGdTest;
+
     }
 
 
+
+    //check whether the 2 OGR guides have the same length
+    BOOST_TEST(PolyGd.size() == PolyGdTest.size());
+    //check the actual polygons
+    auto tgeo=PolyGdTest.begin();
+    bool GeomsAretheSame=true;
+    char ** wkt =new char*;
+    char ** wkt2 =new char*;
+    for(const auto geo:PolyGd ){
+        geo->exportToWkt(wkt);
+        (*tgeo)->exportToWkt(wkt2);
+
+        GeomsAretheSame=(*geo == **tgeo);
+        if (not GeomsAretheSame){
+            break;
+        }
+        ++tgeo;
+    }
+
+    BOOST_TEST(GeomsAretheSame);
+
+
+    //delete dataset
+    boost::filesystem::remove_all(boost::filesystem::path(gdalfile));
+
+
+
+}
+
+//@brief test the retrieval of OGR geometries from a PostGIS-enabled database
+BOOST_AUTO_TEST_CASE(OGRPostGIS,* utf::disabled()){
+
+}
 
 
