@@ -192,8 +192,14 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
                //read existing feature
                 if(idx ==-1){
                     currentFeat=layer_->GetNextFeature();}
-                else{
+                else if (idx ==0){
+                    //special case where we reset the features to start from the beginning
+                    layer_->ResetReading();
+                    currentFeat=layer_->GetNextFeature();
+
+                }else{
                     currentFeat=layer_->GetFeature(idx);
+
                 }
            }
 
@@ -330,7 +336,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         }
 
         template<class T>
-        void OGRVarBase<T>::setValue( const T * in, const ptrdiff_t idx){
+        void OGRVarBase<T>::setValue( const singlePtr & in, const ptrdiff_t idx){
             if (!layer_) {
                 throw core::InputException("OGR layer from parent has not been set");
             }
@@ -349,7 +355,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
 
 
         template<class T>
-        void OGRVarBase<T>::getValue( T* val,const ptrdiff_t idx) const {
+        void OGRVarBase<T>::getValue( singlePtr & val,const ptrdiff_t idx) const {
             if (!layer_) {
                 throw core::InputException("OGR layer from parent has not been set");
             }
@@ -357,7 +363,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
 
             if (!feat){
                 //nothing to iterate over anymore
-                val=nullptr;
+                val=singlePtr();
                 return;
             }
 

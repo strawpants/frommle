@@ -91,7 +91,7 @@ namespace frommle{
             Ar["geom"]=io::Variable<T>();
             auto geovar= dynamic_cast<io::Variable<T>*>(Ar["geom"].get());
             for (auto const & geom:geoms_){
-               geovar->setValue(geom.get(),-1);
+               geovar->setValue(geom,-1);
             }
 
 
@@ -104,7 +104,7 @@ namespace frommle{
 //            //retrieve the variable which holds geometry info
             auto &geovar=Ar.template getVariable<T>("geom");
             for (auto geom:geovar ){
-                geoms_.push_back(std::make_shared<T>(*geom));
+                this->push_back(*geom);
             }
 
         }

@@ -202,9 +202,9 @@ namespace frommle{
 
             using geotype=typename std::is_same<fieldtype , OGRGeomFieldDefn>::type;
 
-            void getValue(T* in, const ptrdiff_t idx) const;
+            void getValue(singlePtr & in, const ptrdiff_t idx) const;
 
-            void setValue(const T* in, const ptrdiff_t idx);
+            void setValue(const singlePtr & in, const ptrdiff_t idx);
 
         private:
             void parentHook();

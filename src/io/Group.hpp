@@ -135,8 +135,8 @@ namespace frommle{
         Variable():TreeNodeItem(){}
         Variable(const std::string & name):TreeNodeItem(name){}
         Variable(const std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
-        virtual void getValue(T* in,const ptrdiff_t idx)const{throw core::MethodException("getValue not implemented");}
-        virtual void setValue(const T* val,const ptrdiff_t idx){throw core::MethodException("setValue not implemented");}
+        virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{throw core::MethodException("getValue not implemented");}
+        virtual void setValue(const singlePtr & val,const ptrdiff_t idx){throw core::MethodException("setValue not implemented");}
         constexpr bool readable()const{
             return static_cast<Group*>(getParent())->readable();
         }
@@ -154,13 +154,16 @@ namespace frommle{
             using difference_type = std::ptrdiff_t;
             using pointer = singlePtr*;
             using reference = singlePtr&;
-            iterator& operator++(){parent_->getValue(value_.get(),-1);return *this;};
+            iterator& operator++(){
+                parent_->getValue(value_,-1);
+                return *this;
+            };
             bool operator==(const iterator & other) const {return value_ == other.value_;}
             bool operator!=(const iterator & other) const {return !(*this == other);}
             singlePtr & operator*() {return value_;}
             iterator(){}
             iterator(const Variable *parent):value_(std::make_shared<single>()),parent_(parent){
-                parent_->getValue(value_.get(),0);
+                parent_->getValue(value_,0);
             }
         protected:
             //note the iterator does not own the resource of the pointer!!

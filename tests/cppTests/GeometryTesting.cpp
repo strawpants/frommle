@@ -26,7 +26,7 @@
 #include "core/Logging.hpp"
 #include "io/OGRArchive.hpp"
 #include "io/OGRIOArchives.hpp"
-
+#include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
 using namespace frommle::geometry;
 using namespace frommle;
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
 
 OGRGuide<OGRPolygon> makeTestOGRGuide(){
     OGRGuide<OGRPolygon> polyGuide{};
-    //add a test polygon with 2 inner rings
-    polyGuide.push_back("POLYGON((-10 50, 20 45, 19.3 -2.4, -9 10),(-2 45, 2 40, 1 30, -1 38),(5 30, 10 29, 9 15, 4 18))");
+    //add a test polygon with 2 inner rings (note the provided polygon rings are sorted in the way which is expected in an esri shapefile (outer: counter clockwise, inner: clockwise)
+    polyGuide.push_back("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
     return polyGuide;
 }
 
@@ -131,8 +131,12 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
     //check the actual polygons
     auto tgeo=PolyGdTest.begin();
     bool GeomsAretheSame=true;
-
+    char ** wkt =new char*;
+    char ** wkt2 =new char*;
     for(const auto geo:PolyGd ){
+        geo->exportToWkt(wkt);
+        (*tgeo)->exportToWkt(wkt2);
+
         GeomsAretheSame=(*geo == **tgeo);
         if (not GeomsAretheSame){
             break;
@@ -144,7 +148,7 @@ BOOST_AUTO_TEST_CASE(OGRArchive){
 
 
     //delete dataset
-
+    boost::filesystem::remove_all(boost::filesystem::path(gdalfile));
 
 
 
