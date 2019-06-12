@@ -15,8 +15,8 @@ LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp geometry/OGR2boost.hpp geometry/OGRiteratorBase.hpp geometry/fibonacciGrid.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/fibonacciGrid.cpp)
 
-LIST(APPEND IOHEADERS io/getpass.hpp io/OGRArchive.hpp  io/Group.hpp  io/OGRIOArchives.hpp)
-LIST(APPEND IOOBJS io/getpass.cpp io/OGRArchive.cpp io/Group.cpp io/OGRIOArchives.cpp)
+LIST(APPEND IOHEADERS io/getpass.hpp io/OGRArchive.hpp  io/Group.hpp  io/OGRIOArchives.hpp io/LineBuffer.hpp)
+LIST(APPEND IOOBJS io/getpass.cpp io/OGRArchive.cpp io/Group.cpp io/OGRIOArchives.cpp io/LineBuffer.cpp)
 
 
 LIST(APPEND SEAHEADERS sealevel/OceanFunction.hpp)

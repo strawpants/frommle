@@ -61,7 +61,7 @@ namespace frommle{
                 OGRGeometry ** geomptr= new OGRGeometry*;
 //                *geomptr=geoms_.back().get();
                 if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),&SpatialRef_,geomptr)){
-                    throw core::InputException("failed to create OGR geometry");
+                    THROWINPUTEXCEPTION("Failed to create OGR geometry");
                 }
                 ++size_;
                 geoms_.push_back(std::make_shared<T>(static_cast<T&>(**geomptr)));

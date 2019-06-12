@@ -38,6 +38,7 @@ namespace frommle{
             InputException(const std::string message):std::runtime_error(message){}
         };
 
+
         ///@brief Exception for indexing errors (out of bound, stride mismath etc)
         class IndexingException:public std::runtime_error{
         public:
@@ -58,5 +59,8 @@ namespace frommle{
 
     }
 }
+
+#define THROWIOEXCEPTION(x) throw frommle::core::IOException(HERE + x)
+#define THROWINPUTEXCEPTION(x) throw frommle::core::InputException(HERE + x)
 
 #endif //FROMMLE_EXCEPTIONS_HPP

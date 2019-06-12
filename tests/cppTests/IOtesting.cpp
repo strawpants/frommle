@@ -30,6 +30,7 @@
 #include "io/OGRIOArchives.hpp"
 #include "geometry/OGRGuide.hpp"
 #include <boost/filesystem.hpp>
+#include "io/LineBuffer.hpp"
 using namespace frommle::io;
 
 using namespace frommle;
@@ -63,8 +64,15 @@ namespace utf=boost::unit_test;
 
 geometry::OGRGuide<OGRPolygon> makeTestOGRGuide(){
     geometry::OGRGuide<OGRPolygon> polyGuide{};
+    //open file with test wkt polygons
+    LineBuffer lbuf("data/testpolygonswkt.txt");
+
+    for(auto & ln:lbuf){
+        polyGuide.push_back(ln.str());
+
+    }
     //add a test polygon with 2 inner rings (note the provided polygon rings are sorted in the way which is expected in an esri shapefile (outer: counter clockwise, inner: clockwise)
-    polyGuide.push_back("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
+//    polyGuide.push_back("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
     return polyGuide;
 
 
