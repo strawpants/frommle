@@ -19,8 +19,9 @@
  */
 
 #include <boost/geometry.hpp>
-//#include <boost/geometry/geometries/register/point.hpp>
-//#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/geometries/register/point.hpp>
+#include <boost/geometry/geometries/register/box.hpp>
+
 //#include <boost/geometry/index/rtree.hpp>
 #include <boost/range.hpp>
 #include <ogr_geometry.h>
@@ -38,46 +39,46 @@ namespace boost
     namespace geometry
     {
         namespace traits {
-            template<>
-            struct tag<OGRPoint> {
-                typedef point_tag type;
-            };
-
-            template<>
-            struct coordinate_type<OGRPoint> {
-                typedef double type;
-            };
-
-            template<>
-            struct coordinate_system<OGRPoint> {
-                typedef bg::cs::geographic<bg::degree> type;
-            };
-
-            template<>
-            struct dimension<OGRPoint> : boost::mpl::int_<2> {
-            };
-
-            template<>
-            struct access<OGRPoint, 0> {
-                static double get(OGRPoint const &p) {
-                    return p.getX();
-                }
-
-                static void set(OGRPoint &p, double const &value) {
-                    p.setX(value);
-                }
-            };
-
-            template<>
-            struct access<OGRPoint, 2> {
-                static double get(OGRPoint const &p) {
-                    return p.getY();
-                }
-
-                static void set(OGRPoint &p, double const &value) {
-                    p.setY(value);
-                }
-            };
+//            template<>
+//            struct tag<OGRPoint> {
+//                typedef point_tag type;
+//            };
+//
+//            template<>
+//            struct coordinate_type<OGRPoint> {
+//                typedef double type;
+//            };
+//
+//            template<>
+//            struct coordinate_system<OGRPoint> {
+//                typedef bg::cs::geographic<bg::degree> type;
+//            };
+//
+//            template<>
+//            struct dimension<OGRPoint> : boost::mpl::int_<2> {
+//            };
+//
+//            template<>
+//            struct access<OGRPoint, 0> {
+//                static double get(OGRPoint const &p) {
+//                    return p.getX();
+//                }
+//
+//                static void set(OGRPoint &p, double const &value) {
+//                    p.setX(value);
+//                }
+//            };
+//
+//            template<>
+//            struct access<OGRPoint, 2> {
+//                static double get(OGRPoint const &p) {
+//                    return p.getY();
+//                }
+//
+//                static void set(OGRPoint &p, double const &value) {
+//                    p.setY(value);
+//                }
+//            };
 
 
 //register line segment
@@ -96,6 +97,9 @@ namespace boost
     }
 } // namespace boost::geometry::traits
 
+////register OGRpoint class so that it is understood by boost geometry
+BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(OGRPoint,double, bg::cs::geographic<bg::degree>, getX, getY, setX, setY);
+BOOST_GEOMETRY_REGISTER_BOX_2D_4VALUES(OGREnvelope, OGRPoint, MinX, MinY, MaxX, MaxY);
 
 //register the boost range iterator to loop over the points in a linestring
 using OGRLineIter=frommle::geometry::OGRiterator<OGRLineString>;
@@ -227,20 +231,6 @@ inline const_OGRpolyiter range_end(const OGRpolyRange & r)
 
 
 
-////register OGRpoint class so that it is understood by boost geometry
-//BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(OGRPoint,double, bg::cs::geographic<bg::degree>,
-//    getX, getY, setX, setY)
 
-//namespace frommle{
-//    namespace geometry{
-//        using bbox=bg::model::box<OGRPoint>;
-//        using bbval=std::pair<bbox,long unsigned int>;
-//        using RtreeDefault=bgi::rtree<bbval,bgi::rstar<16>>;;
-//        bbox getBbox(const OGREnvelope & env ){
-//            return bbox(OGRPoint(env.MinX,env.MinY),OGRPoint(env.MaxX,env.MaxY));
-//        };
-//
-//    }
-//}
 
 #endif //FROMMLE_OGR2BOOST_HPP

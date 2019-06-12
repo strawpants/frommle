@@ -29,6 +29,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
 #include "geometry/fibonacciGrid.hpp"
+#include "io/LineBuffer.hpp"
+#include "geometry/geomOperator.hpp"
 
 using namespace frommle::geometry;
 using namespace frommle;
@@ -97,8 +99,41 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
     }
 }
 
+//test running OGR entities through boost geometry functions
+BOOST_AUTO_TEST_CASE(OGR2BoostGeometry){
+    namespace bg = boost::geometry;
+
+
+
+    //check for properly registered box
+    OGREnvelope box=bg::make<OGREnvelope>(-1.0,-1.0,1.0,1.0);
+    BOOST_TEST(bg::area(box)== 4);
+
+
+
+
+}
+
 ///Test masking operations of geometries within other geometries
 BOOST_AUTO_TEST_CASE(MaskGeometry){
+    using polyguide=OGRGuide<OGRPolygon>;
+    auto polymask=std::make_shared<polyguide>("poly");
+
+    //open file with test wkt polygons
+    io::LineBuffer lbuf("data/testpolygonswkt.txt");
+
+    for(auto & ln:lbuf){
+        polymask->push_back(ln.str());
+
+    }
+
+
+    //create Fibonaccigrid which is going to be masked
+    using pointguide=OGRGuide<OGRPoint>;
+    auto fibgrid=std::make_shared<pointguide>(makeFibonacciGrid(10000));
+    withinOperator<polyguide> MaskOp(polymask);
+
+    auto fibmask=MaskOp(fibgrid);
 
 }
 

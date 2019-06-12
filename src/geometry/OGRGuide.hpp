@@ -44,6 +44,7 @@ namespace frommle{
             using Element=T;
             using ElementContainer=std::vector<std::shared_ptr<Element>>;
             OGRGuide(){}
+            OGRGuide(const std::string & name):GuideBase(name){}
 
             void push_back(Element &&geometry){
                 geoms_.push_back(std::make_shared<T>(std::move(geometry)));
@@ -69,16 +70,26 @@ namespace frommle{
                 delete geomptr;
             }
 
-           typename ElementContainer::const_iterator begin() const { return geoms_.begin(); }
-           typename ElementContainer::const_iterator end() const { return geoms_.end(); }
+           typename ElementContainer::const_iterator cbegin() const { return geoms_.cbegin(); }
+           typename ElementContainer::const_iterator cend() const { return geoms_.cend(); }
 
             typename ElementContainer::iterator begin() { return geoms_.begin(); }
             typename ElementContainer::iterator end() { return geoms_.end(); }
             Element & operator[](const size_t idx){return *(geoms_.at(idx));}
             Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
             //spatial queries
-            //...
-            void createRtree();
+            //Rtree stuff
+//            using point=bg::model::point<double,2,bg::cs::geographic<bg::degree>>;
+            using point=OGRPoint;
+            using box=bg::model::box<OGRPoint>;
+            using idxmap=std::pair<box, size_t>;
+            using rtree=bgi::rtree<idxmap,bgi::rstar<16,4>>;
+            const rtree & getRtree(){
+                if(!rtreeIndex){
+                    buildRtree();
+                }
+                return *rtreeIndex;
+            }
         private:
             friend class io::serialize;
             template<class Archive>
@@ -86,11 +97,6 @@ namespace frommle{
             template<class Archive>
             void save(Archive & Ar)const;
             std::vector <std::shared_ptr<Element>> geoms_={};
-            //Rtree stuff
-            using point=bg::model::point<double,2,bg::cs::geographic<bg::degree>>;
-            using box=bg::model::box<point>;
-            using idxmap=std::pair<box, size_t>;
-            using rtree=bgi::rtree<idxmap,bgi::rstar<16,4>>;
             std::unique_ptr<rtree> rtreeIndex{};
             void buildRtree();
             OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();
@@ -131,11 +137,11 @@ namespace frommle{
             size_t indx=0;
             OGREnvelope env{};
             for(auto & geom:geoms_){
-                geom.getEnvelope(&env);
+                geom->getEnvelope(&env);
 
                 idxboxes.push_back(idxmap(box(point(env.MinX,env.MinY),point(env.MaxX,env.MaxY)),indx++));
             }
-            rtreeIndex=rtree(idxboxes.cbegin(),idxboxes.cend());
+            rtreeIndex=std::unique_ptr<rtree>(new rtree(idxboxes.cbegin(),idxboxes.cend()));
 
 
         }

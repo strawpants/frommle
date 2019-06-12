@@ -75,8 +75,6 @@ geometry::OGRGuide<OGRPolygon> makeTestOGRGuide(){
 //    polyGuide.push_back("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
     return polyGuide;
 
-
-
 }
 
 //Test writing & reading OGR geometries from shapefiles / database

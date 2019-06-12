@@ -16,5 +16,5 @@ endforeach(tester ${ALLTESTS})
 #copy test datasets
 list(APPEND TESTDATA testpolygonswkt.txt)
 foreach(dset ${TESTDATA})
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/${dset}  DESTINATION ${CMAKE_BINARY_DIR}/testing/data/)
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/${dset}  DESTINATION ${CMAKE_BINARY_DIR}/testing/data)
 endforeach(dset ${TESTDATA})
