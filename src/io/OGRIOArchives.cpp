@@ -207,39 +207,40 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
             return currentFeat;
         }
 
-        template<class F, class ...Ts>
-        struct try_casts {
-            core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
-                auto tmp=dynamic_cast<Variable<F> *>(in.get());
-                if(tmp){
-                   //yeah, success let's proceed by returning a converted type
-                    return core::TreeNodeRef(OGRVarBase<F>(std::move(in)));
-                } else{
-                    //no success try the next type
-                    return try_casts<Ts...>()(std::move(in));
-                }
+        //template<class F, class ...Ts>
+        //struct try_casts {
+            //core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
+                //auto tmp=dynamic_cast<Variable<F> *>(in.get());
+                //if(tmp){
+                   ////yeah, success let's proceed by returning a converted type
+                    //return core::TreeNodeRef(OGRVarBase<F>(std::move(in)));
+                //} else{
+                    ////no success try the next type
+                    //return try_casts<Ts...>()(std::move(in));
+                //}
 
-            }
-        };
+            //}
+        //};
 
-        template<class F>
-        struct try_casts<F> {
-            core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
-                auto tmp=dynamic_cast<Variable<F> *>(in.get());
-                if (tmp){
-                    //yeah, success let's proceed by returning a converted type
-                    return core::TreeNodeRef(OGRVarBase<F>(std::move(in)));
-                }else{
-                    //no success  and nothing left to try
-                    throw core::InputException("No more casting possibilities for OGRVarBase");
-                }
+        //template<class F>
+        //struct try_casts<F> {
+            //core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
+                //auto tmp=dynamic_cast<Variable<F> *>(in.get());
+                //if (tmp){
+                    ////yeah, success let's proceed by returning a converted type
+                    //return core::TreeNodeRef(OGRVarBase<F>(std::move(in)));
+                //}else{
+                    ////no success  and nothing left to try
+                    //throw core::InputException("No more casting possibilities for OGRVarBase");
+                //}
 
-            }
-        };
+            //}
+        //};
 
 
         core::TreeNodeRef OGRGroup::convertChild(core::TreeNodeRef &&in) {
-            return try_casts<double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
+            //return try_casts<double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
+            return tryVarCasts<OGRVarBase,double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
         }
 
         OGRGroup::~OGRGroup() {

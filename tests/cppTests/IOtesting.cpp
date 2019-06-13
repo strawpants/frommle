@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(RWOGRArchive){
 ///@brief create a test guided array
 core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
     auto garr=core::make_garray(core::IndexGuide(13),core::IndexGuide(97));
-
+    garr=22.0;
 }
 
 BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
@@ -151,7 +151,8 @@ BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
 
         auto & grp =oAr.getGroup("subgroup1");
 
-        grp <<
+        grp << createTestGarray();
+        
     }
 
 

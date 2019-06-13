@@ -186,6 +186,37 @@ namespace frommle{
         return this->operator[](name).as<Variable<T>>();
 
         }
+        
+        template<template<class> class Vd,class F, class ...Ts>
+        struct tryVarCasts {
+            core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
+                auto tmp=dynamic_cast<Variable<F> *>(in.get());
+                if(tmp){
+                   //yeah, success let's proceed by returning a converted type
+                    return core::TreeNodeRef(Vd<F>(std::move(in)));
+                } else{
+                    //no success try the next type
+                    return tryVarCasts<Vd,Ts...>()(std::move(in));
+                }
+
+            }
+        };
+
+        template<template<class> class Vd,class F>
+        struct tryVarCasts<Vd,F> {
+            core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
+                auto tmp=dynamic_cast<Variable<F> *>(in.get());
+                if (tmp){
+                    //yeah, success let's proceed by returning a converted type
+                    return core::TreeNodeRef(Vd<F>(std::move(in)));
+                }else{
+                    //no success  and nothing left to try
+                    throw core::InputException("No more casting possibilities for Variable");
+                }
+
+            }
+        };
+
 
 
     }

@@ -75,9 +75,34 @@ namespace frommle{
             nc_put_att_text(ncid,NC_GLOBAL,name.c_str(),value.size(),value.c_str());
         }
 
-        core::TreeNodeRef NetCDFArchive::convertChild(core::TreeNodeRef &&in) {
-//            return core::TreeNodeRef(NetCDFGroup(std::move(in)));
+        core::TreeNodeRef convertChildFree(core::TreeNodeRef &&in) {
+            //check if the input node is a group
+            try{
+                in.as<Group>();
+                return core::TreeNodeRef(NetCDFGroup(std::move(in)));
+            }catch(std::bad_cast &excep){
+                //ok try different variable casts
+                return tryVarCasts<NetCDFVariable,double,int,long long int>()(std::move(in));
+                
+                    
+            }
+
         }
+
+        core::TreeNodeRef NetCDFArchive::convertChild(core::TreeNodeRef &&in) {
+            return convertChildFree(std::move(in));
+        }
+        
+        core::TreeNodeRef NetCDFGroup::convertChild(core::TreeNodeRef &&in) {
+            return convertChildFree(std::move(in));
+        }
+        
+        void NetCDFGroup::parentHook(){
+            if(writable()){
+                //createGroup
+            }
+        }
+
 
         ///@brief converts an error code into a frommle IO exception
         void NetCDFCheckerror(const int status) {

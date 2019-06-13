@@ -30,20 +30,26 @@ namespace frommle{
     namespace io{
 
         void NetCDFCheckerror(const int status);
+
         class NetCDFGroup:public Group{
-            NetCDFGroup() : Group() {}
-            NetCDFGroup(const std::string name):Group(name){}
         public:
+            NetCDFGroup() : Group() {}
+            //NetCDFGroup(const std::string name):Group(name){}
+            NetCDFGroup(core::TreeNodeRef && in){}
+            core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
         private:
+        void parentHook();
 
-
-        };
+        }; 
 
         template<class T>
         class NetCDFVariable:public Variable<T>{
         public:
+            NetCDFVariable()=default;
+            NetCDFVariable(core::TreeNodeRef && in){}
+            using Variable<T>::writable;
         private:
-
+            void parentHook();
 
         };
 
@@ -63,7 +69,12 @@ namespace frommle{
         };
 
 
-
+        template<class T>
+        void NetCDFVariable<T>::parentHook(){
+            if(writable()){
+                //create variable definition (not the actual values)
+            }
+        }
     }
 
 }

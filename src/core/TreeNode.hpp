@@ -220,7 +220,7 @@ namespace frommle{
             std::string iname=ptr_->getName();
             auto currentParent=ptr_->getParent();
             if(currentParent) {
-                ptr_ = currentParent->convertChild(std::move(in)).ptr_;;//std::make_shared<T>(std::move(in));
+                ptr_ = currentParent->convertChild(std::move(in)).ptr_;//std::make_shared<T>(std::move(in));
             }
             if (!iname.empty()){
                 //Note existing name takes precedence so here we put it back in

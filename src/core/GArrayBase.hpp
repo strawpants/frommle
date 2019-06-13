@@ -26,7 +26,7 @@
 #include <tuple>
 #include "core/GuidePack.hpp"
 #include "core/MarrayEig.hpp"
-
+#include "io/Group.hpp"
 #include <type_traits>
 
 namespace frommle {
@@ -47,7 +47,6 @@ namespace frommle {
                 name_=name;
             }
         private:
-        protected:
             std::string name_="data";
 
         };
@@ -100,12 +99,21 @@ namespace frommle {
                 return this->operator[](g<0>().idx(indx));
             }
             Garray & operator=(const T scalar){
-                std::fill(this->data(),this->data()+this->.num_elements(),scalar);
+                std::fill(this->data(),this->data()+this->num_elements(),scalar);
             }
 
 
         protected:
         private:
+            friend class io::serialize;
+            template<class Archive>
+            void load(Archive & Ar){
+
+            }
+            template<class Archive>
+            void save(Archive & Ar)const{
+
+            }
         };
 
 //        class GarrayRef..
