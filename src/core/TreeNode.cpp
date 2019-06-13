@@ -71,6 +71,59 @@ namespace frommle {
 
         }
 
+        const TreeNodeRef &TreeNodeRef::operator=(TreeNodeRef &&in) {
+            if (!ptr_) {
+                //quick shortcut if current TreeNode is informationless
+                ptr_=std::move(in.ptr_);
+                return *this;
+            }
+
+
+            std::string iname = ptr_->getName();
+            auto currentParent = ptr_->getParent();
+
+            if (currentParent) {
+                ptr_ = currentParent->convertChild(std::move(in)).ptr_;
+                //also inherit the parent from the current TreeNodeRef
+                ptr_->setParent(currentParent);
+            }
+
+            if (!iname.empty()) {
+                //Note existing name takes precedence so here we put it back in
+                ptr_->setName(iname);
+            }
+
+            return *this;
+        }
+
+        const TreeNodeRef &TreeNodeRef::operator=(TreeNodeRef &in) {
+            if (!ptr_) {
+                //quick shortcut if current TreeNode is informationless
+                ptr_=std::move(in.ptr_);
+                return *this;
+            }
+            std::string iname=ptr_->getName();
+            auto currentParent=ptr_->getParent();
+
+            if(currentParent) {
+                //possibly modify the underlying type so it can work together with the parent
+                ptr_=currentParent->convertChild(TreeNodeRef(in)).ptr_;
+                //also let the input.ptr point to the same ptr_
+                in.ptr_=ptr_;
+                //also inherit the parent from the current TreeNodeRef
+                ptr_->setParent(currentParent);
+            }else{
+                ptr_=in.ptr_;
+            }
+
+            if (!iname.empty()){
+                //Note existing name takes precedence so here we put it back in
+                ptr_->setName(iname);
+            }
+
+            return *this;
+        }
+
 
         const TreeNodeRef &TreeNodeCollection::operator[](const std::string &name) const {
             auto idx = findidx(name);

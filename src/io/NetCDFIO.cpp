@@ -76,19 +76,16 @@ namespace frommle{
         }
 
         core::TreeNodeRef NetCDFArchive::convertChild(core::TreeNodeRef &&in) {
-            return core::TreeNodeRef(NetCDFGroup(std::move(in)));
+//            return core::TreeNodeRef(NetCDFGroup(std::move(in)));
         }
 
         ///@brief converts an error code into a frommle IO exception
-        void NetCDFCheckerror(const int & status) {
+        void NetCDFCheckerror(const int status) {
             if(status != NC_NOERR){
                 THROWIOEXCEPTION(nc_strerror(status));
             }
 
         }
-
-
-
 
 
 

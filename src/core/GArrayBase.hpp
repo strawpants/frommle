@@ -99,6 +99,9 @@ namespace frommle {
                 assert(i<ndim-1);
                 return this->operator[](g<0>().idx(indx));
             }
+            Garray & operator=(const T scalar){
+                std::fill(this->data(),this->data()+this->.num_elements(),scalar);
+            }
 
 
         protected:

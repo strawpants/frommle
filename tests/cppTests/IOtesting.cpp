@@ -31,6 +31,11 @@
 #include "geometry/OGRGuide.hpp"
 #include <boost/filesystem.hpp>
 #include "io/LineBuffer.hpp"
+#include "geometry/fibonacciGrid.hpp"
+#include "core/GArrayBase.hpp"
+#include "io/NetCDFIO.hpp"
+#include "core/IndexGuide.hpp"
+
 using namespace frommle::io;
 
 using namespace frommle;
@@ -87,6 +92,10 @@ BOOST_AUTO_TEST_CASE(RWOGRArchive){
                                       {"Driver", "ESRI Shapefile"}});
         auto &grp = oAr.getGroup("newlayer");
         grp << PolyGd;
+
+        auto &grp2=oAr.getGroup("fibonacci");
+        grp2 <<geometry::makeFibonacciGrid(10000);
+
     }
 
     geometry::OGRGuide<OGRPolygon> PolyGdTest{};
@@ -124,6 +133,26 @@ BOOST_AUTO_TEST_CASE(RWOGRArchive){
 
     //delete dataset
     boost::filesystem::remove_all(boost::filesystem::path(gdalfile));
+
+
+
+}
+
+///@brief create a test guided array
+core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
+    auto garr=core::make_garray(core::IndexGuide(13),core::IndexGuide(97));
+
+}
+
+BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
+    std::string fout("Testnc.nc");
+    {
+        NetCDFArchive oAr(fout,{{"mode","w"},{"history","Created in the IOtesting suite"}});
+
+        auto & grp =oAr.getGroup("subgroup1");
+
+        grp <<
+    }
 
 
 

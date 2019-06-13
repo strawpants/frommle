@@ -148,63 +148,14 @@ namespace frommle{
 //
 //            }
             ///@brief replace the current treenode while keeping the original name and parent
-            const TreeNodeRef & operator=(TreeNodeRef && in){
-                if (!ptr_) {
-                    //quick shortcut if current TreeNode is informationless
-                    ptr_=std::move(in.ptr_);
-                    return *this;
-                }
-
-
-                    std::string iname = ptr_->getName();
-                    auto currentParent = ptr_->getParent();
-
-                    if (currentParent) {
-                        ptr_ = currentParent->convertChild(std::move(in)).ptr_;
-                        //also inherit the parent from the current TreeNodeRef
-                        ptr_->setParent(currentParent);
-                    }
-
-                    if (!iname.empty()) {
-                        //Note existing name takes precedence so here we put it back in
-                        ptr_->setName(iname);
-                    }
-
-                return *this;
-            }
+            const TreeNodeRef & operator=(TreeNodeRef && in);
             //@brief copy a TreenodeRef in the current position but don't update the parent and name in the original
             const TreeNodeRef & operator=(const TreeNodeRef & in){
                 ptr_=in.ptr_;
                 return *this;
             }
             ///@brief assign a treenoderef and make sure that the righthandside has the correct name and parent set
-            const TreeNodeRef & operator=(TreeNodeRef & in){
-                if (!ptr_) {
-                    //quick shortcut if current TreeNode is informationless
-                    ptr_=std::move(in.ptr_);
-                    return *this;
-                }
-                std::string iname=ptr_->getName();
-                auto currentParent=ptr_->getParent();
-
-                if(currentParent) {
-                    //possibly modify the underlying type so it can work together with the parent
-                    ptr_=currentParent->convertChild(TreeNodeRef(in)).ptr_;
-                    //also let the input.ptr point to the same ptr_
-                    in.ptr_=ptr_;
-                    //also inherit the parent from the current TreeNodeRef
-                    ptr_->setParent(currentParent);
-                }else{
-                    ptr_=in.ptr_;
-                }
-
-                if (!iname.empty()){
-                    //Note existing name takes precedence so here we put it back in
-                    ptr_->setName(iname);
-                }
-
-                return *this;
-            }
+            const TreeNodeRef & operator=(TreeNodeRef & in);
 
             TreeNodeRef(const TreeNodeRef & in){
                 ptr_=in.ptr_;
@@ -239,9 +190,6 @@ namespace frommle{
             TreeNodeBase * get()const{return ptr_.get();}
             template<class T>
             T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
-//            //forward [] operator to the underlying pointer
-//            template<class I,class C=Child>
-//            typename std::enable_if<!std::is_void<C>::value,C>::type & operator[](const I & idx) {return ptr_->operator[](idx);}
             template<class I>
             const TreeNodeRef & operator[](const I &idx) const {
                 if (!ptr_) {
@@ -291,18 +239,7 @@ namespace frommle{
             TreeNodeItem(const std::string & name):TreeNodeBase(name){}
             TreeNodeItem(const std::string name, Attribs && attr):TreeNodeBase(name,std::move(attr)){}
             TreeNodeItem(TreeNodeRef && in):TreeNodeBase(std::move(in)){}
-            //            template<class T>
-//            T & as(){
-//                return boost::any_cast<T>(val_);
-//            }
             bool isCollection()const final{return false;}
-
-//            virtual TreeNodeRef  & operator[](const std::string & name)const{throwMethExcept();}
-//            virtual TreeNodeRef  & operator[](const size_t & idx)const{throwMethExcept();}
-//
-//            virtual const TreeNodeRef & operator[](const std::string & name){throwMethExcept();}
-//            virtual const TreeNodeRef & operator[](const size_t & idx){throwMethExcept();}
-//            virtual std::shared_ptr<TreeNodeBase> getSelf()const;
         private:
         };
 
@@ -353,6 +290,20 @@ namespace frommle{
             cvec collection_{};
 //            TreeNodeRef ref_{};
         };
+
+
+
+
+
+
+        //tempalted member functions can be found below
+
+
+
+
+
+
+
 
         template<class T>
         TreeNodeRef & TreeNodeCollection::upsertChild(const std::string name, T &&in) {

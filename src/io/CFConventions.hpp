@@ -20,6 +20,12 @@
  Created by Roelof Rietbroek,  2019
 
  */
+
+
+#include "core/Exceptions.hpp"
+#include "core/UserSettings.hpp"
+#include <boost/any.hpp>
+
 #ifndef FROMMLE_CFCONVENTIONS_HPP
 #define FROMMLE_CFCONVENTIONS_HPP
 namespace frommle{
