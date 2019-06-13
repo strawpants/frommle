@@ -1,6 +1,6 @@
-/*! \file
- \brief
- \copyright Roelof Rietbroek 2018
+/*! \file CFConventions.cpp
+ \brief 
+ \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -16,23 +16,18 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
 
-#include "io/Group.hpp"
+ Created by Roelof Rietbroek,  2019
+
+ */
+#include "io/CFConventions.hpp"
+
 namespace frommle{
     namespace io{
-        Group &Group::getGroup(const std::string &name) {
-            auto idx=findidx(name);
-            if (idx == -1){
-                //create a new group
-                this->operator[](name)=Group();
-            }
-            return this->operator[](name).as<Group>();
-        }
-
+        
+        
     }
-
+    
+    
+    
 }
-
-
-

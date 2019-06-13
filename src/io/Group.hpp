@@ -82,14 +82,7 @@ namespace frommle{
 
             bool readable()const{return openForReading;}
             bool writable()const{return openForWriting;}
-            Group & getGroup(const std::string &name){
-                auto idx=findidx(name);
-                if (idx == -1){
-                    //create a new group
-                    this->operator[](name)=Group();
-                }
-                return this->operator[](name).as<Group>();
-            }
+            Group & getGroup(const std::string &name);
 
             template<class T>
             Variable<T> & getVariable(const std::string & name);
@@ -193,6 +186,7 @@ namespace frommle{
         return this->operator[](name).as<Variable<T>>();
 
         }
+
 
     }
 

@@ -35,7 +35,7 @@ class ArchiveBase:public Group {
 public:
 	ArchiveBase() : Group() {}
 
-	ArchiveBase(const std::string &name) : Group(name) {
+	explicit ArchiveBase(const std::string &name) : Group(name) {
 	}
 
 	ArchiveBase(const std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {

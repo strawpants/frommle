@@ -63,6 +63,7 @@ namespace frommle{
 //            }
 
             size_t getAttributeCount(const std::string & name){return attrib_.count(name);}
+            const Attribs & getAttribMap(){return attrib_;}
 
             template <class T>
             bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval){
