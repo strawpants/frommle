@@ -80,8 +80,8 @@ namespace frommle{
 //            iterator begin(){return iterator(this->TreeNodeCollection::begin()); }
 //            iterator end(){return iterator(this->TreeNodeCollection::end()); }
 
-            bool readable()const{return openForReading;}
-            bool writable()const{return openForWriting;}
+            bool readable()const;
+            bool writable()const;
             Group & getGroup(const std::string &name);
 
             template<class T>
@@ -98,7 +98,7 @@ namespace frommle{
                     openForReading=true;
                     openForWriting=true;
                 }else{
-                    throw core::InputException("cannot understand the access mode of the group");
+                    THROWINPUTEXCEPTION("cannot understand the access mode of the group");
                 }
 
             }
@@ -129,12 +129,17 @@ namespace frommle{
     public:
         using single=T;
         using singlePtr=std::shared_ptr<single>;
+        virtual int ndim(){return 1;}
         Variable(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
         Variable():TreeNodeItem(){}
         Variable(const std::string & name):TreeNodeItem(name){}
         Variable(const std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
         virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{throw core::MethodException("getValue not implemented");}
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){throw core::MethodException("setValue not implemented");}
+        void setValue(const single & val,const ptrdiff_t idx) {
+            //here we construct a shared_ptr but don't dealloacate the actual value after calling by using an alias constructor
+            setValue(singlePtr(singlePtr(), const_cast<single*>(&val)),idx);
+        }
         constexpr bool readable()const{
             return static_cast<Group*>(getParent())->readable();
         }
@@ -186,7 +191,8 @@ namespace frommle{
         return this->operator[](name).as<Variable<T>>();
 
         }
-        
+
+
         template<template<class> class Vd,class F, class ...Ts>
         struct tryVarCasts {
             core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
@@ -211,11 +217,13 @@ namespace frommle{
                     return core::TreeNodeRef(Vd<F>(std::move(in)));
                 }else{
                     //no success  and nothing left to try
-                    throw core::InputException("No more casting possibilities for Variable");
+                    THROWINPUTEXCEPTION("No more casting possibilities for Variable");
                 }
 
             }
         };
+
+    //some container types which are often written and read to/from archives
 
 
 

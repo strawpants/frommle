@@ -70,6 +70,10 @@ namespace frommle {
 			std::string yamlfile_="";
 
 	};
+
+
+		std::string currentTimetag();
+
 	}
 }
 

@@ -28,7 +28,7 @@
 #include "core/MarrayEig.hpp"
 #include "io/Group.hpp"
 #include <type_traits>
-
+#include "io/Group.hpp"
 namespace frommle {
     namespace core {
 
@@ -67,11 +67,6 @@ namespace frommle {
             template<int n>
             inline g_t<n> & g(){return this->GPack::template g<n>();}
             inline const GuideBase & g(const int n){return this->GPack::g(n);}
-//                        template<class LGuide, class ... RGuides>
-//            using nextGarray=Garray<T,RGuides...>;
-//
-//            using subGarray=typename nextGarray<Guides...>;
-
             using arr_t=boost::multi_array<T,ndim>;
             using arr_t::operator[];
             Garray(){};
@@ -112,6 +107,11 @@ namespace frommle {
             }
             template<class Archive>
             void save(Archive & Ar)const{
+                //save the Guidepack
+
+                //save the multiarray data at once
+                auto & mvar=Ar.template getVariable<T>(name());
+                mvar.saveBulk(*this);
 
             }
         };
@@ -129,6 +129,9 @@ namespace frommle {
         Garray<T,Guides...> make_garray(Guides && ... inpack){
             return Garray<T,Guides...>(std::forward<Guides>(inpack)...);
         }
+
+
+
 
 
         }

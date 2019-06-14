@@ -22,6 +22,8 @@
  */
 
 #include "io/ArchiveBase.hpp"
+#include <netcdf.h>
+#include <boost/multi_array.hpp>
 
 #ifndef FROMMLE_NETCDFARCHIVE_HPP
 #define FROMMLE_NETCDFARCHIVE_HPP
@@ -31,48 +33,81 @@ namespace frommle{
 
         void NetCDFCheckerror(const int status);
 
-        class NetCDFGroup:public Group{
+        template<class T>
+        struct NetCDFtype;
+
+        template<>
+        struct NetCDFtype<double>{
+            static constexpr nc_type type(){return NC_DOUBLE;}
+        };
+        template<>
+        struct NetCDFtype<boost::multi_array<double,2>>{
+            static constexpr nc_type type(){return NC_DOUBLE;}
+        };
+
+
+
+        class NetCDFArchive;
+
+        ///@brief class with member functions which can be imported into NC objects
+        class NetCDFBase{
+        public:
+            void setAttr(const std::string& name ,const std::string &value);
+        protected:
+            void setParentid(const core::TreeNodeBase * in);
+            int parentid_=-1;
+            int id_=-1;
+        };
+
+        class NetCDFGroup:public Group, public NetCDFBase{
         public:
             NetCDFGroup() : Group() {}
             //NetCDFGroup(const std::string name):Group(name){}
             NetCDFGroup(core::TreeNodeRef && in){}
             core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
+            int ncid()const;
         private:
         void parentHook();
 
         }; 
 
         template<class T>
-        class NetCDFVariable:public Variable<T>{
+        class NetCDFVariable:public Variable<T>,public NetCDFBase{
         public:
             NetCDFVariable()=default;
             NetCDFVariable(core::TreeNodeRef && in){}
             using Variable<T>::writable;
+            using Variable<T>::getParent;
+            using Variable<T>::getName;
         private:
             void parentHook();
+            //supports variables with up to 10 dimensions..
+            std::array<int,10> dimids{};
 
         };
 
 
         ///@brief a class which helps in setting attributes according to the CFconventions
-        class NetCDFArchive:public ArchiveBase{
+        class NetCDFArchive:public ArchiveBase, public NetCDFBase{
         public:
         NetCDFArchive(const std::string source, core::Attribs && attr);
         explicit NetCDFArchive(const std::string source);
         ~NetCDFArchive();
-        void setAttr(const std::string& name ,const std::string &value);
         core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
         private:
+
             void loadCollection(){};
             void init();
-            int ncid=0;
         };
 
 
         template<class T>
         void NetCDFVariable<T>::parentHook(){
+            setParentid(getParent());
+
             if(writable()){
                 //create variable definition (not the actual values)
+                NetCDFCheckerror(nc_def_var(parentid_,getName().c_str(),NetCDFtype<T>::type, NetCDFtype<T>::nd,   &dimids, &id_));
             }
         }
     }

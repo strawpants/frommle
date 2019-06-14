@@ -27,6 +27,8 @@
 #include "NetCDFIO.hpp"
 #include "core/UserSettings.hpp"
 #include "io/CFConventions.hpp"
+#include "boost/multi_array.hpp"
+
 namespace frommle{
     namespace io{
 
@@ -46,11 +48,11 @@ namespace frommle{
 
             if(writable() and ! readable()){
                 //create a new file
-                omode=NC_CLOBBER;
-               NetCDFCheckerror(nc_create(getName().c_str(), omode, &ncid));
+                omode=NC_CLOBBER|NC_NETCDF4;
+               NetCDFCheckerror(nc_create(getName().c_str(), omode, &id_));
 
             }else {
-                NetCDFCheckerror(nc_open(getName().c_str(), omode, &ncid));
+                NetCDFCheckerror(nc_open(getName().c_str(), omode, &id_));
             }
 
             if(writable()){
@@ -62,7 +64,7 @@ namespace frommle{
         }
 
         NetCDFArchive::~NetCDFArchive() {
-            nc_close(ncid);
+            nc_close(id_);
 
 
         }
@@ -71,8 +73,25 @@ namespace frommle{
             init();
         }
 
-        void NetCDFArchive::setAttr(const std::string &name, const std::string &value) {
-            nc_put_att_text(ncid,NC_GLOBAL,name.c_str(),value.size(),value.c_str());
+
+        void NetCDFBase::setAttr(const std::string &name, const std::string &value) {
+            NetCDFCheckerror(nc_put_att_text(id_,NC_GLOBAL,name.c_str(),value.size(),value.c_str()));
+        }
+
+        void NetCDFBase::setParentid(const core::TreeNodeBase *inParent) {
+            auto test=static_cast<const NetCDFArchive*>(inParent);
+            if(test){
+                //get the id from the
+                parentid_=test->id_;
+            }else{
+                auto test=dynamic_cast<const NetCDFGroup*>(inParent);
+                if (!test){
+                    THROWINPUTEXCEPTION("Parent type not related to NetCDFBAse object");
+                }
+                parentid_=test->id_;
+            }
+
+
         }
 
         core::TreeNodeRef convertChildFree(core::TreeNodeRef &&in) {
@@ -81,7 +100,7 @@ namespace frommle{
                 in.as<Group>();
                 return core::TreeNodeRef(NetCDFGroup(std::move(in)));
             }catch(std::bad_cast &excep){
-                //ok try different variable casts
+                //ok try different variable casts with different dimensions
                 return tryVarCasts<NetCDFVariable,double,int,long long int>()(std::move(in));
                 
                     
@@ -98,9 +117,14 @@ namespace frommle{
         }
         
         void NetCDFGroup::parentHook(){
+            setParentid(getParent());
             if(writable()){
                 //createGroup
+                NetCDFCheckerror(nc_def_grp	(parentid_, getName().c_str(),&id_));
+                CFConventions::SetGroupAttr(*this);
             }
+
+
         }
 
 

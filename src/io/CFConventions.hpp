@@ -37,6 +37,9 @@ namespace frommle{
             static void SetGlobalAttr(Ar & ar);
 
             template<class Ar>
+            static void SetGroupAttr(Ar & ar);
+
+            template<class Ar>
             static void SetDataAttr(Ar & ar);
 
         };
@@ -45,6 +48,7 @@ namespace frommle{
         template<class Ar>
         void CFConventions::SetGlobalAttr(Ar &ar) {
             ar.setAttr("Conventions","CF-1.7");
+            ar.setAttr("history","created: "+core::currentTimetag());
             try {
                 ar.setAttr("institution", core::UserSettings::at("Institution").as<std::string>());
             }catch(core::InputException & excep) {
@@ -59,13 +63,24 @@ namespace frommle{
 
             for(auto & att:ar.getAttribMap()){
                 //check for string(text) attributes
-                if(att.first == "history" or att.first == "title" or att.first == "comment"){
-                    ar.setAttr(att.first,boost::any_cast<std::string>(att.second));
+                if(att.first == "title" or att.first == "comment"){
+                    ar.setAttr(att.first,ar.template getAttribute<std::string>(att.first));
                 }
             }
 
         }
 
+        template<class Ar>
+        void CFConventions::SetGroupAttr(Ar &ar) {
+            ar.setAttr("history","created: "+core::currentTimetag());
+            for(auto & att:ar.getAttribMap()){
+                //check for string(text) attributes
+                if(att.first == "title" or att.first == "comment"){
+                    ar.setAttr(att.first,ar.template getAttribute<std::string>(att.first));
+                }
+            }
+
+        }
 
 
         template<class Ar>

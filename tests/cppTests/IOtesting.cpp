@@ -142,12 +142,14 @@ BOOST_AUTO_TEST_CASE(RWOGRArchive){
 core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
     auto garr=core::make_garray(core::IndexGuide(13),core::IndexGuide(97));
     garr=22.0;
+
+    return garr;
 }
 
 BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
     std::string fout("Testnc.nc");
     {
-        NetCDFArchive oAr(fout,{{"mode","w"},{"history","Created in the IOtesting suite"}});
+        NetCDFArchive oAr(fout,{{"mode","w"},{"title","Test dataset created in the IOtesting suite"}});
 
         auto & grp =oAr.getGroup("subgroup1");
 

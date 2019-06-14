@@ -20,15 +20,12 @@
 
 
 #include "core/TimeGuide.hpp"
-
+#include <chrono>
+#include <ctime>
 namespace frommle{
 namespace core {
 
 
-/* default constructor */
-//    TimeGuide::TimeGuide() {
-
-//    }
-}
+    }
 
 }

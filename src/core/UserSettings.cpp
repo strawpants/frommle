@@ -189,6 +189,13 @@ namespace frommle {
 			}
 
 		}
+		std::string currentTimetag() {
+			auto now=std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::string out(30, '\0');
+			std::strftime(&out[0], out.size(), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+			return out;
+
+		}
 
 	}
 

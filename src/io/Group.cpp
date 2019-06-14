@@ -30,6 +30,23 @@ namespace frommle{
             return this->operator[](name).as<Group>();
         }
 
+        bool Group::readable() const {
+            if (getParent()) {
+                return static_cast<Group *>(getParent())->readable();
+            }else{
+                return openForReading;
+            }
+        }
+
+        bool Group::writable() const {
+            if (getParent()) {
+                return static_cast<Group *>(getParent())->writable();
+            }else{
+                return openForWriting;
+            }
+        }
+
+
     }
 
 }

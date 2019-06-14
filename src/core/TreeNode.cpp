@@ -162,7 +162,7 @@ namespace frommle {
             loadCollection(name);
             auto idx = findidx(name);
             if (idx == -1) {
-                //create a new item
+                //return create a new item
                 return upsertChild(name, TreeNodeItem());
             }
             return collection_[idx];
