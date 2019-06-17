@@ -22,8 +22,8 @@
 #include <cassert>
 #include "core/TreeNode.hpp"
 #include <boost/serialization/split_free.hpp>
-#include <boost/variant.hpp>
-
+//#include <boost/variant.hpp>
+#include "core/Hyperslab.hpp"
 
 #ifndef FROMMLE_GROUPBASE_HPP
 #define FROMMLE_GROUPBASE_HPP
@@ -40,7 +40,6 @@ namespace frommle{
             template<class G,class T>
             inline static void load(const G & grp, T & val){val.load(const_cast<Group&>(grp));}
         };
-
 
 
         //forward declare a variable here
@@ -134,12 +133,14 @@ namespace frommle{
         Variable():TreeNodeItem(){}
         Variable(const std::string & name):TreeNodeItem(name){}
         Variable(const std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
-        virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{throw core::MethodException("getValue not implemented");}
-        virtual void setValue(const singlePtr & val,const ptrdiff_t idx){throw core::MethodException("setValue not implemented");}
         void setValue(const single & val,const ptrdiff_t idx) {
             //here we construct a shared_ptr but don't dealloacate the actual value after calling by using an alias constructor
             setValue(singlePtr(singlePtr(), const_cast<single*>(&val)),idx);
         }
+        virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{THROWMETHODEXCEPTION("getValue not implemented");}
+        virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
+        virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not suppoerted");}
+        virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not suppoerted");}
         constexpr bool readable()const{
             return static_cast<Group*>(getParent())->readable();
         }

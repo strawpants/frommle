@@ -79,6 +79,13 @@ namespace frommle{
             using Variable<T>::writable;
             using Variable<T>::getParent;
             using Variable<T>::getName;
+            using Variable<T>::singlePtr;
+            using Variable<T>::single;
+//            virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{}
+//            virtual void setValue(const singlePtr & val,const ptrdiff_t idx){}
+            virtual void setValue(const core::Hyperslab<T> & hslab);
+            virtual void getValue(core::Hyperslab<T> & hslab);
+            int ndim(){return 1;}
         private:
             void parentHook();
             //supports variables with up to 10 dimensions..
@@ -107,9 +114,19 @@ namespace frommle{
 
             if(writable()){
                 //create variable definition (not the actual values)
-                NetCDFCheckerror(nc_def_var(parentid_,getName().c_str(),NetCDFtype<T>::type, NetCDFtype<T>::nd,   &dimids, &id_));
+                NetCDFCheckerror(nc_def_var(parentid_,getName().c_str(),NetCDFtype<T>::type, ndim(),   &dimids, &id_));
             }
         }
+
+        template<class T>
+        void NetCDFVariable<T>::setValue(const core::Hyperslab<T> &hslab) {
+
+
+
+        }
+
+        template<class T>
+        void NetCDFVariable<T>::getValue(core::Hyperslab<T> &hslab) {}
     }
 
 }

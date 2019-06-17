@@ -25,14 +25,6 @@ namespace frommle {
     namespace core {
 
 
-//        TreeNodeRef & TreeNodeBase::getParentref() {
-//            if (parent_){
-//                return parent_->ref();
-//            }else{
-//                throw IndexingException("No parent defined");
-//            }
-//        }
-
         TreeNodeRef::cvec::const_iterator
         TreeNodeRef::cbegin() const {
             if (!ptr_->isCollection()) {
@@ -142,10 +134,6 @@ namespace frommle {
             return collection_[idx];
         }
 
-//        std::shared_ptr<TreeNodeBase> TreeNodeCollection::getSelf()const {
-//            return std::shared_ptr<TreeNodeCollection>(new TreeNodeCollection(*this));
-//        }
-
 
         ptrdiff_t TreeNodeCollection::findidx(const std::string name) const {
             for (ptrdiff_t i = 0; i < collection_.size(); ++i) {
@@ -162,7 +150,6 @@ namespace frommle {
             loadCollection(name);
             auto idx = findidx(name);
             if (idx == -1) {
-                //return create a new item
                 return upsertChild(name, TreeNodeItem());
             }
             return collection_[idx];

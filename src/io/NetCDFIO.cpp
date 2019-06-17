@@ -101,8 +101,9 @@ namespace frommle{
                 return core::TreeNodeRef(NetCDFGroup(std::move(in)));
             }catch(std::bad_cast &excep){
                 //ok try different variable casts with different dimensions
-                return tryVarCasts<NetCDFVariable,double,int,long long int>()(std::move(in));
-                
+                return tryVarCasts<NetCDFVariable,double>()(std::move(in));
+//                return tryVarCasts<NetCDFVariable,double,int,long long int>()(std::move(in));
+
                     
             }
 

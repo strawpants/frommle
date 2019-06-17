@@ -57,41 +57,41 @@ namespace frommle {
          * @tparam Guides a variadic set of Guides
          */
         template<class T, class... Guides>
-        class Garray:public GArrayBase, public GuidePack < Guides... >, public boost::multi_array<T,sizeof...(Guides)>{
+        class Garray:public GArrayBase{
         public:
             using GPack=GuidePack<Guides...>;
-            using GPack::ndim;
+            static const int ndim=sizeof...(Guides);
             template<int n>
             using g_t=typename GPack::template g_t<n>;
 
             template<int n>
-            inline g_t<n> & g(){return this->GPack::template g<n>();}
-            inline const GuideBase & g(const int n){return this->GPack::g(n);}
-            using arr_t=boost::multi_array<T,ndim>;
-            using arr_t::operator[];
+            inline g_t<n> & g(){return gp_.template g<n>();}
+            ///@brief polymorphic version
+            inline const GuideBase & g(const int n){return gp_.g(n);}
+
+            using arr=boost::multi_array<T,ndim>;
+            inline arr & mar(){return ar_;}
             Garray(){};
             /*!brief
              * Construct a Garray based on given set of Guide instances
              * @param Args
              */
-            Garray(Guides&& ... Args):GPack(std::forward<Guides>(Args)...){
-                //allocate matrix
-                this->resize(this->getExtent());
+            Garray(Guides&& ... Args):gp_(std::forward<Guides>(Args)...),ar_(gp_.getExtent()){
             }
 
-//            //return a single value of the internal multi_array
+//            //return a single value of the internal multi_array_ref
             template<int i=0>
             typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::Element & indx){
                 assert(1==ndim);
-                return this->operator[](g<0>().idx(indx));
+                return ar_[g<0>().idx(indx)];
             }
 
             // return a subview of the current Garray (i.e. strip a dimension)
-            using subGarray=typename arr_t::template array_view<ndim-1>::type;
+            using subGarray=typename arr::template array_view<ndim-1>::type;
             template<int i=0>
             typename std::enable_if< i+1 != ndim, subGarray >::type & operator[](const typename g_t<0>::Element & indx){
                 assert(i<ndim-1);
-                return this->operator[](g<0>().idx(indx));
+                return ar_[g<0>().idx(indx)];
             }
             Garray & operator=(const T scalar){
                 std::fill(this->data(),this->data()+this->num_elements(),scalar);
@@ -101,6 +101,8 @@ namespace frommle {
         protected:
         private:
             friend class io::serialize;
+            GPack gp_{};
+            arr ar_;
             template<class Archive>
             void load(Archive & Ar){
 
@@ -116,7 +118,6 @@ namespace frommle {
             }
         };
 
-//        class GarrayRef..
 
         /*!brief
          * Factory function to quickly create garrays from initialized Guides

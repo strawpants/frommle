@@ -38,7 +38,7 @@ namespace frommle{
         class Legendre_nm:public frommle::core::Garray<ftype,SHtmnGuide>{
         public:
             using Garr=frommle::core::Garray<ftype,SHtmnGuide>;
-            using Garr::operator[];
+            using Garr::mar;
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life
             inline SHtmnGuide & shg(){return this->template g<0>();}
             Legendre_nm(const int nmax);

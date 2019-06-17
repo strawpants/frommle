@@ -52,6 +52,8 @@ namespace frommle{
                 return extent_;
             };
 
+            size_t size()const{return std::accumulate(extent_.cbegin(),extent_.cend(),0);}
+
             /*!brief
              * Get the nth guide of the array
              * @tparam n

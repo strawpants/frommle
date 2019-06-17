@@ -43,32 +43,16 @@ namespace frommle{
         public:
             using Element=T;
             using ElementContainer=std::vector<std::shared_ptr<Element>>;
+            //structors
             OGRGuide(){}
             OGRGuide(const std::string & name):GuideBase(name){}
 
-            void push_back(Element &&geometry){
-                geoms_.push_back(std::make_shared<T>(std::move(geometry)));
-                ++size_;
-            }
 
-            void push_back(const Element &geometry){
-                geoms_.push_back(std::make_shared<T>(geometry));
-                ++size_;
-            }
-
+            ///@brief push_back family
+            void push_back(Element &&geometry);
+            void push_back(const Element &geometry);
             //@brief push back a new geometry from a well-known test representation
-            void push_back(const std::string & WKT){
-//                geoms_.push_back(std::make_shared<T>());
-                OGRGeometry ** geomptr= new OGRGeometry*;
-//                *geomptr=geoms_.back().get();
-                if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),&SpatialRef_,geomptr)){
-                    THROWINPUTEXCEPTION("Failed to create OGR geometry");
-                }
-                ++size_;
-                geoms_.push_back(std::make_shared<T>(static_cast<T&>(**geomptr)));
-                OGRGeometryFactory::destroyGeometry(*geomptr);
-                delete geomptr;
-            }
+            void push_back(const std::string & WKT);
 
            typename ElementContainer::const_iterator cbegin() const { return geoms_.cbegin(); }
            typename ElementContainer::const_iterator cend() const { return geoms_.cend(); }
@@ -84,12 +68,7 @@ namespace frommle{
             using box=bg::model::box<OGRPoint>;
             using idxmap=std::pair<box, size_t>;
             using rtree=bgi::rtree<idxmap,bgi::rstar<16,4>>;
-            const rtree & getRtree(){
-                if(!rtreeIndex){
-                    buildRtree();
-                }
-                return *rtreeIndex;
-            }
+            const rtree & getRtree();
         private:
             friend class io::serialize;
             template<class Archive>
@@ -100,8 +79,6 @@ namespace frommle{
             std::unique_ptr<rtree> rtreeIndex{};
             void buildRtree();
             OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();
-
-
         };
 
         template<class T>
@@ -129,22 +106,6 @@ namespace frommle{
 
         }
 
-        ///@brief create a boost rtree index of the geometry using the packing algorithm
-        template<class T>
-        void geometry::OGRGuide<T>::buildRtree() {
-            //construct a vector with idxmap (box + index)
-            std::vector<idxmap> idxboxes{};
-            size_t indx=0;
-            OGREnvelope env{};
-            for(auto & geom:geoms_){
-                geom->getEnvelope(&env);
-
-                idxboxes.push_back(idxmap(box(point(env.MinX,env.MinY),point(env.MaxX,env.MaxY)),indx++));
-            }
-            rtreeIndex=std::unique_ptr<rtree>(new rtree(idxboxes.cbegin(),idxboxes.cend()));
-
-
-        }
 
 
     }
