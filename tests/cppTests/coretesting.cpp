@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
     auto TGuide=make_trange(bg::date(2002,12,1),bg::date(2003,3,30),bg::days(1));
     auto garr1d=make_garray(std::move(TGuide));
     garr1d.setName("Blah");
-    std::cout << garr1d.name()<<" "<<garr1d[0] << " " << garr1d.g(0).type()<< std::endl;
+//    std::cout << garr1d.name()<<" "<<garr1d[0] << " " << garr1d.g(0).type()<< std::endl;
 
 
     //2D example
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
     size_t ncols=4;
     auto garr2d=make_garray(IndexGuide(nrows),IndexGuide(ncols));
 
-    auto eigm=marray_to_eigen(garr2d);
+    auto eigm=marray_to_eigen(garr2d.mar());
     eigm.array()=3.0;
 
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
 //        std::cout << el << std::endl;
 //    }
 
-    std::cout << garr2d[0][0] << " " << garr2d.g(1).type()<< std::endl;
+//    std::cout << garr2d[0][0] << " " << garr2d.g(1).type()<< std::endl;
 
 
 
@@ -115,49 +115,131 @@ BOOST_AUTO_TEST_CASE(Settings) {
 
 //Tree node testing
 //forward declare node types
-class rootNode;
-class subNode;
-class endNode;
+class handbag;
+class wallet;
+class coin;
 
-class rootNode:public TreeNodeCollection{
+class money:public TreeNodeItem{
 public:
-    rootNode(const std::string && name):TreeNodeCollection(name){}
+    money(int val):val_(val){}
+    int val_=0;
+    virtual bool iscoin(){return false;}
+private:
+    void parentHook();
+};
+
+class coin:public money{
+private:
+    virtual bool iscoin(){return true;}
+public:
+    coin(int value): money(value){}
+};
+
+class note:public money{
+private:
+public:
+    note(int value): money(value){}
+};
+
+
+
+class handbag:public TreeNodeCollection{
+public:
+    handbag(const std::string && name):TreeNodeCollection(name){}
+    void add(int val){loose_value+=val;}
+    int loose_value=0;
+    int value();
 private:
 };
 
 
-class subNode:public TreeNodeCollection{
+class wallet:public TreeNodeCollection{
+public:
+    void add(int val){val_+=val;}
+
+    int val_=0;
+private:
+    virtual TreeNodeRef convertChild(TreeNodeRef && in);
 };
 
 
-class endNode:public TreeNodeItem{
-//    virtual TreeNodeRef<void> operator[](const std::string & name);
-//    virtual TreeNodeRef<void> operator[](const size_t & indx);
+TreeNodeRef wallet::convertChild(TreeNodeRef &&in) {
 
-};
+    //sepcialize whether we have a coin or  note
+    int val = in.as<money>().val_;
+    if (val < 5) {
+        return TreeNodeRef(coin(val));
+    } else {
+        return TreeNodeRef(note(val));
+    }
+}
 
+
+void money::parentHook() {
+    //add the amount of this coin to the parent
+    auto walletptr=dynamic_cast<wallet*>(getParent());
+    if(walletptr){
+        //add value to the wallet
+        walletptr->add(val_);
+        return;
+    }
+
+    auto handbagptr=dynamic_cast<handbag*>(getParent());
+    if(handbagptr){
+        //add value to the handbag
+        handbagptr->add(val_);
+        return;
+    }
+
+
+
+}
+
+
+int handbag::value() {
+    int val=0;
+    //loop over wallets and coins
+    for(auto &wl:*this){
+        if( wl->isCollection()) {
+            val += wl.as<wallet>().val_;
+        }else{
+            val += wl.as<money>().val_;
+        }
+    }
+    return val;
+}
 
 
 BOOST_AUTO_TEST_CASE(TreeNodes){
 
-    rootNode root("noparentnode");
+    handbag bag("handbag");
+    bool handbagwithwallet=bool(bag["wallet"]);
 
-    //add subnodes to the root node
-    root["test"]=subNode();
+    BOOST_TEST(handbagwithwallet == false);
 
-    root["test2"]=subNode();
+    //add a wallet in the handbag
+    bag["wallet"]=wallet();
 
-    //add endnodes to the subnodes
-    root["test"]["end1"]=endNode();
+    //also add a 2euro  coin in the handbag
+    bag["euro2"]=coin(2);
 
-    root["test"]["end2"]=endNode();
+    //add two generic money items in the wallet
+    bag["wallet"]["euro1"]=money(1);
+    bag["wallet"]["euro5"]=money(5);
+
+    bool walletwitheurocoin=bool(bag["wallet"]["euro1"]);
+    //test if the wallet contains  a 1 euro coin
+    BOOST_TEST(walletwitheurocoin);
+
+    auto & euro1 = bag["wallet"]["euro1"].as<money>();
+
+    BOOST_TEST(euro1.iscoin());
 
 
+    //check the value of the loose  amount of money in the handbag
+    BOOST_TEST(bag.loose_value == 2);
 
-
-
-    std::cout << root.getName() <<std::endl;
-
+    BOOST_TEST(bag.value() == 8 );
 
 
 }

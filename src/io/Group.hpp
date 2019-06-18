@@ -22,6 +22,8 @@
 #include <cassert>
 #include "core/TreeNode.hpp"
 #include <boost/serialization/split_free.hpp>
+//#include <core/GuidePack.hpp>
+
 //#include <boost/variant.hpp>
 #include "core/Hyperslab.hpp"
 
@@ -40,6 +42,7 @@ namespace frommle{
             template<class G,class T>
             inline static void load(const G & grp, T & val){val.load(const_cast<Group&>(grp));}
         };
+
 
 
         //forward declare a variable here
@@ -139,8 +142,8 @@ namespace frommle{
         }
         virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{THROWMETHODEXCEPTION("getValue not implemented");}
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
-        virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not suppoerted");}
-        virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not suppoerted");}
+        virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
+        virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not supported");}
         constexpr bool readable()const{
             return static_cast<Group*>(getParent())->readable();
         }

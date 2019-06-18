@@ -17,6 +17,9 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+
+#include <boost/multi_array.hpp>
 #ifndef FROMMLE_HYPERSLAB_HPP
 #define FROMMLE_HYPERSLAB_HPP
 namespace frommle{
@@ -25,12 +28,27 @@ namespace frommle{
         template<class T>
         class Hyperslab {
         public:
-            static const int maxdim = 9;
-            T *data = nullptr;
-            std::array <size_t, maxdim> offset{0};
-            std::array <size_t, maxdim> count{0};
-            std::array <size_t, maxdim> stride{1};
-            std::array <size_t, maxdim> map{0};
+            template<size_t ndim>
+            Hyperslab(const boost::multi_array<T,ndim> &arr){
+                ndim_=ndim;
+                cdata_= arr.origin();
+                offset_=std::vector<size_t >(ndim_,0);
+                stride_=std::vector<size_t >(ndim_,1);
+                auto shape=arr.shape();
+                count_=std::vector<size_t>(shape,shape+ndim_);
+
+            }
+        const T* data()const{return cdata_;}
+        T* data(){return data_;}
+        const std::vector<size_t > & extents()const{return count_;}
+        private:
+            size_t ndim_=0;
+            T *data_ = nullptr;
+            const T* cdata_=nullptr;
+            std::vector<size_t> offset_{};
+            std::vector <size_t> count_{};
+            std::vector <size_t> stride_{};
+//            std::vector <size_t> map_{};
         };
     }
 }

@@ -26,7 +26,6 @@
 #include <tuple>
 #include "core/GuidePack.hpp"
 #include "core/MarrayEig.hpp"
-#include "io/Group.hpp"
 #include <type_traits>
 #include "io/Group.hpp"
 namespace frommle {
@@ -66,8 +65,13 @@ namespace frommle {
 
             template<int n>
             inline g_t<n> & g(){return gp_.template g<n>();}
+
+            template<int n>
+            inline const g_t<n> & g()const{return gp_.template g<n>();}
+
             ///@brief polymorphic version
-            inline const GuideBase & g(const int n){return gp_.g(n);}
+            inline const GuideBase & g(const int n)const{return gp_.g(n);}
+            inline GuideBase & g(const int n){return gp_.g(n);}
 
             using arr=boost::multi_array<T,ndim>;
             inline arr & mar(){return ar_;}
@@ -94,9 +98,8 @@ namespace frommle {
                 return ar_[g<0>().idx(indx)];
             }
             Garray & operator=(const T scalar){
-                std::fill(this->data(),this->data()+this->num_elements(),scalar);
+                std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
             }
-
 
         protected:
         private:
@@ -110,10 +113,22 @@ namespace frommle {
             template<class Archive>
             void save(Archive & Ar)const{
                 //save the Guidepack
+                Ar << gp_;
 
-                //save the multiarray data at once
+
+                //save the multiarray data
                 auto & mvar=Ar.template getVariable<T>(name());
-                mvar.saveBulk(*this);
+
+                //link the coordinate variables in the attributes
+                std::string coord=g(0).name();
+                for (auto i=1; i< ndim;++i){
+                    coord+=" "+g(i).name();
+                }
+                mvar.setAttribute("coordinates",coord);
+
+
+                using hslab=typename core::Hyperslab<T>;
+                mvar.setValue(hslab(ar_));
 
             }
         };

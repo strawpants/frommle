@@ -77,7 +77,7 @@ namespace frommle {
             if (currentParent) {
                 ptr_ = currentParent->convertChild(std::move(in)).ptr_;
                 //also inherit the parent from the current TreeNodeRef
-                ptr_->setParent(currentParent);
+                ptr_->setParent(*currentParent);
             }
 
             if (!iname.empty()) {
@@ -103,7 +103,7 @@ namespace frommle {
                 //also let the input.ptr point to the same ptr_
                 in.ptr_=ptr_;
                 //also inherit the parent from the current TreeNodeRef
-                ptr_->setParent(currentParent);
+                ptr_->setParent(*currentParent);
             }else{
                 ptr_=in.ptr_;
             }
@@ -116,20 +116,62 @@ namespace frommle {
             return *this;
         }
 
+        const std::string &TreeNodeRef::getName() const {return ptr_->getName();}
 
-        const TreeNodeRef &TreeNodeCollection::operator[](const std::string &name) const {
+        TreeNodeRef::TreeNodeRef(const std::string &name) {
+            ptr_=std::make_shared<TreeNodeItem>(name);
+        }
+
+        TreeNodeRef::operator bool() const {
+            if (ptr_) {
+                //try casting this to a TreeNodeCollection or a TreeNodeItem if not sucessful return false
+                auto test = dynamic_cast<const TreeNodeItem *>(ptr_.get());
+                if (test) {
+                    return true;
+                }
+                //try casting to a collection
+                auto test2 = dynamic_cast<const TreeNodeCollection * >(ptr_.get());
+                if(test2){
+                    return true;
+                }
+            }
+
+            //if we end up here the TreeNoderef is invalid
+            return false;
+        }
+
+
+
+        const TreeNodeRef TreeNodeCollection::operator[](const std::string &name) const {
             auto idx = findidx(name);
             if (idx == -1) {
-                throw IndexingException("Cannot access unregistered element by name");
+                return TreeNodeBase(name);
             }
             return collection_[idx];
         }
 
-        const TreeNodeRef &TreeNodeCollection::operator[](const size_t &idx) const {
+        ///@brief at operator which autmomatically creates a new entry in the collection
+        TreeNodeRef TreeNodeCollection::operator[](const std::string &name) {
+            loadCollection(name);
+            auto idx = findidx(name);
+            if (idx == -1) {
+                //return a
+                return TreeNodeBase(name).setParent(*this);
+            }
+            return collection_[idx];
+        }
+
+        const TreeNodeRef TreeNodeCollection::operator[](const size_t &idx) const  {
             if (idx >= collection_.size()) {
-                throw IndexingException("Requested index of requested Treenode is larger than collection");
-            } else if (!collection_[idx]) {
-                throw IndexingException("Requested Treenode has not been properly initialized");
+                return TreeNodeBase();
+            }
+            return collection_[idx];
+        }
+
+        TreeNodeRef TreeNodeCollection::operator[](const size_t &idx) {
+            loadCollection(idx);
+            if (idx >= collection_.size()) {
+                return TreeNodeBase().setParent(*this);
             }
             return collection_[idx];
         }
@@ -146,33 +188,44 @@ namespace frommle {
             return -1;
         }
 
-        TreeNodeRef &TreeNodeCollection::operator[](const std::string &name) {
-            loadCollection(name);
-            auto idx = findidx(name);
-            if (idx == -1) {
-                return upsertChild(name, TreeNodeItem());
-            }
-            return collection_[idx];
-        }
-
-        TreeNodeRef &TreeNodeCollection::operator[](const size_t &idx) {
-            loadCollection(idx);
-            if (idx >= collection_.size()) {
-                return upsertChild(idx, TreeNodeItem());
-            } else if (!collection_[idx]) {
-                return upsertChild(idx, TreeNodeItem());
-            }
-            return collection_[idx];
-
-        }
-
         void TreeNodeBase::throwMethExcept() const {
             throw MethodException("Cannot call operator [] on this TreeNodeBase");
         }
 
         ///@brief default just passes the input
-        TreeNodeRef TreeNodeBase::convertChild(TreeNodeRef &&in) {
+        TreeNodeRef TreeNodeCollection::convertChild(TreeNodeRef &&in) {
             return std::move(in);
+        }
+
+        TreeNodeRef &TreeNodeCollection::upsertChild(const std::string name, TreeNodeRef &&in) {
+            auto idx =findidx(name);
+            in->setName(name);
+            if(idx ==-1){
+                collection_.push_back(std::move(in));
+                idx=collection_.size()-1;
+            }else{
+                collection_[idx]=std::move(in);
+
+            }
+
+            collection_[idx]->setParent(*this);
+            return collection_[idx];
+
+
+
+        }
+
+        TreeNodeRef &TreeNodeCollection::upsertChild(const size_t idx, TreeNodeRef &&in) {
+            std::string name=in.getName();
+            if (idx >= collection_.size()) {
+                //first resize the container to accomodate the placement at idx}
+                collection_.resize(idx+1);
+            }
+
+            collection_[idx]=std::move(in);
+            collection_[idx]->setParent(*this);
+            return collection_[idx];
+
         }
 
 

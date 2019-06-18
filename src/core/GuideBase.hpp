@@ -65,11 +65,16 @@ namespace core {
             return type_ == in.type_;
         }
 
+        std::string name()const{return name_;}
+        void setName(const std::string & name){
+            name_=name;
+        }
     private:
         bool isPermuted_ = false;
         std::vector<index> permute_ = {};
     protected:
         std::string type_ = "FROMMLE";
+        std::string name_="Guide";
         index size_ = 0;
     };
 

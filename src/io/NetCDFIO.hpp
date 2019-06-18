@@ -24,7 +24,8 @@
 #include "io/ArchiveBase.hpp"
 #include <netcdf.h>
 #include <boost/multi_array.hpp>
-
+#include <string>
+#include "io/CFConventions.hpp"
 #ifndef FROMMLE_NETCDFARCHIVE_HPP
 #define FROMMLE_NETCDFARCHIVE_HPP
 
@@ -48,24 +49,34 @@ namespace frommle{
 
 
         class NetCDFArchive;
+        class NetCDFGroupBase;
 
         ///@brief class with member functions which can be imported into NC objects
         class NetCDFBase{
         public:
-            void setAttr(const std::string& name ,const std::string &value);
+            inline int id()const{return id_;}
         protected:
-            void setParentid(const core::TreeNodeBase * in);
-            int parentid_=-1;
+            void setParentid(core::TreeNodeBase * in);
             int id_=-1;
+            NetCDFGroupBase *ncparent_=nullptr;
         };
 
-        class NetCDFGroup:public Group, public NetCDFBase{
+        class NetCDFGroupBase:public NetCDFBase{
+        public:
+            int getdimid(const size_t sz)const;
+            int getdimid(const std::string name)const;
+            int setdimid(const size_t len,const std::string name);
+            core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
+            void setAttr(const std::string& name ,const std::string &value);
+        };
+
+        class NetCDFGroup:public Group,public NetCDFGroupBase{
         public:
             NetCDFGroup() : Group() {}
             //NetCDFGroup(const std::string name):Group(name){}
             NetCDFGroup(core::TreeNodeRef && in){}
-            core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
             int ncid()const;
+            core::TreeNodeRef convertChild(core::TreeNodeRef &&in){return NetCDFGroupBase::convertChild(std::move(in));};
         private:
         void parentHook();
 
@@ -81,26 +92,33 @@ namespace frommle{
             using Variable<T>::getName;
             using Variable<T>::singlePtr;
             using Variable<T>::single;
+            using Variable<T>::getAttributeCount;
+            using core::TreeNodeBase::getAttribute;
 //            virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{}
 //            virtual void setValue(const singlePtr & val,const ptrdiff_t idx){}
             virtual void setValue(const core::Hyperslab<T> & hslab);
             virtual void getValue(core::Hyperslab<T> & hslab);
-            int ndim(){return 1;}
+            int ndim(){return ndim_;}
+
+            void setAttr(const std::string& name ,const std::string &value);
+
         private:
             void parentHook();
+            void setUpVariable(const std::vector<size_t> &extents);
+            size_t ndim_=1;
             //supports variables with up to 10 dimensions..
-            std::array<int,10> dimids{};
+            std::vector<int> dimids{};
 
         };
 
 
         ///@brief a class which helps in setting attributes according to the CFconventions
-        class NetCDFArchive:public ArchiveBase, public NetCDFBase{
+        class NetCDFArchive:public ArchiveBase, public NetCDFGroupBase{
         public:
         NetCDFArchive(const std::string source, core::Attribs && attr);
         explicit NetCDFArchive(const std::string source);
         ~NetCDFArchive();
-        core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
+        core::TreeNodeRef convertChild(core::TreeNodeRef &&in){return NetCDFGroupBase::convertChild(std::move(in));};
         private:
 
             void loadCollection(){};
@@ -112,21 +130,68 @@ namespace frommle{
         void NetCDFVariable<T>::parentHook(){
             setParentid(getParent());
 
-            if(writable()){
-                //create variable definition (not the actual values)
-                NetCDFCheckerror(nc_def_var(parentid_,getName().c_str(),NetCDFtype<T>::type, ndim(),   &dimids, &id_));
-            }
         }
 
         template<class T>
         void NetCDFVariable<T>::setValue(const core::Hyperslab<T> &hslab) {
-
+            assert(id_);
+            setUpVariable(hslab.extents());
+            NetCDFCheckerror(nc_put_var	(ncparent_->id(),id_, hslab.data()));
 
 
         }
 
         template<class T>
         void NetCDFVariable<T>::getValue(core::Hyperslab<T> &hslab) {}
+
+        template<class T>
+        void NetCDFVariable<T>::setUpVariable(const std::vector<size_t> & extents) {
+
+            if(writable()){
+                //dynamically set number of dimensions
+                ndim_=extents.size();
+                dimids=std::vector<int>(ndim_,-1);
+
+                //create/reuse dimensions from parent
+                for(int i=0;i< ndim_;++i){
+                    std::string fallback(getName());
+                    if (getAttributeCount("Dimensions") == 0){
+                        if (ndim_ != 1){
+                            //append a dimension id to name as the variable for the 1D case
+                            fallback+=std::to_string(i);
+                        }
+
+                        //tryto find a dimension which ahs the same size
+                        dimids[i]=ncparent_->getdimid(extents[i]);
+
+                    }else{
+                        fallback=core::TreeNodeBase::template getAttribute< std::vector<std::string> >("Dimensions").at(i);
+                        //try to find a dimension with the same name
+                        dimids[i]= ncparent_->getdimid(fallback);
+                    }
+
+                    if(dimids[i] == -1){
+                        //not found so we would like to create a new dimension
+                        dimids[i]=ncparent_->setdimid(extents[i],fallback);
+
+                    }
+
+
+                }
+
+                // After setting up /finding the dimensions we need to register the variable definition
+                NetCDFCheckerror(nc_def_var(ncparent_->id(),getName().c_str(),NetCDFtype<T>::type(), ndim_,  dimids.data(), &id_));
+                //also setup attributes
+                CFConventions::SetDataAttr(*this);
+
+            }
+
+
+        }
+        template<class T>
+        void NetCDFVariable<T>::setAttr(const std::string &name, const std::string &value) {
+            NetCDFCheckerror(nc_put_att_text(ncparent_->id(),id_,name.c_str(),value.size(),value.c_str()));
+        }
     }
 
 }

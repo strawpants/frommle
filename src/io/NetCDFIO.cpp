@@ -26,7 +26,6 @@
 #include "core/Exceptions.hpp"
 #include "NetCDFIO.hpp"
 #include "core/UserSettings.hpp"
-#include "io/CFConventions.hpp"
 #include "boost/multi_array.hpp"
 
 namespace frommle{
@@ -74,27 +73,28 @@ namespace frommle{
         }
 
 
-        void NetCDFBase::setAttr(const std::string &name, const std::string &value) {
+        void NetCDFGroupBase::setAttr(const std::string &name, const std::string &value) {
             NetCDFCheckerror(nc_put_att_text(id_,NC_GLOBAL,name.c_str(),value.size(),value.c_str()));
         }
 
-        void NetCDFBase::setParentid(const core::TreeNodeBase *inParent) {
-            auto test=static_cast<const NetCDFArchive*>(inParent);
+
+        void NetCDFBase::setParentid(core::TreeNodeBase *inParent) {
+            auto test=static_cast<NetCDFArchive*>(inParent);
             if(test){
                 //get the id from the
-                parentid_=test->id_;
+                ncparent_= static_cast<NetCDFGroupBase*>(test);
             }else{
-                auto test=dynamic_cast<const NetCDFGroup*>(inParent);
+                auto test=dynamic_cast<NetCDFGroup*>(inParent);
                 if (!test){
                     THROWINPUTEXCEPTION("Parent type not related to NetCDFBAse object");
                 }
-                parentid_=test->id_;
+                ncparent_= static_cast<NetCDFGroupBase*>(test);
             }
 
 
         }
 
-        core::TreeNodeRef convertChildFree(core::TreeNodeRef &&in) {
+        core::TreeNodeRef NetCDFGroupBase::convertChild(core::TreeNodeRef &&in) {
             //check if the input node is a group
             try{
                 in.as<Group>();
@@ -109,19 +109,61 @@ namespace frommle{
 
         }
 
-        core::TreeNodeRef NetCDFArchive::convertChild(core::TreeNodeRef &&in) {
-            return convertChildFree(std::move(in));
+        ///@brief get dimension by searching for the first with the same size
+        int NetCDFGroupBase::getdimid(const size_t sz)const{
+            //search the existing dimensions by size
+
+            int ndims;
+
+
+            auto status=nc_inq_ndims(id_,&ndims);
+
+            if(status != NC_NOERR){
+                //no dimensions found at all
+                return -1;
+            }
+
+            size_t dimlen;
+            for(int did=0;did<ndims;++did){
+                int status=nc_inq_dimlen(id_,did,&dimlen);
+                if(status == NC_NOERR) {
+                    if (dimlen == sz) {
+                        return did;
+                    }
+                }
+            }
+            //not found if we arrive here
+            return -1;
+
         }
-        
-        core::TreeNodeRef NetCDFGroup::convertChild(core::TreeNodeRef &&in) {
-            return convertChildFree(std::move(in));
+
+        ///@brief get a dimension by searching for the name
+        int NetCDFGroupBase::getdimid(const std::string name)const{
+            //search the existing dimensions by size
+            int dimid=-1;
+            int status=nc_inq_dimid(id_,name.c_str(),&dimid);
+            if(status == NC_NOERR){
+                return dimid;
+            }
+
+            return -1;
+
         }
-        
+
+        ///@brief create a new dimension
+        int NetCDFGroupBase::setdimid(const size_t len,const std::string name){
+            int dimid;
+            NetCDFCheckerror(nc_def_dim	(id_,name.c_str(), len,&dimid));
+            return dimid;
+        }
+
+
+
         void NetCDFGroup::parentHook(){
             setParentid(getParent());
             if(writable()){
                 //createGroup
-                NetCDFCheckerror(nc_def_grp	(parentid_, getName().c_str(),&id_));
+                NetCDFCheckerror(nc_def_grp	(ncparent_->id(), getName().c_str(),&id_));
                 CFConventions::SetGroupAttr(*this);
             }
 

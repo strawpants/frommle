@@ -148,6 +148,7 @@ core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
 
 BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
     std::string fout("Testnc.nc");
+    boost::filesystem::remove_all(boost::filesystem::path(fout));
     {
         NetCDFArchive oAr(fout,{{"mode","w"},{"title","Test dataset created in the IOtesting suite"}});
 

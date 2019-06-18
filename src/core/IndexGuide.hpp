@@ -18,7 +18,7 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "core/GuideBase.hpp"
-
+#include "io/Group.hpp"
 #ifndef FROMMLE_INDEXGUIDE_HPP
 #define FROMMLE_INDEXGUIDE_HPP
 
@@ -35,6 +35,14 @@ namespace frommle{
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
             Element operator[](const frommle::core::index idx)const{return idx;}
 //            Element & operator[](GuideBase::index idx){return idx;}
+            private:
+
+            friend class io::serialize;
+            template<class Archive>
+            void load(Archive & Ar);
+            template<class Archive>
+            void save(Archive & Ar)const{
+            }
         };
 
 

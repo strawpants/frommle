@@ -20,6 +20,7 @@
 
 #include <tuple>
 #include "core/GuideBase.hpp"
+#include "io/Group.hpp"
 
 #ifndef CORE_GUIDEPACK_HPP_
 #define CORE_GUIDEPACK_HPP_
@@ -78,7 +79,7 @@ namespace frommle{
              * @return a GuideBase
              */
             template<int n=0>
-            typename std::enable_if< n+1 != ndim,const GuideBase>::type & g(const int i){
+            typename std::enable_if< n+1 != ndim,const GuideBase>::type & g(const int i)const{
                 if (i == n) {
                     return g<n>();
                 }else{
@@ -91,14 +92,67 @@ namespace frommle{
              * @tparam n
              */
             template<int n=0>
-            typename std::enable_if< n+1 == ndim,const GuideBase>::type & g(const int i){
+            typename std::enable_if< n+1 == ndim,const GuideBase>::type & g(const int i)const{
+                assert(i+1==ndim);
+                return g<n>();
+            }
+
+            //non-const versions
+
+            template<int n=0>
+            typename std::enable_if< n+1 != ndim, GuideBase>::type & g(const int i){
+                if (i == n) {
+                    return g<n>();
+                }else{
+                    //call this function recursively
+                    return g<n+1>(i);
+                }
+            }
+            /*! brief the function below stops the recursion
+             *
+             * @tparam n
+             */
+            template<int n=0>
+            typename std::enable_if< n+1 == ndim,GuideBase>::type & g(const int i){
                 assert(i+1==ndim);
                 return g<n>();
             }
         private:
+            friend class io::serialize;
+            template<class Archive>
+            void load(Archive & Ar);
+            template<class Archive>
+            void save(Archive & Ar)const{
+                saveGuides<Archive,0>(Ar);            
+            
+            }
+            template<class Archive,int n>
+            typename std::enable_if< n+1 != ndim>::type saveGuides(Archive & Ar)const{
+                Ar << std::get<n>(guides_);
+                //also recursively save the remaining guides
+                saveGuides<Archive,n+1>(Ar);
+            };
+            
+            template<class Archive,int n>
+            typename std::enable_if< n+1 == ndim>::type saveGuides(Archive & Ar)const{
+                Ar << std::get<n>(guides_);
+            };
+
+
             guides_t guides_{};
             std::array<size_t,ndim> extent_={};
         };
+
+
+
+
+
+        //template<class... Guides>
+       //template<class Archive>
+        //void core::GuidePack<Guides...>::save(Archive &Ar) const {
+            ////save the different Guides from the guidepack
+            //core::GuidePack<Guides...>::template saveGuides<0>(Ar);
+        //}
 
 
     }

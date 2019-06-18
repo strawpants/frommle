@@ -85,6 +85,14 @@ namespace frommle{
 
         template<class Ar>
         void CFConventions::SetDataAttr(Ar &ar) {
+            for(auto & att:ar.getAttribMap()){
+                //check for string(text) attributes
+                if(att.first == "long_name" or att.first == "units"
+                or   att.first == "standard_name"
+                or att.first == "coordinates"){
+                    ar.setAttr(att.first,ar.template getAttribute<std::string>(att.first));
+                }
+            }
 
         }
 

@@ -32,8 +32,86 @@
 namespace frommle{
     namespace core{
 
-        class TreeNodeRef;
         using Attribs=std::map<std::string,boost::any>;
+
+        class TreeNodeBase;
+        class TreeNodeCollection;
+        //@brief wrapper class around a shared_ptr which also forwards operator[] to the pointee. Note that this is implemented in the shared_ptr from c++11
+        class TreeNodeRef{
+        public:
+            using cvec=std::vector<TreeNodeRef>;
+            TreeNodeRef(){}
+            explicit TreeNodeRef(const std::string & name );
+            template<class T>
+            TreeNodeRef(T && nodeIn)noexcept{
+                ptr_=std::make_shared<T>(std::move(nodeIn));
+            }
+
+            template<class T>
+            TreeNodeRef(T & nodeIn)noexcept;
+            TreeNodeRef(TreeNodeRef & in){
+                ptr_=in.ptr_;
+            }
+            explicit TreeNodeRef(const TreeNodeCollection * parent);
+//            explicit TreeNodeRef(const std::string name){
+//
+//            }
+            ///@brief replace the current treenode while keeping the original name and parent
+            const TreeNodeRef & operator=(TreeNodeRef && in);
+            //@brief copy a TreenodeRef in the current position but don't update the parent and name in the original
+            const TreeNodeRef & operator=(const TreeNodeRef & in){
+                ptr_=in.ptr_;
+                return *this;
+            }
+            ///@brief assign a treenoderef and make sure that the righthandside has the correct name and parent set
+            const TreeNodeRef & operator=(TreeNodeRef & in);
+
+            TreeNodeRef(const TreeNodeRef & in){
+                ptr_=in.ptr_;
+            }
+
+            TreeNodeRef(TreeNodeRef && in)noexcept{
+                *this=std::move(in);
+            }
+//            TreeNodeRef(TreeNodeRef && in){
+//                *this=std::move(in);
+//            }
+
+            cvec::const_iterator cbegin()const;
+            cvec::const_iterator cend()const;
+
+            cvec::iterator begin();
+            cvec::iterator end();
+
+
+//            template<class T>
+//            TreeNodeRef & upsertChild(const std::string name,T && in);
+//            template<class T>
+//            TreeNodeRef & upsertChild(const size_t idx,T && in);
+
+
+
+            template<class T>
+            TreeNodeRef & operator =( T && in);
+
+            TreeNodeBase & operator *()const{return *ptr_;}
+            TreeNodeBase * operator ->()const{return ptr_.get();}
+            TreeNodeBase * get()const{return ptr_.get();}
+            template<class T>
+            T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
+
+            template<class I>
+            const TreeNodeRef  operator[](const I &idx) const;
+
+            template<class I>
+            TreeNodeRef operator[](const I &idx);
+
+            explicit operator bool()const;
+            //forward some calls to underlying ptr
+            const std::string & getName()const;
+        private:
+            std::shared_ptr<TreeNodeBase> ptr_{};
+        };
 
         class TreeNodeBase{
         public:
@@ -43,14 +121,17 @@ namespace frommle{
             TreeNodeBase(const std::string && name):name_(std::move(name)){}
             TreeNodeBase(const std::string name, Attribs && attr):name_(name),attrib_(std::move(attr)){}
             TreeNodeBase(TreeNodeRef && in);
-            TreeNodeBase(const TreeNodeBase & in){
-                name_=in.name_;
-                attrib_=in.attrib_;
-            }
+            TreeNodeBase(const TreeNodeBase & in)=default;
+
+//            {
+//                name_=in.name_;
+//                attrib_=in.attrib_;
+//                parent_=in.parent_;
+//            }
 
             const std::string & getName()const{return name_;}
             void setName(const std::string name){name_=name;}
-            virtual bool isCollection()const=0;//dynamically determines whether this is a collection or whether it holds a single value
+            virtual bool isCollection()const{return false;};//dynamically determines whether this is a collection or whether it holds a single value
 
             template<class Value>
             void setAttribute(const std::string & name,const Value & val){
@@ -93,26 +174,33 @@ namespace frommle{
                 }
             }
 
-            virtual const TreeNodeRef & operator[](const std::string & name)const{throwMethExcept();};
-            virtual const TreeNodeRef & operator[](const size_t & idx)const{throwMethExcept();};
+            virtual const TreeNodeRef operator[](const std::string & name)const {throwMethExcept();};
+            virtual const TreeNodeRef operator[](const size_t & idx)const {throwMethExcept();};
 
-            virtual TreeNodeRef & operator[](const std::string & name){throwMethExcept();}
-            virtual TreeNodeRef & operator[](const size_t & idx){throwMethExcept();};
+            virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();}
+            virtual TreeNodeRef operator[](const size_t & idx){throwMethExcept();};
 
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const=0;
 //            virtual const TreeNodeRef & ref()const=0;
-            TreeNodeBase* getParent()const{return parent_;}
+            TreeNodeCollection* getParent()const{return parent_;}
 //            std::shared_ptr<TreeNodeBase> getParent()const{return parent_;}
             template<class T>
-            void setParent(T* const parent){
-                parent_=parent;
+            TreeNodeBase & setParent(T & parent) &{
+                parent_=&parent;
                 parentHook();
+                return *this;
+            }
+
+            template<class T>
+            TreeNodeBase && setParent(T & parent) &&{
+                parent_=&parent;
+                parentHook();
+                return std::move(*this);
             }
 //            void setParent(std::shared_ptr<T> && parent){
 //                parent_=std::move(parent);
 //                parentHook();
 //            }
-            virtual TreeNodeRef convertChild(TreeNodeRef &&in);
         protected:
 
         private:
@@ -121,116 +209,8 @@ namespace frommle{
             virtual void parentHook(){};
             std::string name_="";
             Attribs attrib_{};
-//            std::shared_ptr<TreeNodeBase> parent_{};
-            TreeNodeBase *parent_=nullptr;
+            TreeNodeCollection *parent_=nullptr;
         };
-
-
-        //@brief wrapper class around a shared_ptr which also forwards operator[] to the pointee. Note that this is implemented in the shared_ptr from c++11
-        class TreeNodeRef{
-        public:
-            using cvec=std::vector<TreeNodeRef>;
-            TreeNodeRef(){}
-            template<class T>
-            TreeNodeRef(T && nodeIn)noexcept{
-                ptr_=std::make_shared<T>(std::move(nodeIn));
-            }
-
-            template<class T>
-            TreeNodeRef(T & nodeIn)noexcept{
-                //use shared_ptr aliasing so the pointer points to the memory of nodein, but does not own it
-                ptr_=std::shared_ptr<T>(std::shared_ptr<T>(),& nodeIn);
-            }
-            TreeNodeRef(TreeNodeRef & in){
-                ptr_=in.ptr_;
-            }
-//            explicit TreeNodeRef(const std::string name){
-//
-//            }
-            ///@brief replace the current treenode while keeping the original name and parent
-            const TreeNodeRef & operator=(TreeNodeRef && in);
-            //@brief copy a TreenodeRef in the current position but don't update the parent and name in the original
-            const TreeNodeRef & operator=(const TreeNodeRef & in){
-                ptr_=in.ptr_;
-                return *this;
-            }
-            ///@brief assign a treenoderef and make sure that the righthandside has the correct name and parent set
-            const TreeNodeRef & operator=(TreeNodeRef & in);
-
-            TreeNodeRef(const TreeNodeRef & in){
-                ptr_=in.ptr_;
-            }
-
-            TreeNodeRef(TreeNodeRef && in)noexcept{
-                ptr_=in.ptr_;
-            }
-//            TreeNodeRef(TreeNodeRef && in){
-//                *this=std::move(in);
-//            }
-
-            cvec::const_iterator cbegin()const;
-            cvec::const_iterator cend()const;
-
-            cvec::iterator begin();
-            cvec::iterator end();
-
-
-            template<class T>
-            TreeNodeRef & upsertChild(const std::string name,T && in);
-            template<class T>
-            TreeNodeRef & upsertChild(const size_t idx,T && in);
-
-
-
-            template<class T>
-            TreeNodeRef & operator =( T && in);
-
-            TreeNodeBase & operator *()const{return *ptr_;}
-            TreeNodeBase * operator ->()const{return ptr_.get();}
-            TreeNodeBase * get()const{return ptr_.get();}
-            template<class T>
-            T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
-            template<class I>
-            const TreeNodeRef & operator[](const I &idx) const {
-                if (!ptr_) {
-                    throw IndexingException("TreeNodeRef points to nothing");
-                }
-                return ptr_->operator[](idx);
-            }
-
-            template<class I>
-            TreeNodeRef & operator[](const I &idx) {
-                if (!ptr_) {
-                    throw IndexingException("TreenodeRef points to nothing");
-                }
-                return ptr_->operator[](idx);
-            }
-
-            explicit operator bool()const{
-                return bool(ptr_);
-            }
-            //forward some calls to underlying ptr
-            const std::string & getName()const{return ptr_->getName();}
-        private:
-            std::shared_ptr<TreeNodeBase> ptr_{};
-        };
-
-        template<class T>
-        TreeNodeRef &TreeNodeRef::operator=(T &&in) {
-            std::string iname=ptr_->getName();
-            auto currentParent=ptr_->getParent();
-            if(currentParent) {
-                ptr_ = currentParent->convertChild(std::move(in)).ptr_;//std::make_shared<T>(std::move(in));
-            }
-            if (!iname.empty()){
-                //Note existing name takes precedence so here we put it back in
-                ptr_->setName(iname);
-            }
-            //also inherit the parent from the current TreeNodeRef
-            ptr_->setParent(currentParent);
-            return *this;
-        }
-
 
 
         class TreeNodeItem:public TreeNodeBase{
@@ -239,7 +219,6 @@ namespace frommle{
             TreeNodeItem(const std::string & name):TreeNodeBase(name){}
             TreeNodeItem(const std::string name, Attribs && attr):TreeNodeBase(name,std::move(attr)){}
             TreeNodeItem(TreeNodeRef && in):TreeNodeBase(std::move(in)){}
-            bool isCollection()const final{return false;}
         private:
         };
 
@@ -258,11 +237,11 @@ namespace frommle{
             typename cvec::iterator end(){return collection_.end();}
             size_t size()const{return collection_.size();}
 
-            virtual const TreeNodeRef & operator[](const std::string & name)const;
-            virtual const TreeNodeRef & operator[](const size_t & idx)const;
+            virtual const TreeNodeRef operator[](const std::string & name)const;
+            virtual const TreeNodeRef operator[](const size_t & idx)const;
 
-            virtual TreeNodeRef & operator[](const std::string & name);
-            virtual TreeNodeRef & operator[](const size_t & idx);
+            virtual TreeNodeRef operator[](const std::string & name);
+            virtual TreeNodeRef operator[](const size_t & idx);
 
             bool isCollection()const final{return true;}
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const;
@@ -274,11 +253,15 @@ namespace frommle{
             TreeNodeRef & upsertChild(const std::string name,T && in);
             template<class T>
             TreeNodeRef & upsertChild(const size_t idx,T && in);
+
+            TreeNodeRef & upsertChild(const size_t idx,TreeNodeRef && in);
+            TreeNodeRef & upsertChild(const std::string name,TreeNodeRef && in);
             void deleteCollection(){
                 collection_=cvec{};
             }
 
             ptrdiff_t findidx(const std::string name)const;
+            virtual TreeNodeRef convertChild(TreeNodeRef &&in);
         protected:
             //@brief optional virtual function to load all or specific available children
             // call loadCollection() to load all, or specify either an id or name
@@ -290,6 +273,60 @@ namespace frommle{
             cvec collection_{};
 //            TreeNodeRef ref_{};
         };
+
+        template<class T>
+        TreeNodeRef &TreeNodeRef::operator=(T &&in) {
+
+            if(ptr_) {
+                std::string iname = ptr_->getName();
+                if (iname.empty()){
+                    iname=in.getName();
+                }
+
+                auto currentParent = ptr_->getParent();
+
+                if (currentParent) {
+                    //also inherit the parent from the current TreeNodeRef
+//                    ptr_->setParent(*currentParent);
+
+//                    ptr_ = currentParent->convertChild(std::move(in)).ptr_;//std::make_shared<T>(std::move(in));
+                    //register as a child at the parent
+                    currentParent->upsertChild(iname,currentParent->convertChild(TreeNodeRef(std::move(in))));
+                    ptr_=currentParent->operator[](iname).ptr_;
+                }
+            }else{
+                *this=std::move(in);
+            }
+            return *this;
+        }
+
+        template<class I>
+        const TreeNodeRef TreeNodeRef::operator[](const I &idx) const {
+            if (!ptr_) {
+                //just return this empty instance
+                return *this;
+//                    throw IndexingException("TreeNodeRef points to nothing");
+            }
+
+            return ptr_->operator[](idx);
+        }
+
+
+        template<class I>
+        TreeNodeRef TreeNodeRef::operator[](const I &idx) {
+            if (!ptr_) {
+                return *this;
+//                    throw IndexingException("TreenodeRef points to nothing");
+            }
+            return ptr_->operator[](idx);
+        }
+
+        template<class T>
+        TreeNodeRef::TreeNodeRef(T &nodeIn) noexcept {
+            //use shared_ptr aliasing so the pointer points to the memory of nodein, but does not own it
+            ptr_=std::shared_ptr<T>(std::shared_ptr<T>(),& nodeIn);
+        }
+
 
 
 
@@ -312,14 +349,13 @@ namespace frommle{
             if (idx == -1){
                 collection_.push_back(TreeNodeRef(std::move(in)));
                 idx=collection_.size()-1;
-                //and overwrite the name of the node
+                //and possibly overwrite the name of the node
                 collection_.back()->setName(name);
             }else{
                 collection_[idx]=TreeNodeRef(std::move(in));
             }
-            collection_[idx]->setParent(this);
-//            collection_[idx]->setParent((*this).getSelf());
 
+            collection_[idx]->setParent(*this);
             return collection_[idx];
 
 
@@ -333,36 +369,36 @@ namespace frommle{
                     collection_.resize(idx+1);
             }
             collection_[idx]=TreeNodeRef(std::move(in));
-            collection_[idx]->setParent(this);
+            collection_[idx]->setParent(*this);
 //            collection_[idx]->setParent((*this).getSelf());
             return collection_[idx];
 
         }
 
-        template<class T>
-        TreeNodeRef & TreeNodeRef::upsertChild(const size_t idx, T &&in) {
-            if(!ptr_->isCollection()) {
-                throw MethodException("Can only upsert a child in a TreeNodecollection");
+//        template<class T>
+//        TreeNodeRef & TreeNodeRef::upsertChild(const size_t idx, T &&in) {
+//            if(!ptr_->isCollection()) {
+//                throw MethodException("Can only upsert a child in a TreeNodecollection");
+//
+//            }
+//            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(idx,std::move(in));
+//            //also set the parent of the child
+////            ref.parent_=ptr_;
+////            return ref;
+//        }
 
-            }
-            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(idx,std::move(in));
-            //also set the parent of the child
-//            ref.parent_=ptr_;
-//            return ref;
-        }
-
-        template<class T>
-        TreeNodeRef & TreeNodeRef::upsertChild(const std::string name, T &&in) {
-
-            if(!ptr_->isCollection()) {
-                throw MethodException("Can only upsert a child in a TreeNodecollection");
-
-            }
-            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(name,std::move(in));
-//            ref.setParent(ptr_);
-//            return ref;
-
-        }
+//        template<class T>
+//        TreeNodeRef & TreeNodeRef::upsertChild(const std::string name, T &&in) {
+//
+//            if(!ptr_->isCollection()) {
+//                throw MethodException("Can only upsert a child in a TreeNodecollection");
+//
+//            }
+//            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(name,std::move(in));
+////            ref.setParent(ptr_);
+////            return ref;
+//
+//        }
 
         template<class T, class It>
         class iteratorWrap: public It{
