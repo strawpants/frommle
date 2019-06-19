@@ -32,6 +32,8 @@
 #include "io/LineBuffer.hpp"
 #include "geometry/geomOperator.hpp"
 
+#include <ogr_geometry.h>
+
 using namespace frommle::geometry;
 using namespace frommle;
 namespace utf=boost::unit_test;
@@ -99,16 +101,35 @@ BOOST_AUTO_TEST_CASE(GeoPointsGuide){
     }
 }
 
+OGRLineString makeOGRLineStr(){
+    OGRSpatialReference *SpatialRef_=OGRSpatialReference::GetWGS84SRS();
+
+    OGRGeometry ** geomptr= new OGRGeometry*;
+    std::string WKT("LineString (-35.58577405857741383 21.35146443514642556, -1.58158995815898606 24.11924686192467959, 4.34937238493725431 47.05230125523011964, 31.23640167364015952 53.77405857740585304, 60.49581589958160066 35.98117154811714613)");
+    if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),SpatialRef_,geomptr)){
+        THROWINPUTEXCEPTION("Failed to create OGR geometry");
+    }
+    OGRLineString ogrline(static_cast<OGRLineString&>(**geomptr));
+    OGRGeometryFactory::destroyGeometry(*geomptr);
+    delete geomptr;
+    return ogrline;
+}
+
 //test running OGR entities through boost geometry functions
 BOOST_AUTO_TEST_CASE(OGR2BoostGeometry){
     namespace bg = boost::geometry;
-
-
 
     //check for properly registered box
     OGREnvelope box=bg::make<OGREnvelope>(-1.0,-1.0,1.0,1.0);
     BOOST_TEST(bg::area(box)== 4);
 
+    //check for functioning linestring
+    //create a linestrin
+    OGRLineString linest(makeOGRLineStr());
+    LOGINFO << bg::length<OGRLineString>(linest);
+//    char** wkt=new char*;
+//    linest.exportToWkt(wkt);
+//    LOGINFO << std::string(*wkt);
 
 
 
