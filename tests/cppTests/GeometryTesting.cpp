@@ -37,6 +37,7 @@
 using namespace frommle::geometry;
 using namespace frommle;
 namespace utf=boost::unit_test;
+namespace tt = boost::test_tools;
 BOOST_AUTO_TEST_CASE(GeoGridGuide,*utf::tolerance(1e-11)){
     //Test the functionality of a GeoGrid (equidistant grid)
     std::array<double,4> wesn={-180,180,-90,90};
@@ -115,6 +116,22 @@ OGRLineString makeOGRLineStr(){
     return ogrline;
 }
 
+
+
+OGRLinearRing makeOGRRing(){
+    OGRSpatialReference *SpatialRef_=OGRSpatialReference::GetWGS84SRS();
+    OGRGeometry ** geomptr= new OGRGeometry*;
+    std::string WKT("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
+    if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),SpatialRef_,geomptr)){
+        THROWINPUTEXCEPTION("Failed to create OGR geometry");
+    }
+    OGRLinearRing ogrring(*static_cast<OGRPolygon&>(**geomptr).getExteriorRing());
+    OGRGeometryFactory::destroyGeometry(*geomptr);
+    delete geomptr;
+    return ogrring;
+
+}
+
 //test running OGR entities through boost geometry functions
 BOOST_AUTO_TEST_CASE(OGR2BoostGeometry){
     namespace bg = boost::geometry;
@@ -124,12 +141,12 @@ BOOST_AUTO_TEST_CASE(OGR2BoostGeometry){
     BOOST_TEST(bg::area(box)== 4);
 
     //check for functioning linestring
-    //create a linestrin
     OGRLineString linest(makeOGRLineStr());
-    LOGINFO << bg::length<OGRLineString>(linest);
-//    char** wkt=new char*;
-//    linest.exportToWkt(wkt);
-//    LOGINFO << std::string(*wkt);
+    BOOST_TEST(bg::length(linest)==1.1137827e+07,tt::tolerance(1.0L));
+
+    //check for functioning linear ring
+    OGRLinearRing ringst(makeOGRRing());
+    BOOST_TEST(bg::area(ringst)==13886524452171.0,tt::tolerance(1.0));
 
 
 

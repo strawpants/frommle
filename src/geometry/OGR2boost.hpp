@@ -1,5 +1,5 @@
 /*! \file
- \brief adapted from https://www.boost.org/doc/libs/1_70_0/libs/geometry/doc/html/geometry/examples/example_source_code__adapting_a_legacy_geometry_object_model.html
+ \brief adapted from https://www.boost.org/doc/libs/1_70_0/libs/geometry/doc/html/geometry/examples/example_source_code__adapting_a_legacy_geometry_object_model.html and https://github.com/eveith/ogr-boost-adapter
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -40,83 +40,14 @@ BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(OGRPoint,double, bg::cs::geographic<bg:
 BOOST_GEOMETRY_REGISTER_BOX_2D_4VALUES(OGREnvelope, OGRPoint, MinX, MinY, MaxX, MaxY);
 
 
-namespace boost
-{
-    namespace geometry
-    {
-        namespace traits {
-//            template<>
-//            struct tag<OGRPoint> {
-//                typedef point_tag type;
-//            };
-//
-//            template<>
-//            struct coordinate_type<OGRPoint> {
-//                typedef double type;
-//            };
-//
-//            template<>
-//            struct coordinate_system<OGRPoint> {
-//                typedef bg::cs::geographic<bg::degree> type;
-//            };
-//
-//            template<>
-//            struct dimension<OGRPoint> : boost::mpl::int_<2> {
-//            };
-//
-//            template<>
-//            struct access<OGRPoint, 0> {
-//                static double get(OGRPoint const &p) {
-//                    return p.getX();
-//                }
-//
-//                static void set(OGRPoint &p, double const &value) {
-//                    p.setX(value);
-//                }
-//            };
-//
-//            template<>
-//            struct access<OGRPoint, 2> {
-//                static double get(OGRPoint const &p) {
-//                    return p.getY();
-//                }
-//
-//                static void set(OGRPoint &p, double const &value) {
-//                    p.setY(value);
-//                }
-//            };
 
-
-
-
-//            template<>
-//            struct tag<OGRLinearRing>
-//            {
-//                typedef ring_tag type;
-//            };
-        }
-    }
-} // namespace boost::geometry::traits
-
-//namespace boost{
-//    namespace geometry{
-//        namespace traits{
-////register line segment
-//            template<>
-//            struct tag<OGRLineString> {
-//                typedef linestring_tag type;
-//            };
-//
-//        }
-//    }
-//}
 namespace fg=frommle::geometry;
 namespace frommle{
     namespace geometry {
 
 //register the boost range iterator to loop over the points in a linestring
-        using OGRLineIter=fg::OGRiterator<OGRLineString>;
-        using const_OGRLineIter=fg::const_OGRiterator<OGRLineString>;
+        using OGRLineIter=fg::OGRPiterator<OGRPoint,OGRLineString>;
+        using const_OGRLineIter=fg::OGRPiterator<const OGRPoint,OGRLineString>;
     }
 }
 
@@ -132,18 +63,94 @@ namespace boost
     { typedef fg::const_OGRLineIter type; };
 }
 
-//namespace frommle{
-//    namespace geometry{
 
-        inline fg::OGRLineIter range_begin(OGRLineString& ogrls) {return fg::OGRiterRange<OGRLineString>(ogrls).begin();}
-        inline fg::OGRLineIter range_end(OGRLineString& ogrls) {return fg::OGRiterRange<OGRLineString>(ogrls).end();}
+        inline fg::OGRLineIter range_begin(OGRLineString& ogrls) {
+            auto it=fg::OGRLineIter(&ogrls);
+            return it;
+        }
+        inline fg::OGRLineIter range_end(OGRLineString& ogrls) {
+            auto it=fg::OGRLineIter(&ogrls);
+            it+=it.size();
+        }
 
-        inline fg::const_OGRLineIter range_begin(const OGRLineString& ogrls) {return fg::const_OGRLineIter(&ogrls,false);}
-        inline fg::const_OGRLineIter range_end(const OGRLineString& ogrls) {return fg::const_OGRLineIter(&ogrls);}
+        inline fg::const_OGRLineIter range_begin(const OGRLineString& ogrls) {
+            auto it=fg::const_OGRLineIter(&ogrls);
+            return it;}
+        inline fg::const_OGRLineIter range_end(const OGRLineString& ogrls) {
+            auto it=fg::const_OGRLineIter(&ogrls);
+            it+=it.size();
+            return it;
+        }
 
-//    }
-//}
 BOOST_GEOMETRY_REGISTER_LINESTRING(OGRLineString);
+
+///register linear ring
+
+namespace frommle{
+    namespace geometry {
+
+//register the boost range iterator to loop over the points in a linestring
+        using OGRRingIter=fg::OGRPiterator<OGRPoint,OGRLinearRing>;
+        using const_OGRRingIter=fg::OGRPiterator<const OGRPoint,OGRLinearRing>;
+    }
+}
+
+namespace boost
+{
+
+    template <>
+    struct range_iterator<OGRLinearRing>
+    { typedef fg::OGRRingIter type; };
+
+    template<>
+    struct range_const_iterator<OGRLinearRing>
+    { typedef fg::const_OGRRingIter type; };
+}
+
+
+inline fg::OGRRingIter range_begin(OGRLinearRing& ogrls) {
+    return fg::OGRRingIter(&ogrls);
+}
+
+inline fg::OGRRingIter range_end(OGRLinearRing& ogrls) {
+    auto it=fg::OGRRingIter(&ogrls);
+    it+=it.size();
+}
+
+inline fg::const_OGRRingIter range_begin(const OGRLinearRing& ogrls) {
+    return fg::const_OGRRingIter(&ogrls);
+    }
+inline fg::const_OGRRingIter range_end(const OGRLinearRing& ogrls) {
+    auto it=fg::const_OGRRingIter(&ogrls);
+    it+=it.size();
+    return it;
+}
+
+namespace boost {
+    namespace geometry {
+        namespace traits {
+
+
+            template<>
+            struct tag<OGRLinearRing *>
+            {
+                typedef ring_tag type;
+            };
+
+
+            template<>
+            struct tag<OGRLinearRing>
+            {
+                typedef ring_tag type;
+            };
+        } // namespace traits
+    } // namespace geometry
+} // namespace boost
+
+//Register the OGRPolygon
+
+
+
 //
 //namespace frommle{
 //    namespace geometry{
