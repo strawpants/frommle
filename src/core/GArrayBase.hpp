@@ -73,14 +73,15 @@ namespace frommle {
             inline const GuideBase & g(const int n)const{return gp_.g(n);}
             inline GuideBase & g(const int n){return gp_.g(n);}
 
-            using arr=boost::multi_array<T,ndim>;
+            using arr=boost::multi_array_ref<T,ndim>;
             inline arr & mar(){return ar_;}
-            Garray(){};
+            Garray():gp_(),data_(std::make_shared<T[]>(gp_.num_elements())),ar_(data_.get(),gp_.getExtent()){}
+
             /*!brief
              * Construct a Garray based on given set of Guide instances
              * @param Args
              */
-            Garray(Guides&& ... Args):gp_(std::forward<Guides>(Args)...),ar_(gp_.getExtent()){
+            Garray(Guides&& ... Args):gp_(std::forward<Guides>(Args)...),data_(std::make_shared<T[]>(gp_.num_elements())),ar_(data_.get(),gp_.getExtent()){
             }
 
 //            //return a single value of the internal multi_array_ref
@@ -105,9 +106,24 @@ namespace frommle {
         private:
             friend class io::serialize;
             GPack gp_{};
+            std::shared_ptr<T[]> data_{};
             arr ar_;
             template<class Archive>
             void load(Archive & Ar){
+                //first load the matrix variable
+                auto & mvar=Ar.template getVariable<T>(name());
+
+                //set the appropriate names for the guidepacks
+               gp_.setNames(mvar.template getAttribute<std::string>("coordinates"));
+                //then load the appropriate guides
+
+                Ar >> gp_;
+
+
+                //also load the matrix data
+                core::Hyperslab<T> hslab{};
+                mvar.getValue(hslab);
+                //
 
             }
             template<class Archive>
@@ -125,10 +141,7 @@ namespace frommle {
                     coord+=" "+g(i).name();
                 }
                 mvar.setAttribute("coordinates",coord);
-
-
-                using hslab=typename core::Hyperslab<T>;
-                mvar.setValue(hslab(ar_));
+                mvar.setValue(core::Hyperslab<T>(ar_));
 
             }
         };

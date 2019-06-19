@@ -33,15 +33,39 @@ namespace frommle{
             using Element=unsigned long long int;
             IndexGuide():GuideBase("IndexGuide"){}
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
+            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,"IndexGuide",nsize){}
             Element operator[](const frommle::core::index idx)const{return idx;}
 //            Element & operator[](GuideBase::index idx){return idx;}
             private:
 
             friend class io::serialize;
             template<class Archive>
-            void load(Archive & Ar);
+            void load(Archive & Ar){
+                std::string gname=name();
+                if (gname.empty()){
+                    gname=type();
+                }
+                auto & gvar=Ar.template getVariable<size_t>(gname);
+                //set the size of the current index
+                core::Hyperslab<size_t> hslab{};
+                gvar.getValue(hslab);
+                size_=hslab.data()[1]+1;
+
+            }
+
             template<class Archive>
             void save(Archive & Ar)const{
+                //create an empty variable holding the index range
+                using rangear=std::array<size_t,2>;
+                rangear irange{0,size()-1};
+                std::string gname=name();
+                if (gname.empty()){
+                    gname=type();
+                }
+                Ar[gname]=io::Variable<size_t>(gname,{{"guidetype",type()}});
+
+                Ar[gname].template as<io::Variable<size_t>>().setValue(core::Hyperslab<size_t>(irange));
+
             }
         };
 

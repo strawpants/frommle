@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(RWOGRArchive){
 
 ///@brief create a test guided array
 core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
-    auto garr=core::make_garray(core::IndexGuide(13),core::IndexGuide(97));
+    auto garr=core::make_garray(core::IndexGuide("guide1",13),core::IndexGuide("guide2",97));
     garr=22.0;
 
     return garr;
@@ -149,14 +149,28 @@ core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
 BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
     std::string fout("Testnc.nc");
     boost::filesystem::remove_all(boost::filesystem::path(fout));
+    auto garray=createTestGarray();
     {
         NetCDFArchive oAr(fout,{{"mode","w"},{"title","Test dataset created in the IOtesting suite"}});
 
-        auto & grp =oAr.getGroup("subgroup1");
+        oAr.getGroup("subgroup1") << garray;
 
-        grp << createTestGarray();
-        
     }
+
+    //now read in the same data
+    core::Garray<double,core::IndexGuide,core::IndexGuide> garrout{};
+
+    {
+        NetCDFArchive iAr(fout,{{"mode","r"}});
+        iAr.getGroup("subgroup1") >> garrout;
+
+
+
+    }
+
+    //check for equality
+    BOOST_TEST(garray.mar() == garrout.mar());
+
 
 
 

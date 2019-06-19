@@ -21,6 +21,7 @@
 #include <tuple>
 #include "core/GuideBase.hpp"
 #include "io/Group.hpp"
+#include <boost/algorithm/string.hpp>
 
 #ifndef CORE_GUIDEPACK_HPP_
 #define CORE_GUIDEPACK_HPP_
@@ -53,6 +54,18 @@ namespace frommle{
                 return extent_;
             };
 
+            long long unsigned int num_elements()const{
+                return std::accumulate(extent_.cbegin(),extent_.cend(),0);
+            }
+
+            void setNames(const std::string & coordinatenames){
+                std::vector<std::string> splits;
+                boost::split(splits,coordinatenames,boost::is_any_of(" "));
+                for(int i=0;i<splits.size();++i){
+                    g(i).setName(splits[i]);
+                }
+
+            }
             size_t size()const{return std::accumulate(extent_.cbegin(),extent_.cend(),0);}
 
             /*!brief
@@ -120,7 +133,10 @@ namespace frommle{
         private:
             friend class io::serialize;
             template<class Archive>
-            void load(Archive & Ar);
+            void load(Archive & Ar){
+                loadGuides<Archive,0>(Ar);
+            }
+
             template<class Archive>
             void save(Archive & Ar)const{
                 saveGuides<Archive,0>(Ar);            
@@ -138,21 +154,21 @@ namespace frommle{
                 Ar << std::get<n>(guides_);
             };
 
+            template<class Archive,int n>
+            typename std::enable_if< n+1 != ndim>::type loadGuides(Archive & Ar){
+                Ar >> std::get<n>(guides_);
+                //also recursively save the remaining guides
+                loadGuides<Archive,n+1>(Ar);
+            };
+
+            template<class Archive,int n>
+            typename std::enable_if< n+1 == ndim>::type loadGuides(Archive & Ar){
+                Ar >> std::get<n>(guides_);
+            };
 
             guides_t guides_{};
-            std::array<size_t,ndim> extent_={};
+            std::array<size_t,ndim> extent_={0};
         };
-
-
-
-
-
-        //template<class... Guides>
-       //template<class Archive>
-        //void core::GuidePack<Guides...>::save(Archive &Ar) const {
-            ////save the different Guides from the guidepack
-            //core::GuidePack<Guides...>::template saveGuides<0>(Ar);
-        //}
 
 
     }

@@ -117,8 +117,6 @@ namespace frommle{
 
         protected:
             friend serialize;
-            //needed to be compatible with the boost serialization library(don't ask me why)
-            void load_binary(void * address,std::size_t count){assert(0);};
             bool openForReading=true;
             bool openForWriting=false;
     private:

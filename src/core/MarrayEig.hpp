@@ -38,7 +38,7 @@ namespace frommle{
      * @return
      */
     template<typename T>
-    Eigen::Map<Matrix<T,Dynamic,Dynamic> ,Unaligned, Stride<Dynamic,Dynamic>> marray_to_eigen(boost::multi_array<T,2> & marr){
+    Eigen::Map<Matrix<T,Dynamic,Dynamic> ,Unaligned, Stride<Dynamic,Dynamic>> marray_to_eigen(boost::multi_array_ref<T,2> & marr){
       using Strd=Stride<Dynamic,Dynamic>;
 
         //Make sure the storage order agrees ..

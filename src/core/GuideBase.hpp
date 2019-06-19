@@ -49,6 +49,7 @@ namespace core {
         GuideBase() {};
 
         GuideBase(const std::string &type, const index &sz) : type_(type), size_(sz) {}
+        GuideBase(const std::string & name, const std::string &type, const index &sz) : type_(type), size_(sz),name_(name) {}
 
         GuideBase(const std::string &type) : type_(type) {}
 

@@ -86,7 +86,7 @@ namespace frommle{
             }else{
                 auto test=dynamic_cast<NetCDFGroup*>(inParent);
                 if (!test){
-                    THROWINPUTEXCEPTION("Parent type not related to NetCDFBAse object");
+                    THROWINPUTEXCEPTION("Parent type not related to NetCDFBase object");
                 }
                 ncparent_= static_cast<NetCDFGroupBase*>(test);
             }
@@ -101,7 +101,7 @@ namespace frommle{
                 return core::TreeNodeRef(NetCDFGroup(std::move(in)));
             }catch(std::bad_cast &excep){
                 //ok try different variable casts with different dimensions
-                return tryVarCasts<NetCDFVariable,double>()(std::move(in));
+                return tryVarCasts<NetCDFVariable,double,size_t>()(std::move(in));
 //                return tryVarCasts<NetCDFVariable,double,int,long long int>()(std::move(in));
 
                     
@@ -161,6 +161,13 @@ namespace frommle{
 
         void NetCDFGroup::parentHook(){
             setParentid(getParent());
+
+            if (readable() and ncparent_->id() != -1){
+            //load group id from archive
+                NetCDFCheckerror(nc_inq_grp_ncid (ncparent_->id(),getName().c_str(),&id_));
+
+            }
+
             if(writable()){
                 //createGroup
                 NetCDFCheckerror(nc_def_grp	(ncparent_->id(), getName().c_str(),&id_));
