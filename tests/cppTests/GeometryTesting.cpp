@@ -31,7 +31,6 @@
 #include "geometry/fibonacciGrid.hpp"
 #include "io/LineBuffer.hpp"
 #include "geometry/geomOperator.hpp"
-
 #include <ogr_geometry.h>
 
 using namespace frommle::geometry;
@@ -117,23 +116,28 @@ OGRLineString makeOGRLineStr(){
 }
 
 
-
-OGRLinearRing makeOGRRing(){
+OGRPolygon makeOGRPolygon(){
     OGRSpatialReference *SpatialRef_=OGRSpatialReference::GetWGS84SRS();
     OGRGeometry ** geomptr= new OGRGeometry*;
-    std::string WKT("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
+    std::string WKT("POLYGON ((-10 50,20 45,19.3 -2.4,-9 10, -10 50),(-1 38,1 30,2 40,-2 45,-2 40, -1 38),(4 18,9 15,10 29,5 30, 4 18))");
     if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),SpatialRef_,geomptr)){
         THROWINPUTEXCEPTION("Failed to create OGR geometry");
     }
-    OGRLinearRing ogrring(*static_cast<OGRPolygon&>(**geomptr).getExteriorRing());
+    OGRPolygon ogrpoly(static_cast<OGRPolygon&>(**geomptr));
     OGRGeometryFactory::destroyGeometry(*geomptr);
     delete geomptr;
-    return ogrring;
+    return ogrpoly;
 
 }
 
+OGRLinearRing makeOGRRing(){
+    auto poly=makeOGRPolygon();
+    OGRLinearRing *ogrring=poly.getExteriorRing();
+    return OGRLinearRing(*ogrring);
+}
+
 //test running OGR entities through boost geometry functions
-BOOST_AUTO_TEST_CASE(OGR2BoostGeometry){
+BOOST_AUTO_TEST_CASE(OGR2BoostGeometry, *utf::tolerance(1e-4)){
     namespace bg = boost::geometry;
 
     //check for properly registered box
@@ -142,14 +146,32 @@ BOOST_AUTO_TEST_CASE(OGR2BoostGeometry){
 
     //check for functioning linestring
     OGRLineString linest(makeOGRLineStr());
-    BOOST_TEST(bg::length(linest)==1.1137827e+07,tt::tolerance(1.0L));
+    double length=bg::length(linest);
+    BOOST_TEST(length==1.1137827094e+07);
 
     //check for functioning linear ring
     OGRLinearRing ringst(makeOGRRing());
-    BOOST_TEST(bg::area(ringst)==13886524452171.0,tt::tolerance(1.0));
+    double ringarea=bg::area(ringst);
+    BOOST_TEST(ringarea==13886524452171.0);
 
+    //check for functioning OGRpolygon
+    OGRPolygon poly(makeOGRPolygon());
+    char ** wkt=new char*;
+    poly.exportToWkt(wkt);
+    auto end=const_OGRPolyIter(&poly);
+    end+=end.size();
+    std::string message;
+//    LOGINFO << message;
+//    for(auto it=const_OGRPolyIter(&poly);it<end;++it){
+//      area+=bg::area(*it);
+////        LOGINFO << "area: "<< bg::area(*it)<< " " << area;
+//    }
+    double area=bg::area(poly);
 
+    BOOST_TEST(area==12859038681013.0);
+//    LOGINFO << bg::area(poly);
 
+//    bool valid=bg::is_valid(poly);
 }
 
 ///Test masking operations of geometries within other geometries

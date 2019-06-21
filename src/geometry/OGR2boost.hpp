@@ -91,7 +91,7 @@ namespace frommle{
 
 //register the boost range iterator to loop over the points in a linestring
         using OGRRingIter=fg::OGRPiterator<OGRPoint,OGRLinearRing>;
-        using const_OGRRingIter=fg::OGRPiterator<const OGRPoint,OGRLinearRing>;
+        using const_OGRRingIter=fg::OGRPiterator<const OGRPoint,const OGRLinearRing>;
     }
 }
 
@@ -131,11 +131,11 @@ namespace boost {
         namespace traits {
 
 
-            template<>
-            struct tag<OGRLinearRing *>
-            {
-                typedef ring_tag type;
-            };
+//            template<>
+//            struct tag<OGRLinearRing *>
+//            {
+//                typedef ring_tag type;
+//            };
 
 
             template<>
@@ -149,117 +149,179 @@ namespace boost {
 
 //Register the OGRPolygon
 
+class OGRPolyRange{
+public:
+    using ringiterator=fg::OGRRingIterator<OGRLinearRing,OGRPolygon>;
+    using const_ringiterator=fg::OGRRingIterator<const OGRLinearRing,const OGRPolygon>;
+    ringiterator begin(){assert(!citer);return begin_;}
+    ringiterator end(){assert(!citer);return end_;}
+    const_ringiterator cbegin()const{assert(citer);return cbegin_;}
+    const_ringiterator cend()const{assert(citer);return cend_;}
+
+    OGRPolyRange(ringiterator & start , ringiterator & end):citer(false),begin_(start),end_(end){
+    }
+
+    OGRPolyRange(const_ringiterator & start,const_ringiterator & end):citer(true),cbegin_(start),cend_(end){
+
+    }
+    OGRPolyRange(const OGRPolyRange & crange){
+
+    }
+
+    const OGRPolyRange& operator =(const OGRPolyRange & crange){
+        return *this;
+    }
 
 
-//
-//namespace frommle{
-//    namespace geometry{
-//
-//    //register the boost range iterator to loop over the points in a linearRing
-//    using OGRRingIter=frommle::geometry::OGRiterator<OGRLinearRing>;
-//    using const_OGRRingIter=frommle::geometry::const_OGRiterator<OGRLinearRing>;
-//
-//    }
-//}
-//namespace boost
-//{
-//    template <>
-//    struct range_iterator<OGRLinearRing>
-//    { typedef OGRRingIter type; };
-//
-//    template<>
-//    struct range_const_iterator<OGRLinearRing>
-//    { typedef const_OGRRingIter type; };
-//}
-//
-////namespace frommle{
-////    namespace geometry{
-//
-//inline OGRRingIter range_begin(OGRLinearRing& ogrls) {OGRRingIter begin(&ogrls);return ++begin;}
-//inline OGRRingIter range_end(OGRLinearRing& ogrls) {OGRRingIter end(&ogrls);return end;}
-//
-//inline const_OGRRingIter range_begin(const OGRLinearRing& ogrls) {const_OGRRingIter cbegin(&ogrls);return ++cbegin;}
-//inline const_OGRRingIter range_end(const OGRLinearRing& ogrls) {const_OGRRingIter cend(&ogrls); return cend;}
-//
-////    }
-////}
-//
-//
-//using OGRpolyiter=frommle::geometry::OGRiterator<OGRPolygon>;
-//using const_OGRpolyiter=frommle::geometry::const_OGRiterator<OGRPolygon>;
-//
-//using OGRpolyRange=frommle::geometry::OGRiterRange<OGRPolygon>;
-////same but will use a different constructor
-//using const_OGRpolyRange=frommle::geometry::OGRiterRange<OGRPolygon>;
-//
-//
-//namespace boost {
-//    namespace geometry {
-//        namespace traits {
-//            template<> struct tag<OGRPolygon> { typedef polygon_tag type; };
-//            template<> struct ring_const_type<OGRPolygon> { typedef const OGRLinearRing& type; };
-//            template<> struct ring_mutable_type<OGRPolygon> { typedef OGRLinearRing& type; };
-//            template<> struct interior_const_type<OGRPolygon> { typedef const OGRpolyRange type; };
-//            template<> struct interior_mutable_type<OGRPolygon> { typedef OGRpolyRange type; };
-//
-//            template<> struct exterior_ring<OGRPolygon>
-//            {
-//                static OGRLinearRing& get(OGRPolygon& p)
-//                {
-//                    return *(p.getExteriorRing());
-//                }
-//                static OGRLinearRing const& get(OGRPolygon const& p)
-//                {
-//                    return *(p.getExteriorRing());
-//                }
-//            };
-//
-//            template<> struct interior_rings<OGRPolygon>
-//            {
-//                static OGRpolyRange get(OGRPolygon& p)
-//                {
-//                    return OGRpolyRange(p);
-//                }
-//                static const const_OGRpolyRange get(OGRPolygon const& p)
-//                {
-//                    return const_OGRpolyRange(p);
-//                }
-//            };
-//        }
-//    }
-//} // namespace boost::geometry::traits
-//
-//namespace boost
-//{
-//    // Specialize metafunctions. We must include the range.hpp header.
-//    // We must open the 'boost' namespace.
-//
-//    template <>
-//    struct range_iterator<OGRpolyRange> { typedef OGRpolyiter type; };
-//
-//    template<>
-//    struct range_const_iterator<OGRpolyRange> { typedef const_OGRpolyiter type; };
-//
-//} // namespace 'boost'
-//
-//
-//// The required Range functions. These should be defined in the same namespace
-//// as Ring.
-//
-//inline OGRpolyiter range_begin(OGRpolyRange & r)
-//{return r.begin();}
-//
-//inline const_OGRpolyiter range_begin(const OGRpolyRange & r)
-//{return r.cbegin();}
-//
-//inline OGRpolyiter range_end(OGRpolyRange & r)
-//{return r.end();}
-//
-//inline const_OGRpolyiter range_end(const OGRpolyRange & r)
-//{return r.cend();}
-//
-//
+private:
+    bool citer=false;
+    ringiterator begin_{};
+    ringiterator end_{};
+    const_ringiterator cbegin_{};
+    const_ringiterator cend_{};
+};
 
+
+namespace frommle{
+    namespace geometry{
+
+    //register the boost range iterator to loop over the points in a linearRing
+    using OGRPolyIter=frommle::geometry::OGRRingIterator<OGRLinearRing,OGRPolygon>;
+    using const_OGRPolyIter=frommle::geometry::OGRRingIterator<const OGRLinearRing,const OGRPolygon>;
+
+    }
+}
+namespace boost {
+    template <>
+    struct range_iterator<OGRPolygon>
+    {
+        typedef fg::OGRPolyIter type;
+    };
+
+
+    template <>
+    struct range_const_iterator<OGRPolygon>
+    {
+        typedef fg::const_OGRPolyIter type;
+    };
+}
+
+
+inline fg::OGRPolyIter range_begin(OGRPolygon& ogrls) {
+    return fg::OGRPolyIter(&ogrls);
+}
+
+inline fg::OGRPolyIter range_end(OGRPolygon& ogrls) {
+    auto it=fg::OGRPolyIter(&ogrls);
+    it+=it.size();
+    return it;
+}
+
+inline fg::const_OGRPolyIter range_begin(const OGRPolygon& ogrls) {
+    return fg::const_OGRPolyIter(&ogrls);
+}
+
+inline fg::const_OGRPolyIter range_end(const OGRPolygon& ogrls) {
+    auto it=fg::const_OGRPolyIter(&ogrls);
+    it+=it.size();
+    return it;
+}
+
+
+namespace boost{
+    namespace geometry {
+        namespace traits {
+
+            template<>
+            struct tag<OGRPolygon> {
+                typedef polygon_tag type;
+            };
+
+
+            template<>
+            struct ring_const_type<OGRPolygon> {
+                typedef const OGRLinearRing & type;
+            };
+
+
+            template<>
+            struct ring_mutable_type<OGRPolygon> {
+                typedef OGRLinearRing & type;
+            };
+
+
+            template<>
+            struct interior_const_type<OGRPolygon> {
+                typedef const OGRPolyRange  type;
+            };
+
+
+            template<>
+            struct interior_mutable_type<OGRPolygon> {
+                typedef OGRPolyRange  type;
+            };
+
+
+            template<>
+            struct exterior_ring<OGRPolygon> {
+                static OGRLinearRing &get(OGRPolygon &p) {
+                    return *(p.getExteriorRing());
+                }
+
+                static const OGRLinearRing &get(OGRPolygon const &p) {
+                    return *(p.getExteriorRing());
+                }
+            };
+
+
+            template<>
+            struct interior_rings<OGRPolygon> {
+                static OGRPolyRange get(OGRPolygon &p) {
+                    fg::OGRPolyIter start(&p);
+                    fg::OGRPolyIter end(&p);
+                    if(start.size()) {
+                        start += 1;//exclude 0 (exterior ring)
+                        end += end.size();
+                    }
+                    return OGRPolyRange(start,end);
+                }
+
+                static const OGRPolyRange get(const OGRPolygon & p){
+                    fg::const_OGRPolyIter start(&p);
+                    fg::const_OGRPolyIter end(&p);
+                    if(start.size()) {
+                        start += 1;//exclude 0 (exterior ring)
+                        end += end.size();
+                    }
+                    return OGRPolyRange(start,end);
+                }
+            };
+        }
+
+    }
+}
+
+namespace boost
+{
+    template <>
+    struct range_iterator<OGRPolyRange> { typedef fg::OGRPolyIter type; };
+
+    template<>
+    struct range_const_iterator<OGRPolyRange> { typedef fg::const_OGRPolyIter type;};
+
+} // namespace 'boost'
+
+inline fg::OGRPolyIter range_begin(OGRPolyRange & r)
+{return r.begin();}
+
+inline fg::const_OGRPolyIter range_begin(const OGRPolyRange& r)
+{return r.cbegin();}
+
+inline fg::OGRPolyIter range_end(OGRPolyRange& r)
+{return r.end();}
+
+inline fg::const_OGRPolyIter range_end(const OGRPolyRange& r)
+{return r.cend();}
 
 
 #endif //FROMMLE_OGR2BOOST_HPP
