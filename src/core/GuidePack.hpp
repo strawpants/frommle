@@ -21,6 +21,7 @@
 #include <tuple>
 #include "core/GuideBase.hpp"
 #include "io/Group.hpp"
+#include "seqGenerator.hpp"
 #include <boost/algorithm/string.hpp>
 
 #ifndef CORE_GUIDEPACK_HPP_
@@ -29,9 +30,6 @@ namespace frommle{
 
     namespace core{
 
-//        template <class LGuide, class ... RGuides> struct stripfirst{
-//            using type=std::tuple<RGuides...>;
-//        };
 /*!brief
  * Wraps several guides into a tuple and provide access functions
  * @tparam Guides: a variadic list of guides which spans the dimensions
@@ -40,16 +38,27 @@ namespace frommle{
         class GuidePack{
         public:
             static const int ndim=sizeof...(Guides);
-            using guides_t=std::tuple<Guides...>;
+            using guides_t=std::tuple<std::shared_ptr<Guides>...>;
             template<int n>
             using g_t=typename std::tuple_element<n,guides_t>::type;
 //            using subguides=typename stripfirst<Guides...>::type;
             GuidePack(){}
             GuidePack(Guides&& ... Args){
                 extent_={Args.size()...};
-                guides_ = std::make_tuple(std::forward<Guides>(Args)...);
+//                guides_ = std::make_tuple(std::forward<(std::make_shared<Guides>(std::forward<Guides>(Args)...)...);
+                guides_ = std::make_tuple(std::make_shared<Guides>(std::move(Args))...);
 
             }
+
+
+            template<class Gp>
+            GuidePack & operator=(Gp & gpin){
+                assert(ndim == gpin.ndim);
+                assignGuidePack<0,Gp>(gpin);
+                return *this;
+            }
+
+
             std::array<size_t,ndim> getExtent()const{
                 return extent_;
             };
@@ -62,7 +71,7 @@ namespace frommle{
                 std::vector<std::string> splits;
                 boost::split(splits,coordinatenames,boost::is_any_of(" "));
                 for(int i=0;i<splits.size();++i){
-                    g(i).setName(splits[i]);
+                    g(i)->setName(splits[i]);
                 }
 
             }
@@ -92,7 +101,7 @@ namespace frommle{
              * @return a GuideBase
              */
             template<int n=0>
-            typename std::enable_if< n+1 != ndim,const GuideBase>::type & g(const int i)const{
+            typename std::enable_if< n+1 != ndim,std::shared_ptr<const GuideBase>>::type  g(const int i)const{
                 if (i == n) {
                     return g<n>();
                 }else{
@@ -105,7 +114,7 @@ namespace frommle{
              * @tparam n
              */
             template<int n=0>
-            typename std::enable_if< n+1 == ndim,const GuideBase>::type & g(const int i)const{
+            typename std::enable_if< n+1 == ndim,std::shared_ptr<const GuideBase>>::type  g(const int i)const{
                 assert(i+1==ndim);
                 return g<n>();
             }
@@ -113,7 +122,7 @@ namespace frommle{
             //non-const versions
 
             template<int n=0>
-            typename std::enable_if< n+1 != ndim, GuideBase>::type & g(const int i){
+            typename std::enable_if< n+1 != ndim, std::shared_ptr<GuideBase>>::type  g(const int i){
                 if (i == n) {
                     return g<n>();
                 }else{
@@ -126,11 +135,32 @@ namespace frommle{
              * @tparam n
              */
             template<int n=0>
-            typename std::enable_if< n+1 == ndim,GuideBase>::type & g(const int i){
+            typename std::enable_if< n+1 == ndim,std::shared_ptr<GuideBase>>::type  g(const int i){
                 assert(i+1==ndim);
                 return g<n>();
+
             }
+
+            template<int i>
+            struct maskpack {
+                    template<class Gother>
+                    using mask_g=typename std::conditional<std::is_same<Gother,typename g_t<i>::element_type>::value,core::MaskedGuide<Gother>,Gother>::type;
+                    using type=GuidePack< mask_g<Guides>...>;
+            };
+
+            ///@returns a guidepack which has one dimension masked
+            template<int i>
+            typename maskpack<i>::type mask(){
+                typename maskpack<i>::type maskp{};
+                //assign guides
+                maskp.guides_=guides_;
+                return maskp;
+            }
+
         private:
+            template<class ...Gs>
+            friend class GuidePack;
+
             friend class io::serialize;
             template<class Archive>
             void load(Archive & Ar){
@@ -144,26 +174,52 @@ namespace frommle{
             }
             template<class Archive,int n>
             typename std::enable_if< n+1 != ndim>::type saveGuides(Archive & Ar)const{
-                Ar << std::get<n>(guides_);
+                Ar << *(std::get<n>(guides_));
                 //also recursively save the remaining guides
                 saveGuides<Archive,n+1>(Ar);
             };
             
             template<class Archive,int n>
             typename std::enable_if< n+1 == ndim>::type saveGuides(Archive & Ar)const{
-                Ar << std::get<n>(guides_);
+                Ar << *(std::get<n>(guides_));
             };
 
             template<class Archive,int n>
             typename std::enable_if< n+1 != ndim>::type loadGuides(Archive & Ar){
-                Ar >> std::get<n>(guides_);
+                Ar >> *(std::get<n>(guides_));
                 //also recursively save the remaining guides
                 loadGuides<Archive,n+1>(Ar);
             };
 
             template<class Archive,int n>
             typename std::enable_if< n+1 == ndim>::type loadGuides(Archive & Ar){
-                Ar >> std::get<n>(guides_);
+                Ar >> *(std::get<n>(guides_));
+            };
+
+            template<class G,class Gin>
+                static typename std::enable_if<std::is_same< typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
+                    //we don't convert but just add an owner to the shared_ptr
+                    out=in;
+                }
+            
+            template<class G,class Gin>
+                static typename std::enable_if<!std::is_same<typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
+                    //we convert the value here but just add an owner to the shared_ptr
+                    //convert  
+                    *out=typename G::element_type(*in);
+                }
+
+            template<int n,class Gpackother>
+            typename std::enable_if< n+1 != ndim >::type assignGuidePack(Gpackother & gpother){
+                    assign(g<n>(),gpother.template g<n>());
+                    //also recursively assign the other guides
+                    assignGuidePack<n+1,Gpackother>(gpother);
+            }
+
+            template<int n,class Gpackother>
+            typename std::enable_if< n+1 == ndim>::type assignGuidePack( Gpackother & gpother){
+                assign(g<n>(),gpother.template g<n>());
+
             };
 
             guides_t guides_{};

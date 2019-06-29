@@ -22,6 +22,8 @@
 #include <assert.h>
 #include <tuple>
 #include "core/GuidePack.hpp"
+#include "GArrayBase.hpp"
+
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
 
@@ -49,18 +51,26 @@ namespace core {
 
 
     template<class outGuide, class inGuide>
-    class GOperator : public GOperatorBase, public GuidePack<outGuide,inGuide> {
+    class GOperator : public GOperatorBase  {
     public:
         using GPack=GuidePack<outGuide,inGuide>;
+        using gin=typename GPack::template g_t<1>;
+        using gout=typename GPack::template g_t<0>;
+        
         GOperator() {}
 
-        GOperator(outGuide &&out, inGuide &&in):GPack(std::move(out),std::move(in)) {
+        GOperator(outGuide &&out, inGuide &&in):gp_(std::move(out),std::move(in)) {
         }
+        template<class rhsGuide>
+        core::Garray<outGuide,rhsGuide> operator()(core::Garray<inGuide,rhsGuide> & inGar){
 
+        }
 
 
     protected:
     private:
+        GPack gp_{};
+
 
     };
 

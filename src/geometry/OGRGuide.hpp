@@ -69,6 +69,10 @@ namespace frommle{
             using idxmap=std::pair<box, size_t>;
             using rtree=bgi::rtree<idxmap,bgi::rstar<16,4>>;
             const rtree & getRtree();
+            //operator core::MaskedGuide<OGRGuide>(){
+            //return core::MaskedGuide<OGRGuide>(static_cast<const OGRGuide&>(*this));
+            //}
+            using core::GuideBase::operator core::MaskedGuide<OGRGuide>;
         private:
             friend class io::serialize;
             template<class Archive>

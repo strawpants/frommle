@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
     }
 
     //check for equality
-    BOOST_TEST(garray.mar() == garrout.mar());
+    BOOST_TEST(garray.mat() == garrout.mat());
 
 
 

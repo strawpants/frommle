@@ -31,6 +31,8 @@
 #include "core/UserSettings.hpp"
 #include <cstdio>
 #include "core/TreeNode.hpp"
+#include "core/Constants.hpp"
+#include "core/Logging.hpp"
 
 using namespace frommle::core;
 namespace bg=boost::gregorian;
@@ -39,29 +41,20 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
     auto TGuide=make_trange(bg::date(2002,12,1),bg::date(2003,3,30),bg::days(1));
     auto garr1d=make_garray(std::move(TGuide));
     garr1d.setName("Blah");
-//    std::cout << garr1d.name()<<" "<<garr1d[0] << " " << garr1d.g(0).type()<< std::endl;
-
+    garr1d=M_PI;
+    std::cout << garr1d.name()<<" "<<garr1d.mat()[0] << " " << garr1d.g(0)->type()<< std::endl;
 
     //2D example
     size_t nrows=23;
     size_t ncols=4;
+    double value=3.0;
     auto garr2d=make_garray(IndexGuide(nrows),IndexGuide(ncols));
 
-    auto eigm=marray_to_eigen(garr2d.mar());
-    eigm.array()=3.0;
+    //now try to change the values through an eigen matrix wrapper
+    auto eigm=garr2d.eig();
+    eigm.array()=value;
 
-
-
-//    boost::multi_array<double,1> barr2d(shp);
-//    for(auto & el:garr2d){
-//        std::cout << el << std::endl;
-//    }
-
-//    std::cout << garr2d[0][0] << " " << garr2d.g(1).type()<< std::endl;
-
-
-
-    BOOST_TEST( "ksmc" == "Blah");
+    BOOST_TEST(eigm.sum() == nrows*ncols*value);
 }
 
 

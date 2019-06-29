@@ -32,6 +32,7 @@
 #include "io/LineBuffer.hpp"
 #include "geometry/geomOperator.hpp"
 #include <ogr_geometry.h>
+#include "core/IndexGuide.hpp"
 
 using namespace frommle::geometry;
 using namespace frommle;
@@ -169,8 +170,9 @@ BOOST_AUTO_TEST_CASE(OGR2BoostGeometry, *utf::tolerance(1e-4)){
     double area=bg::area(poly);
 
     BOOST_TEST(area==12859038681013.0);
-//    LOGINFO << bg::area(poly);
 
+
+    //currently is_valid is not working.. :(
 //    bool valid=bg::is_valid(poly);
 }
 
@@ -188,12 +190,15 @@ BOOST_AUTO_TEST_CASE(MaskGeometry){
     }
 
 
-    //create Fibonaccigrid which is going to be masked
+    //create a Fibonaccigrid with assigned values which is going to be masked
     using pointguide=OGRGuide<OGRPoint>;
-    auto fibgrid=std::make_shared<pointguide>(makeFibonacciGrid(10000));
-    withinOperator<polyguide> MaskOp(polymask);
+    auto fibarr=core::make_garray<int>(makeFibonacciGrid(10000),core::IndexGuide(1));
+    fibarr=1;
 
-    auto fibmask=MaskOp(fibgrid);
+
+    withinOperator<OGRPolygon,pointguide> MaskOp(polymask);
+
+    auto fibmask=MaskOp(fibarr);
 
 }
 

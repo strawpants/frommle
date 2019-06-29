@@ -37,6 +37,7 @@ namespace bg = boost::geometry;
 
 ////register OGRpoint class so that it is understood by boost geometry
 BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(OGRPoint,double, bg::cs::geographic<bg::degree>, getX, getY, setX, setY);
+//BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(OGRPoint,double, bg::cs::spherical_equatorial<bg::degree>, getX, getY, setX, setY);
 BOOST_GEOMETRY_REGISTER_BOX_2D_4VALUES(OGREnvelope, OGRPoint, MinX, MinY, MaxX, MaxY);
 
 

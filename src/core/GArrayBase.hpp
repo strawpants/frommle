@@ -25,7 +25,7 @@
 #include <boost/multi_array.hpp>
 #include <tuple>
 #include "core/GuidePack.hpp"
-#include "core/MarrayEig.hpp"
+#include <eigen3/Eigen/Core>
 #include <type_traits>
 #include "io/Group.hpp"
 namespace frommle {
@@ -55,11 +55,12 @@ namespace frommle {
          * @tparam T element type of the multiarray
          * @tparam Guides a variadic set of Guides
          */
-        template<class T, class... Guides>
+        template<class T, class GPack>
         class Garray:public GArrayBase{
         public:
-            using GPack=GuidePack<Guides...>;
-            static const int ndim=sizeof...(Guides);
+//            using GPack=GuidePack<Guides...>;
+//            static const int ndim=sizeof...(Guides);
+            static const int ndim=GPack::ndim;
             template<int n>
             using g_t=typename GPack::template g_t<n>;
 
@@ -70,41 +71,59 @@ namespace frommle {
             inline const g_t<n> & g()const{return gp_.template g<n>();}
 
             ///@brief polymorphic version
-            inline const GuideBase & g(const int n)const{return gp_.g(n);}
-            inline GuideBase & g(const int n){return gp_.g(n);}
+            inline const std::shared_ptr<GuideBase>  g(const int n)const{return gp_.g(n);}
+            inline std::shared_ptr<GuideBase>  g(const int n){return gp_.g(n);}
 
             using arr=boost::multi_array_ref<T,ndim>;
-            inline arr & mar(){return ar_;}
-            Garray():gp_(),data_(std::make_shared<T[]>(gp_.num_elements())),ar_(data_.get(),gp_.getExtent()){}
+            inline arr & mat(){return ar_;}
+            Garray():gp_(),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){}
 
-            /*!brief
-             * Construct a Garray based on given set of Guide instances
-             * @param Args
-             */
-            Garray(Guides&& ... Args):gp_(std::forward<Guides>(Args)...),data_(std::make_shared<T[]>(gp_.num_elements())),ar_(data_.get(),gp_.getExtent()){
+
+            Garray(GPack && gp):gp_(std::move(gp)),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){
             }
 
 //            //return a single value of the internal multi_array_ref
             template<int i=0>
-            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::Element & indx){
+            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::element_type::Element & indx){
                 assert(1==ndim);
-                return ar_[g<0>().idx(indx)];
+                return ar_[g<0>()->idx(indx)];
             }
 
             // return a subview of the current Garray (i.e. strip a dimension)
             using subGarray=typename arr::template array_view<ndim-1>::type;
             template<int i=0>
-            typename std::enable_if< i+1 != ndim, subGarray >::type & operator[](const typename g_t<0>::Element & indx){
+            typename std::enable_if< i+1 != ndim, subGarray >::type & operator[](const typename g_t<0>::element_type::Element & indx){
                 assert(i<ndim-1);
-                return ar_[g<0>().idx(indx)];
+                return ar_[g<0>()->idx(indx)];
             }
             Garray & operator=(const T scalar){
                 std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
             }
 
+            //Extract eigen matrix (but only for 2D arrays)
+            using eigm=typename Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ,Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>>;
+            template<int dim=ndim>
+            typename std::enable_if<dim==2,eigm>::type  eig(){
+                auto marrStrd=Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>(ar_.strides()[0],ar_.strides()[1]);
+                return eigm(ar_.data(),ar_.shape()[0],ar_.shape()[1],marrStrd);
+            }
+
+            template<int n>
+            typename core::Garray<T,typename GPack::template maskpack<n>::type> maskdim(){
+                typename core::Garray<T,typename GPack::template maskpack<n>::type> mask{};
+                mask.gp_=gp_;
+                mask.data_=data_;
+                mask.ar_=ar_;
+                return mask;
+            }
+
+
         protected:
         private:
             friend class io::serialize;
+            template<class Y,class Gp>
+            friend class Garray;
+
             GPack gp_{};
             std::shared_ptr<T[]> data_{};
             arr ar_;
@@ -144,8 +163,21 @@ namespace frommle {
                 mvar.setValue(core::Hyperslab<T>(ar_));
 
             }
+
+        
         };
 
+
+        ///@brief a guided array which also screens off invalid elements
+        template<class T, class GPack>
+        class MaskedGarray:public Garray<T,GPack>{
+            public:
+            using Garray<T,GPack>::ndim;
+            using mask_ar=boost::multi_array<bool,ndim>;
+            private:
+            mask_ar mask_{};
+            
+        };
 
         /*!brief
          * Factory function to quickly create garrays from initialized Guides
@@ -155,8 +187,8 @@ namespace frommle {
          * @return
          */
         template<class T=double,class... Guides>
-        Garray<T,Guides...> make_garray(Guides && ... inpack){
-            return Garray<T,Guides...>(std::forward<Guides>(inpack)...);
+        Garray<T,GuidePack<Guides...>> make_garray(Guides && ... inpack){
+            return Garray<T,GuidePack<Guides...>>(GuidePack<Guides...>(std::forward<Guides>(std::move(inpack))...));
         }
 
 

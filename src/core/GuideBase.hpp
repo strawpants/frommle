@@ -28,6 +28,8 @@
 #include <memory>
 namespace frommle {
 namespace core {
+    template<class G>
+    class MaskedGuide;
 
     using index=size_t;
 /*!
@@ -55,8 +57,11 @@ namespace core {
 
         virtual ~GuideBase() {
         }
-
-
+       
+        //implict conversion to a maskedversion
+        template<class G>
+        explicit   operator MaskedGuide<G>();
+        
         //add 1D index_range and index_gen types here?
         virtual std::string type() const { return type_; }
 
@@ -101,6 +106,55 @@ namespace core {
         Element elVal={};
     private:
     };
+
+
+    ///@brief this masked guide wraps another guide while masking part of it
+    template<class G>
+class MaskedGuide:public GuideBase{
+public:
+    //create iterators to iterate over the contained guide while skipping masked values
+    using Element=typename G::Element;
+    using GuideBase::size_;
+    void mask(const ptrdiff_t idx=-1){
+        if (idx!=-1){
+            valid_[idx]=0;
+            --size_;
+        }else{
+            //mask everything
+            std::fill(valid_.begin(),valid_.end(),0);
+            size_=0;
+        }
+    }
+    void unmask(const ptrdiff_t idx=-1){
+        if (idx!=-1){
+            valid_[idx]=1;
+            ++size_;
+        }else{
+            //mask everything
+            std::fill(valid_.begin(),valid_.end(),1);
+            size_=valid_.size();
+        }
+    }
+
+    MaskedGuide(const G & in):guide_(&in),valid_(in.size(),1){
+
+    }
+//    void togglemask(const ptrdiff_t idx =-1){}
+    MaskedGuide & operator=(const G & gin){
+        *this=MaskedGuide(gin);
+        return *this;
+    }
+private:
+    const G* guide_=nullptr;
+    std::vector<int> valid_{};
+
+};
+template<class G>
+GuideBase::operator MaskedGuide<G>(){
+            return MaskedGuide<G>(static_cast<const G&>(*this));
+}
+
+
 }
 }
 

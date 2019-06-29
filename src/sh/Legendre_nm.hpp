@@ -35,12 +35,12 @@
 namespace frommle{
     namespace sh{
         template<class ftype>
-        class Legendre_nm:public frommle::core::Garray<ftype,SHtmnGuide>{
+    class Legendre_nm:public frommle::core::Garray<ftype,core::GuidePack<SHtmnGuide>>{
         public:
-            using Garr=frommle::core::Garray<ftype,SHtmnGuide>;
-            using Garr::mar;
+            using Garr=frommle::core::Garray<ftype,core::GuidePack<SHtmnGuide>>;
+            using Garr::mat;
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life
-            inline SHtmnGuide & shg(){return this->template g<0>();}
+            inline SHtmnGuide & shg(){return *(this->template g<0>());}
             Legendre_nm(const int nmax);
             void set(const ftype costheta);
 

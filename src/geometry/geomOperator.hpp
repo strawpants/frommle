@@ -24,6 +24,8 @@
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/index/rtree.hpp>
+#include <boost/geometry/strategies/agnostic/point_in_poly_winding.hpp>
+#include "core/GOperatorBase.hpp"
 namespace bgi=boost::geometry::index;
 
 #ifndef FROMMLE_GEOMOPERATOR_HPP
@@ -31,29 +33,49 @@ namespace bgi=boost::geometry::index;
 namespace frommle{
     namespace geometry{
 
-    template<class G>
-    class withinOperator{
+    template<class OGR,class G>
+    class withinOperator:public core::GOperator<core::MaskedGuide<G>,G>{
     public:
-        withinOperator(const std::shared_ptr<G> & in):baseref(in){}
+        using ogrcont=OGRGuide<OGR>;
+        withinOperator(std::shared_ptr<ogrcont> & in):cont_(in){}
         withinOperator(){};
-        template<class Gout>
-        std::shared_ptr<Gout> operator()(const std::shared_ptr<Gout> & in)const{
-        auto masked=std::make_shared<Gout>("masked");
-        //do a first scan using the rtee from the baseref
-//        for(const auto & geom:*in){
-//            auto itbegin=baseref->getRtree().qbegin(bgi::within(*geom));
-//            for(auto it=itbegin;it!=baseref->getRtree();++it){
-//                //do a full geometry check on the hits from the rtree
-//                if(geom->Within(&(*baseref)[it->second])){
-//                    masked->push_back(*geom);
+        template<class T,class Grhs>
+        using gar=core::Garray<T,typename core::GuidePack<G,Grhs>>;
+
+        template<class T,class Grhs>
+        using garmask=core::Garray<T,typename core::GuidePack<G,Grhs>::template maskpack<0>::type>;
+
+        template<class T,class Grhs>
+        garmask<T,Grhs> operator()(gar<T,Grhs> & in)const{
+            //get a reference to an array which has a masked dimension
+            auto masked=in.template maskdim<0>();
+            auto gm=masked.template g<0>();
+            //first mask all entries in the output
+            gm->mask();
+
+            auto g1=in.template g<0>();
+            //do a first scan using the boundng boxes from the boost:rtee
+            auto g0=g1->cbegin();
+            size_t idx=0;
+            for(const auto & geom:*g1){
+                auto itbegin=cont_->getRtree().qbegin(bgi::within(*geom));
+                //auto itend=cont_->getRtree().qend();
+//                for(auto it=itbegin;it!=itend;++it){
+//                    //do a full geometry check on the hits from the rtree
+//                    if(geom->Within(&(*cont_)[it->second])){
+//                            //unmask the entry which has a hit
+//                           gm->unmask(idx);
+//                    }
 //                }
-//            }
-//        }
-        return masked;
-        };
+                ++idx;
+            }
+
+
+            return masked;
+        }
 
     private:
-        std::shared_ptr<G>baseref{};
+        std::shared_ptr<ogrcont> cont_{};
     };
 
     }

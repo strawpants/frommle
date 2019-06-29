@@ -81,7 +81,7 @@ namespace frommle {
             L1CacheEntry.sectorial = 1.0 / numericStabilityFactor;
 
 
-            mar()[0] = 1.0; // or Pnm[0] = L1CacheEntry.sectorial*numericStabilityFactor
+            mat()[0] = 1.0; // or Pnm[0] = L1CacheEntry.sectorial*numericStabilityFactor
 
             for (int m = 0; m < nmax_; ++m) {
                 idx = shg().idx(m, m);
@@ -89,7 +89,7 @@ namespace frommle {
 
                 //compute offdiagonal element
                 L1CacheEntry.pnmin1 = wnm_[idx + 1] * costheta * L1CacheEntry.pnmin2;
-                mar()[idx + 1] = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
+                mat()[idx + 1] = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
                 //loop over remaining degrees
                 for (int n = m + 2; n <= nmax_ + 1; ++n) {
                     idx = shg().idx(n, m);
@@ -97,7 +97,7 @@ namespace frommle {
                     L1CacheEntry.pn =
                             wnm_[idx] * (costheta * L1CacheEntry.pnmin1 - L1CacheEntry.pnmin2 / wnm_[idx - 1]);
                     //write value to output vector and shift entries in the cache
-                    mar()[idx] = L1CacheEntry.pn * L1CacheEntry.sectorial;
+                    mat()[idx] = L1CacheEntry.pn * L1CacheEntry.sectorial;
                     //shift entry to prepare for the next degree
                     L1CacheEntry.pnmin2 = L1CacheEntry.pnmin1;
                     L1CacheEntry.pnmin1 = L1CacheEntry.pn;
@@ -106,7 +106,7 @@ namespace frommle {
                 //Update the m+1 sectorial (applies n+1,n+1 <- n,n recursion)
                 L1CacheEntry.sectorial *= wnn_[m + 1] * sinTheta;
                 //also write the next sectorial to the output vector (scaled correctly)
-                mar()[shg().idx(m + 1, m + 1)] = L1CacheEntry.sectorial * numericStabilityFactor;
+                mat()[shg().idx(m + 1, m + 1)] = L1CacheEntry.sectorial * numericStabilityFactor;
 
 
             }
