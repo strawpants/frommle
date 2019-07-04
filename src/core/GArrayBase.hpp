@@ -98,6 +98,7 @@ namespace frommle {
             }
             Garray & operator=(const T scalar){
                 std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
+                return *this;
             }
 
             //Extract eigen matrix (but only for 2D arrays)
@@ -113,7 +114,8 @@ namespace frommle {
                 typename core::Garray<T,typename GPack::template maskpack<n>::type> mask{};
                 mask.gp_=gp_;
                 mask.data_=data_;
-                mask.ar_=ar_;
+                //create a multi_array-ref referencing the same memory
+                mask.ar_=arr(data_.get(),std::array<size_type,ndim>(ar_.shape()));
                 return mask;
             }
 

@@ -189,16 +189,16 @@ BOOST_AUTO_TEST_CASE(MaskGeometry){
 
     }
 
-
     //create a Fibonaccigrid with assigned values which is going to be masked
     using pointguide=OGRGuide<OGRPoint>;
     auto fibarr=core::make_garray<int>(makeFibonacciGrid(10000),core::IndexGuide(1));
     fibarr=1;
 
-
     withinOperator<OGRPolygon,pointguide> MaskOp(polymask);
 
     auto fibmask=MaskOp(fibarr);
+    BOOST_TEST(fibmask.g<0>()->size()==1000);
+    //save to file for checking in Qgis
 
 }
 

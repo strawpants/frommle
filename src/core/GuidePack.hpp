@@ -54,7 +54,7 @@ namespace frommle{
             template<class Gp>
             GuidePack & operator=(Gp & gpin){
                 assert(ndim == gpin.ndim);
-                assignGuidePack<0,Gp>(gpin);
+                assignGuides<0, Gp>(gpin);
                 return *this;
             }
 
@@ -205,19 +205,20 @@ namespace frommle{
             template<class G,class Gin>
                 static typename std::enable_if<!std::is_same<typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
                     //we convert the value here but just add an owner to the shared_ptr
-                    //convert  
-                    *out=typename G::element_type(*in);
+                    //convert
+
+                    out=std::shared_ptr<typename G::element_type>(new typename G::element_type(*in));
                 }
 
             template<int n,class Gpackother>
-            typename std::enable_if< n+1 != ndim >::type assignGuidePack(Gpackother & gpother){
+            typename std::enable_if< n+1 != ndim >::type assignGuides(Gpackother &gpother){
                     assign(g<n>(),gpother.template g<n>());
                     //also recursively assign the other guides
-                    assignGuidePack<n+1,Gpackother>(gpother);
+                assignGuides<n + 1, Gpackother>(gpother);
             }
 
             template<int n,class Gpackother>
-            typename std::enable_if< n+1 == ndim>::type assignGuidePack( Gpackother & gpother){
+            typename std::enable_if< n+1 == ndim>::type assignGuides(Gpackother &gpother){
                 assign(g<n>(),gpother.template g<n>());
 
             };

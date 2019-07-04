@@ -29,6 +29,7 @@
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/index/rtree.hpp>
 
 namespace bg=boost::geometry;
 namespace bgi = boost::geometry::index;
@@ -62,10 +63,12 @@ namespace frommle{
             Element & operator[](const size_t idx){return *(geoms_.at(idx));}
             Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
             //spatial queries
-            //Rtree stuff
-//            using point=bg::model::point<double,2,bg::cs::geographic<bg::degree>>;
+            //Rtree stuff (store the encompassing geo box of the OGR geometry in the rtree)
+            //using point=bg::model::point<double,2,bg::cs::geographic<bg::degree>>;
+            //using point=bg::model::point<double,2,bg::cs::cartesian>;
             using point=OGRPoint;
-            using box=bg::model::box<OGRPoint>;
+            using box=bg::model::box<point>;
+            
             using idxmap=std::pair<box, size_t>;
             using rtree=bgi::rtree<idxmap,bgi::rstar<16,4>>;
             const rtree & getRtree();

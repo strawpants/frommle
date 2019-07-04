@@ -18,13 +18,13 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "geometry/OGR2boost.hpp"
+//#include "geometry/OGR2boost.hpp"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/index/rtree.hpp>
-#include <boost/geometry/strategies/agnostic/point_in_poly_winding.hpp>
+//#include <boost/geometry/strategies/agnostic/point_in_poly_winding.hpp>
 #include "core/GOperatorBase.hpp"
 namespace bgi=boost::geometry::index;
 
@@ -55,18 +55,19 @@ namespace frommle{
 
             auto g1=in.template g<0>();
             //do a first scan using the boundng boxes from the boost:rtee
-            auto g0=g1->cbegin();
             size_t idx=0;
             for(const auto & geom:*g1){
-                auto itbegin=cont_->getRtree().qbegin(bgi::within(*geom));
-                //auto itend=cont_->getRtree().qend();
-//                for(auto it=itbegin;it!=itend;++it){
-//                    //do a full geometry check on the hits from the rtree
-//                    if(geom->Within(&(*cont_)[it->second])){
-//                            //unmask the entry which has a hit
-//                           gm->unmask(idx);
-//                    }
-//                }
+                //auto itbegin=cont_->getRtree().qbegin(bgi::contains(typename G::point(geom->getX(),geom->getY())));
+                auto itbegin=cont_->getRtree().qbegin(bgi::contains(*geom));
+                auto itend=cont_->getRtree().qend();
+                // we still need to perform a detailed check whether the geom is within the actual geometry of the guide
+                for(auto it=itbegin;it!=itend;++it){
+                    //do a full geometry check on the hits from the rtree
+                    if(geom->Within(&(*cont_)[it->second])){
+                            //unmask the entry which has a hit
+                           gm->unmask(idx);
+                    }
+                }
                 ++idx;
             }
 
