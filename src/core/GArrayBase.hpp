@@ -82,7 +82,6 @@ namespace frommle {
             Garray(GPack && gp):gp_(std::move(gp)),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){
             }
 
-//            //return a single value of the internal multi_array_ref
             template<int i=0>
             typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::element_type::Element & indx){
                 assert(1==ndim);
@@ -115,7 +114,7 @@ namespace frommle {
                 mask.gp_=gp_;
                 mask.data_=data_;
                 //create a multi_array-ref referencing the same memory
-                mask.ar_=arr(data_.get(),std::array<size_type,ndim>(ar_.shape()));
+                mask.ar_=arr(data_.get(),getExtent(ar_));
                 return mask;
             }
 
@@ -129,6 +128,14 @@ namespace frommle {
             GPack gp_{};
             std::shared_ptr<T[]> data_{};
             arr ar_;
+
+            static std::array<size_t,ndim> getExtent(arr & in){
+                std::array<size_t,ndim> out{};
+                std::copy(in.shape(), in.shape()+out.size(), out.begin());
+                return out;
+
+            }
+
             template<class Archive>
             void load(Archive & Ar){
                 //first load the matrix variable
@@ -170,16 +177,27 @@ namespace frommle {
         };
 
 
-        ///@brief a guided array which also screens off invalid elements
-        template<class T, class GPack>
-        class MaskedGarray:public Garray<T,GPack>{
-            public:
-            using Garray<T,GPack>::ndim;
-            using mask_ar=boost::multi_array<bool,ndim>;
-            private:
-            mask_ar mask_{};
-            
+        ///@brief a wrapper class which provides 'view access' (i.e. subarray with fewer dimensions, permuted or masked) to another Garray
+        template<class GA,int ndim=GA::ndim>
+        class GarrayView:public GArrayBase{
+        public:
+            using arrv=typename GA::arr::array_view<ndim>::type;
+        private:
+            arrv arr_{};
+            GA * garptr_=nullptr;
+
         };
+
+        ///@brief a guided array which also screens off invalid elements
+//        template<class T, class GPack>
+//        class MaskedGarray:public Garray<T,GPack>{
+//            public:
+//            using Garray<T,GPack>::ndim;
+//            using mask_ar=boost::multi_array<bool,ndim>;
+//            private:
+//            mask_ar mask_{};
+//
+//        };
 
         /*!brief
          * Factory function to quickly create garrays from initialized Guides

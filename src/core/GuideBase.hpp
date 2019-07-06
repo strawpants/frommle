@@ -75,9 +75,10 @@ namespace core {
         void setName(const std::string & name){
             name_=name;
         }
+        virtual bool isMasked()const{return false;};
+        virtual bool isPermuted()const{return false;};
+
     private:
-        bool isPermuted_ = false;
-        std::vector<index> permute_ = {};
     protected:
         std::string type_ = "FROMMLE";
         std::string name_="Guide";
@@ -144,6 +145,7 @@ public:
         *this=MaskedGuide(gin);
         return *this;
     }
+    bool isMasked()const{return true;}
 private:
     const G* guide_=nullptr;
     std::vector<int> valid_{};
