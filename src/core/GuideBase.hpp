@@ -151,6 +151,19 @@ private:
     std::vector<int> valid_{};
 
 };
+
+
+///@brief guide which has a length of 1 (used to track dimensions which are to be reduced)
+class SingleGuide: public GuideBase{
+    public:
+        using Element=size_t;
+        SingleGuide(){}
+        SingleGuide(const size_t idx ):idx_(idx){}
+        inline size_t idx(){return idx_;}
+    private:
+        size_t idx_=0;
+};
+
 template<class G>
 GuideBase::operator MaskedGuide<G>(){
             return MaskedGuide<G>(static_cast<const G&>(*this));
