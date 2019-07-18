@@ -156,8 +156,20 @@ namespace frommle{
                 maskp.guides_=guides_;
                 return maskp;
             }
+        
+            //returns a tuple of boost::index_ranges to be used for creating arrayviews
+            using index_gen=arr:index_gen::gen::type<ndim,ndim>;
+            std::tuple< > indices(){
+                return get_indices<0>();
+            }
 
         private:
+
+            //SFINEA templates to count the amount of dimensions which are class X at compiletime
+            //template<int n,class X>
+            //constexpr std::enable_if<std::is_same<g_t<n>,X>::value,
+            
+
             template<class ...Gs>
             friend class GuidePack;
 
@@ -222,6 +234,19 @@ namespace frommle{
                 assign(g<n>(),gpother.template g<n>());
 
             };
+            
+            template<int n>
+            typename std::enable_if< n+1 != ndim >::type get_indices()const{
+                //also recursively call 
+                return std::get<n>(guides_).index_range() get_indices<n+1>();
+            };
+            
+            template<int n>
+            typename std::enable_if< n+1 == ndim>::type get_indices()const{
+                //ending call 
+                return std::get<n>(guides_).index_range();
+            };
+            
 
             guides_t guides_{};
             std::array<size_t,ndim> extent_={0};

@@ -29,7 +29,7 @@ namespace frommle {
 
 
         template<class ftype>
-        struct cacheEntry {
+        struct alignas(64) cacheEntry {
             ftype pnmin2 = 0.0;
             ftype pnmin1 = 0.0;
             ftype pn = 0.0;
