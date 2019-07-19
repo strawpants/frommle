@@ -44,7 +44,6 @@ namespace frommle{
         };
 
 
-
         //forward declare a variable here
         template<class T>
         class Variable;

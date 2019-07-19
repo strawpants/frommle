@@ -114,9 +114,9 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
         for (int m = 0; m <= nmax; ++m) {
             for (int n = m; n <= nmax; ++n) {
                 auto idx = Pnm.shg().idx(n, m);
-                val=Pnm[idx];
+                val=Pnm.mat()[idx];
                 //convert to double to compare properly
-                valld=Pnmld[idx];
+                valld=Pnmld.mat()[idx];
 
                 dif = abs(val-valld);
                 maxv=std::max(abs(val),abs(valld));

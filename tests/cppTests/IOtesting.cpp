@@ -70,7 +70,8 @@ namespace utf=boost::unit_test;
 geometry::OGRGuide<OGRPolygon> makeTestOGRGuide(){
     geometry::OGRGuide<OGRPolygon> polyGuide{};
     //open file with test wkt polygons
-    LineBuffer lbuf("data/testpolygonswkt.txt");
+//    LineBuffer lbuf("data/testpolygonswkt.txt.gz",true);
+    LineBuffer lbuf("data/testpolygonswkt.txt",true);
 
     for(auto & ln:lbuf){
         polyGuide.push_back(ln.str());
@@ -139,7 +140,7 @@ BOOST_AUTO_TEST_CASE(RWOGRArchive){
 }
 
 ///@brief create a test guided array
-core::Garray<double,core::IndexGuide,core::IndexGuide> createTestGarray(){
+core::Garray<double,core::GuidePack<core::IndexGuide,core::IndexGuide>> createTestGarray(){
     auto garr=core::make_garray(core::IndexGuide("guide1",13),core::IndexGuide("guide2",97));
     garr=22.0;
 
@@ -158,7 +159,7 @@ BOOST_AUTO_TEST_CASE(RWNetCDFArchive){
     }
 
     //now read in the same data
-    core::Garray<double,core::IndexGuide,core::IndexGuide> garrout{};
+    core::Garray<double,core::GuidePack<core::IndexGuide,core::IndexGuide> > garrout{};
 
     {
         NetCDFArchive iAr(fout,{{"mode","r"}});

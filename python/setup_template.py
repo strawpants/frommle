@@ -15,7 +15,11 @@ def yieldExtensions():
         mod="_"+re.split('[._]',cppf)[-2]
         ext=Extension("frommle."+mod, sources=[cppf],
         library_dirs=["${Boost_LIBRARY_DIR_RELEASE}","${PROJECT_BINARY_DIR}/lib" ],
-        libraries = ["${FROMMLEPYLIB}","${FROMMLELIB}",getLibraryAlias("${Boost_PYTHON3_LIBRARY}"),getLibraryAlias("${Boost_NUMPY3_LIBRARY}"),getLibraryAlias("${Boost_SYSTEM_LIBRARY}"),getLibraryAlias("${GDAL_LIBRARY}")],
+        libraries = ["${FROMMLEPYLIB}","${FROMMLELIB}"
+            ,getLibraryAlias("${GDAL_LIBRARY}"),getLibraryAlias("${YAML_CPP_LIBRARY}")
+                     ,getLibraryAlias("${Boost_LOG_LIBRARY_RELEASE}"),getLibraryAlias("${Boost_LOG_SETUP_LIBRARY_RELEASE}")
+            ,getLibraryAlias("${Boost_FILESYSTEM_LIBRARY_RELEASE}"),getLibraryAlias("${Boost_IOSTREAMS_LIBRARY_RELEASE}")
+            ,getLibraryAlias("${Boost_PYTHON3_LIBRARY}"),getLibraryAlias("${Boost_NUMPY3_LIBRARY}"),getLibraryAlias("${Boost_SYSTEM_LIBRARY}")],
         include_dirs=["${Boost_INCLUDE_DIR}","${CMAKE_SOURCE_DIR}"],
         runtime_library_dirs = ["${PROJECT_BINARY_DIR}/lib"])
         exts.append(ext)

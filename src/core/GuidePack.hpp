@@ -157,11 +157,11 @@ namespace frommle{
                 return maskp;
             }
         
-            //returns a tuple of boost::index_ranges to be used for creating arrayviews
-            using index_gen=arr:index_gen::gen::type<ndim,ndim>;
-            std::tuple< > indices(){
-                return get_indices<0>();
-            }
+//            //returns a tuple of boost::index_ranges to be used for creating arrayviews
+//            using index_gen=arr::index_gen::gen::type<ndim,ndim>;
+//            std::tuple< > indices(){
+//                return get_indices<0>();
+//            }
 
         private:
 
@@ -235,17 +235,17 @@ namespace frommle{
 
             };
             
-            template<int n>
-            typename std::enable_if< n+1 != ndim >::type get_indices()const{
-                //also recursively call 
-                return std::get<n>(guides_).index_range() get_indices<n+1>();
-            };
-            
-            template<int n>
-            typename std::enable_if< n+1 == ndim>::type get_indices()const{
-                //ending call 
-                return std::get<n>(guides_).index_range();
-            };
+//            template<int n>
+//            typename std::enable_if< n+1 != ndim >::type get_indices()const{
+//                //also recursively call
+//                return std::get<n>(guides_).index_range() get_indices<n+1>();
+//            };
+//
+//            template<int n>
+//            typename std::enable_if< n+1 == ndim>::type get_indices()const{
+//                //ending call
+//                return std::get<n>(guides_).index_range();
+//            };
             
 
             guides_t guides_{};

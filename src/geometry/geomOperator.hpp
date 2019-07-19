@@ -48,31 +48,31 @@ namespace frommle{
         template<class T,class Grhs>
         garmask<T,Grhs> operator()(gar<T,Grhs> & in)const{
             //get a reference to an array which has a masked dimension
-            auto masked=in.template maskdim<0>();
-            auto gm=masked.template g<0>();
-            //first mask all entries in the output
-            gm->mask();
+//            auto masked=in.template maskdim<0>();
+//            auto gm=masked.template g<0>();
+//            //first mask all entries in the output
+//            gm->mask();
+//
+//            auto g1=in.template g<0>();
+//            //do a first scan using the boundng boxes from the boost:rtee
+//            size_t idx=0;
+//            for(const auto & geom:*g1){
+//                //auto itbegin=cont_->getRtree().qbegin(bgi::contains(typename G::point(geom->getX(),geom->getY())));
+//                auto itbegin=cont_->getRtree().qbegin(bgi::contains(*geom));
+//                auto itend=cont_->getRtree().qend();
+//                // we still need to perform a detailed check whether the geom is within the actual geometry of the guide
+//                for(auto it=itbegin;it!=itend;++it){
+//                    //do a full geometry check on the hits from the rtree
+//                    if(geom->Within(&(*cont_)[it->second])){
+//                            //unmask the entry which has a hit
+//                           gm->unmask(idx);
+//                    }
+//                }
+//                ++idx;
+//            }
+//
 
-            auto g1=in.template g<0>();
-            //do a first scan using the boundng boxes from the boost:rtee
-            size_t idx=0;
-            for(const auto & geom:*g1){
-                //auto itbegin=cont_->getRtree().qbegin(bgi::contains(typename G::point(geom->getX(),geom->getY())));
-                auto itbegin=cont_->getRtree().qbegin(bgi::contains(*geom));
-                auto itend=cont_->getRtree().qend();
-                // we still need to perform a detailed check whether the geom is within the actual geometry of the guide
-                for(auto it=itbegin;it!=itend;++it){
-                    //do a full geometry check on the hits from the rtree
-                    if(geom->Within(&(*cont_)[it->second])){
-                            //unmask the entry which has a hit
-                           gm->unmask(idx);
-                    }
-                }
-                ++idx;
-            }
-
-
-            return masked;
+//            return masked;
         }
 
     private:

@@ -65,23 +65,27 @@ namespace frommle {
             using g_t=typename GPack::template g_t<n>;
 
             template<int n>
-            inline g_t<n> & g(){return gp_.template g<n>();}
+            inline g_t<n> & g();
 
             template<int n>
-            inline const g_t<n> & g()const{return gp_.template g<n>();}
+            inline const g_t<n> & g()const;
 
             ///@brief polymorphic version
-            inline const std::shared_ptr<GuideBase>  g(const int n)const{return gp_.g(n);}
-            inline std::shared_ptr<GuideBase>  g(const int n){return gp_.g(n);}
+            std::shared_ptr<const GuideBase>  g(const int n)const;
+            std::shared_ptr<GuideBase>  g(const int n);
 
             using arr=boost::multi_array_ref<T,ndim>;
             inline arr & mat(){return ar_;}
-            Garray():gp_(),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){}
+            ///structors
+            Garray():gp_(),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){
+
+            }
 
 
             Garray(GPack && gp):gp_(std::move(gp)),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){
             }
 
+            //indexing
             template<int i=0>
             typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::element_type::Element & indx){
                 assert(1==ndim);
@@ -97,11 +101,8 @@ namespace frommle {
             }
 
 
-
-            Garray & operator=(const T scalar){
-                std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
-                return *this;
-            }
+            ///@brief fill the matrix with a scalar value
+            Garray & operator=(const T scalar);
 
             //Extract eigen matrix (but only for 2D arrays)
             using eigm=typename Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ,Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>>;
@@ -112,8 +113,8 @@ namespace frommle {
             }
 
             
-            template<int ... n>
-            typename GarrayView<typename GPack::template maskpack<n>::type> maskdims();
+//            template<int ... n>
+//            typename GarrayView<typename GPack::template maskpack<n>::type> maskdims();
             //{
                 //using garview=typename GarrayView<Garray<T,typename GPack::template maskpack<n>::type>>;
                 //garview mask{*this};
@@ -125,25 +126,25 @@ namespace frommle {
                 //return mask;
             //}
 
-            template<class subGp>
-                class GarrayView{
-                    public:
-                        using ndim=subGp::ndim;
-                        //type describing a view on the underlying multi_array_ref (possibly with reduced dimensions)
-                        using arrv=Garray::arr::array_view<ndim>;
-                        template<class Gp>
-                        GarrayView(const Garray & garin, Gp & gpin):garr_(garin){
-                        //assign (possibly squeeze out degenerate dimensions
-                        gp_=gpin.squeeze();
-                        arv_=garin.ar_[gpin.indices()]; 
-
-                        }
-                    private:
-                        subGp=gp_{};
-                        arrv arv_={};
-                        //holds a pointer to the underlying Garray
-                        Garray * garr_=nullptr;
-                };
+//            template<class subGp>
+//                class GarrayView{
+//                    public:
+//                        using ndim=subGp::ndim;
+//                        //type describing a view on the underlying multi_array_ref (possibly with reduced dimensions)
+//                        using arrv=Garray::arr::array_view<ndim>;
+//                        template<class Gp>
+//                        GarrayView(const Garray & garin, Gp & gpin):garr_(garin){
+//                        //assign (possibly squeeze out degenerate dimensions
+//                        gp_=gpin.squeeze();
+//                        arv_=garin.ar_[gpin.indices()];
+//
+//                        }
+//                    private:
+//                        subGp=gp_{};
+//                        arrv arv_={};
+//                        //holds a pointer to the underlying Garray
+//                        Garray * garr_=nullptr;
+//                };
 
         protected:
         private:
@@ -163,59 +164,27 @@ namespace frommle {
             }
 
             template<class Archive>
-            void load(Archive & Ar){
-                //first load the matrix variable
-                auto & mvar=Ar.template getVariable<T>(name());
-
-                //set the appropriate names for the guidepacks
-               gp_.setNames(mvar.template getAttribute<std::string>("coordinates"));
-                //then load the appropriate guides
-
-                Ar >> gp_;
-
-
-                //also load the matrix data
-                core::Hyperslab<T> hslab{};
-                mvar.getValue(hslab);
-                //
-
-            }
+            void load(Archive & Ar);
             template<class Archive>
-            void save(Archive & Ar)const{
-                //save the Guidepack
-                Ar << gp_;
-
-
-                //save the multiarray data
-                auto & mvar=Ar.template getVariable<T>(name());
-
-                //link the coordinate variables in the attributes
-                std::string coord=g(0).name();
-                for (auto i=1; i< ndim;++i){
-                    coord+=" "+g(i).name();
-                }
-                mvar.setAttribute("coordinates",coord);
-                mvar.setValue(core::Hyperslab<T>(ar_));
-
-            }
+            void save(Archive & Ar)const;
 
         
         };
 
 
-        ///@brief a wrapper class which provides 'view access' (i.e. subarray with fewer dimensions, permuted or masked) to another Garray
-        //template<class GA>
-        //class GarrayView:public GArrayBase{
-        //public:
-            //using ndim=GA::ndim;
-            //using arrv=typename GA::arr::template array_view<ndim>::type;
-            //GarrayView(const GA & gar){
-            //}
-        //private:
-            //arrv arv_{};
-            //GA * garptr_=nullptr;
-
-        //};
+//        ///@brief a wrapper class which provides 'view access' (i.e. subarray with fewer dimensions, permuted or masked) to another Garray
+//        template<class GA>
+//        class GarrayView:public GArrayBase{
+//        public:
+//            using ndim=GA::ndim;
+//            using arrv=typename GA::arr::template array_view<ndim>::type;
+//            GarrayView(const GA & gar){
+//            }
+//        private:
+//            arrv arv_{};
+//            GA * garptr_=nullptr;
+//
+//        };
 
         ///@brief a guided array which also screens off invalid elements
 //        template<class T, class GPack>
@@ -228,13 +197,82 @@ namespace frommle {
 //
 //        };
 
-            template<class T,class ... Guides>
-            template<int i>
-            typename Garray<T,Guides>::GarrayView<typename Garray<T,Guides>>::GPack::template maskpack<n>::type> maskdims()
-            {
-                using garview=typename Garray<T,Guides>::GarrayView<typename GPack::template maskpack<n>::type>;
-                return garview(*this,this->gp_.mask<i>());
+//            template<class T,class ... Guides>
+//            template<int i>
+//            typename Garray<T,Guides>::GarrayView<typename Garray<T,Guides>>::GPack::template maskpack<n>::type> maskdims()
+//            {
+//                using garview=typename Garray<T,Guides>::GarrayView<typename GPack::template maskpack<n>::type>;
+//                return garview(*this,this->gp_.mask<i>());
+//            }
+
+
+        //templatei function implementations for Garray
+
+
+        template<class T, class GPack>
+        template<int n>
+        const typename Garray<T, GPack>::template g_t <n> &core::Garray<T, GPack>::g() const {return gp_.template g<n>();}
+
+        template<class T, class GPack>
+        template<int n>
+        typename Garray<T,GPack>::template g_t <n> &Garray<T, GPack>::g() {return gp_.template g<n>();}
+
+        template<class T, class GPack>
+        std::shared_ptr<const GuideBase> Garray<T, GPack>::g(const int n) const {return gp_.g(n);}
+
+        template<class T, class GPack>
+        std::shared_ptr<GuideBase> Garray<T, GPack>::g(const int n) {return gp_.g(n);}
+
+//        template<class T, class GPack>
+//        template<int... n>
+//        Garray::GarrayView<typename GPack::template maskpack<n>::type> Garray<T, GPack>::maskdims() {}
+
+        template<class T, class GPack>
+        Garray<T,GPack> &Garray<T, GPack>::operator=(const T scalar) {
+            std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
+            return *this;
+        }
+
+        template<class T, class GPack>
+        template<class Archive>
+        void Garray<T, GPack>::save(Archive &Ar) const {
+            //save the Guidepack
+            Ar << gp_;
+
+
+            //save the multiarray data
+            auto & mvar=Ar.template getVariable<T>(name());
+
+            //link the coordinate variables in the attributes
+            std::string coord=g(0)->name();
+            for (auto i=1; i< ndim;++i){
+                coord+=" "+g(i)->name();
             }
+            mvar.setAttribute("coordinates",coord);
+            mvar.setValue(core::Hyperslab<T>(ar_));
+
+        }
+
+        template<class T, class GPack>
+        template<class Archive>
+        void Garray<T, GPack>::load(Archive &Ar) {
+            //first load the matrix variable
+            auto & mvar=Ar.template getVariable<T>(name());
+
+            //set the appropriate names for the guidepacks
+            gp_.setNames(mvar.template getAttribute<std::string>("coordinates"));
+            //then load the appropriate guides
+
+            Ar >> gp_;
+
+
+            //also load the matrix data
+            core::Hyperslab<T> hslab{};
+            mvar.getValue(hslab);
+            //
+
+        }
+
 
         /*!brief
          * Factory function to quickly create garrays from initialized Guides

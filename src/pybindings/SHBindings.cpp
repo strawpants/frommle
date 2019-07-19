@@ -60,7 +60,7 @@ void pyexport_sh()
             .def("__getitem__",p::pure_virtual(&sh::SHGuideBase::operator[]));
 
     p::class_<sh::SHtmnGuide,p::bases<sh::SHGuideBase> >("SHtmnGuide",p::init<int>())
-            .def("idx",&sh::SHtmnGuide::idx)
+//            .def("idx",&sh::SHtmnGuide::idx)
             .def("idx",&sh::SHGuideBase::idxfromEl)
             .def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
             .def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i")
@@ -70,8 +70,8 @@ void pyexport_sh()
 
     p::def("nmax_from_sz",&sh::nmax_from_sz);
 
-    p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
-            .def("__call__",&sh::Legendre_nm_d::operator())
-            .def("indxnm", &sh::Legendre_nm_d::indxnm);
+//    p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
+//            .def("__call__",&sh::Legendre_nm_d::operator())
+//            .def("indxnm", &sh::Legendre_nm_d::indxnm);
 
 }
