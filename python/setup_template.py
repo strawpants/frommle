@@ -17,11 +17,13 @@ def yieldExtensions():
         library_dirs=["${Boost_LIBRARY_DIR_RELEASE}","${PROJECT_BINARY_DIR}/lib" ],
         libraries = ["${FROMMLEPYLIB}","${FROMMLELIB}"
             ,getLibraryAlias("${GDAL_LIBRARY}"),getLibraryAlias("${YAML_CPP_LIBRARY}")
-                     ,getLibraryAlias("${Boost_LOG_LIBRARY_RELEASE}"),getLibraryAlias("${Boost_LOG_SETUP_LIBRARY_RELEASE}")
+            ,getLibraryAlias("${Boost_LOG_LIBRARY_RELEASE}"),getLibraryAlias("${Boost_LOG_SETUP_LIBRARY_RELEASE}")
             ,getLibraryAlias("${Boost_FILESYSTEM_LIBRARY_RELEASE}"),getLibraryAlias("${Boost_IOSTREAMS_LIBRARY_RELEASE}")
             ,getLibraryAlias("${Boost_PYTHON3_LIBRARY}"),getLibraryAlias("${Boost_NUMPY3_LIBRARY}"),getLibraryAlias("${Boost_SYSTEM_LIBRARY}")],
         include_dirs=["${Boost_INCLUDE_DIR}","${CMAKE_SOURCE_DIR}"],
         runtime_library_dirs = ["${PROJECT_BINARY_DIR}/lib"])
+        #insert semincolon separated libraries
+        ext.libraries[2:2]="${LIBSECRET_LIBRARIES}".split(";")
         exts.append(ext)
     return exts
 
