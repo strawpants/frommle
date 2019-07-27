@@ -25,7 +25,7 @@ namespace frommle {
     namespace geometry {
 
         GeoGrid::GeoGrid(double west, double east, double south, double north, double dlon, double dlat, const gridreg reg)
-                : GuideBase("GeoGrid") {
+                : GuideBase(core::typehash("GeoGrid")) {
             /*The input may not be perfectly constistent so we will respect the resolution, but
              possibly snap the max values of the bounding box to appropriate values
              */

@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(Garray1n2n3d){
     auto garr1d=make_garray(std::move(TGuide));
     garr1d.setName("Blah");
     garr1d=M_PI;
-    std::cout << garr1d.name()<<" "<<garr1d.mat()[0] << " " << garr1d.g(0)->type()<< std::endl;
+    std::cout << garr1d.name()<<" "<<garr1d.mat()[0] << " " << std::string(garr1d.g(0)->hash())<< std::endl;
 
     //2D example
     size_t nrows=23;

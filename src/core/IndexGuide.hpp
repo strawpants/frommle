@@ -31,9 +31,9 @@ namespace frommle{
         class IndexGuide:public GuideBase{
         public:
             using Element=unsigned long long int;
-            IndexGuide():GuideBase("IndexGuide"){}
-            IndexGuide(const size_t nsize):GuideBase("IndexGuide",nsize){}
-            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,"IndexGuide",nsize){}
+            IndexGuide():GuideBase(typehash("IndexGuide").add(0).add(0)){}
+            IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize),nsize){}
+            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize),nsize){}
             Element operator[](const frommle::core::index idx)const{return idx;}
 //            Element & operator[](GuideBase::index idx){return idx;}
             private:
@@ -43,7 +43,7 @@ namespace frommle{
             void load(Archive & Ar){
                 std::string gname=name();
                 if (gname.empty()){
-                    gname=type();
+                    gname=std::string(hash());
                 }
                 auto & gvar=Ar.template getVariable<size_t>(gname);
                 //set the size of the current index
@@ -60,9 +60,9 @@ namespace frommle{
                 rangear irange{0,size()-1};
                 std::string gname=name();
                 if (gname.empty()){
-                    gname=type();
+                    gname=std::string(hash());
                 }
-                Ar[gname]=io::Variable<size_t>(gname,{{"guidetype",type()}});
+                Ar[gname]=io::Variable<size_t>(gname,{{"guidetype",std::string(hash())}});
 
                 Ar[gname].template as<io::Variable<size_t>>().setValue(core::Hyperslab<size_t>(irange));
 

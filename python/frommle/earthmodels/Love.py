@@ -20,7 +20,7 @@ import re
 class LoadLove:
     def __init__(self, filename, nmax=None):
         if not nmax:
-            #unlimited maximum degree
+            #unlimited maximum degree for a start
             nmax=maxsize
 
         commentreg = re.compile('^#')

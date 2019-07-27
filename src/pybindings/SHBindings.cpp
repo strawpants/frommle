@@ -16,23 +16,26 @@ namespace np = boost::python::numpy;
 
 
 using namespace frommle;
+namespace frommle{
+    namespace sh {
 
 //Wrapper class is needed to cope with pure virtual functions of SHGuideBase
         struct SHGuideBaseWrapper : sh::SHGuideBase, p::wrapper<sh::SHGuideBase> {
         public:
-            using sh::SHGuideBase::idx;
-            using Element=sh::SHGuideBase::Element;
-            using trig=sh::SHGuideBase::trig;
+            using SHGuideBase::idx;
+            using Element=SHGuideBase::Element;
+            using trig=SHGuideBase::trig;
+
 //            frommle::core::index   (SHGuideBaseWrapper::*idxfromEl)(const Element) const = &SHGuideBaseWrapper::idx;
 //            frommle::core::index   (sh::SHGuideBase::*idxfromnmt)(const int,const int, const trig ) const = &sh::SHGuideBase::idx;
 //            inline frommle::core::index   idxfromEl(const sh::SHGuideBase::Element El)const{ return this->idx(El);}
-            inline frommle::core::index idxfromnmt(const int n,const int m, const sh::SHGuideBase::trig t)const{return this->idx(n,m,t);}
+            inline frommle::core::index idxfromnmt(const int n, const int m, const SHGuideBase::trig t) const { return this->idx(n, m, t); }
 
-            inline frommle::core::index idx(const int n, const int m, const sh::SHGuideBase::trig t)const {
-                return this->get_override("idx")(n,m,t);
+            inline frommle::core::index idx(const int n, const int m, const SHGuideBase::trig t) const {
+                return this->get_override("idx")(n, m, t);
             }
 
-            inline frommle::core::index idx(const Element el)const {
+            inline frommle::core::index idx(const Element el) const {
                 return this->SHGuideBase::idx(el);
             }
 
@@ -40,7 +43,8 @@ using namespace frommle;
                 return this->get_override("operator[]")(idx);
             }
         };
-
+    }
+}
 void pyexport_sh()
 {
 
@@ -52,19 +56,17 @@ void pyexport_sh()
     py::register_tuple<sh::SHGuideBase::Element >();
 
     //the SHGuideBase
-    p::class_<SHGuideBaseWrapper,p::bases<core::GuideBase>,boost::noncopyable>("SHGuideBase")
-            .def("nmax",&sh::SHGuideBase::nmax)
-            .def("nmin",&sh::SHGuideBase::nmin)
+    p::class_<sh::SHGuideBaseWrapper,p::bases<core::GuideBase>,boost::noncopyable>("SHGuideBase")
+            .add_property("nmax",&sh::SHGuideBase::nmax)
+            .add_property("nmin",&sh::SHGuideBase::nmin)
             .def("idx",&sh::SHGuideBase::idxfromEl)
-            .def("idx",&SHGuideBaseWrapper::idxfromnmt)
-            .def("__getitem__",p::pure_virtual(&sh::SHGuideBase::operator[]));
-
-    p::class_<sh::SHtmnGuide,p::bases<sh::SHGuideBase> >("SHtmnGuide",p::init<int>())
-//            .def("idx",&sh::SHtmnGuide::idx)
-            .def("idx",&sh::SHGuideBase::idxfromEl)
-            .def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
-            .def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i")
+//            .def("idx",&sh::SHGuideBaseWrapper::idxfromnmt)
+            .def("__getitem__",p::pure_virtual(&sh::SHGuideBase::operator[]))
             .def("__iter__",p::iterator<const sh::SHGuideBase>());
+
+    p::class_<sh::SHtmnGuide,p::bases<sh::SHGuideBase> >("SHtmnGuide",p::init<int,p::optional<std::string>>())
+            .def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
+            .def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i");
 
 
 

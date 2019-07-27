@@ -36,6 +36,12 @@ namespace np = boost::python::numpy;
 namespace frommle{
     namespace py{
 
+        ///@brief convert an element to a numpy dtype (specialize for each valid Element)
+        template<class Element>
+        struct to_np_dtype{};
+
+
+
         template<class T>
         struct vec_to_ndarray{
             static PyObject* convert( std::vector<T> const & invec){

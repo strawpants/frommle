@@ -16,12 +16,14 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 
 import numpy as np
+from frommle.sh import SHtmnGuide,trig
 
-
-def read_shstandard(file, nmax=None, headerOnly=False):
+def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
     """Reads the standard SH format as produce by the RLFTLBX (first line has a META tag)"""
     from frommle.core.time import decyear2datetime
     from frommle.sh.shdata import shdata
+
+
     with open(file, 'rt') as fid:
         ln = fid.readline()
         lnspl = ln.split()
@@ -31,9 +33,20 @@ def read_shstandard(file, nmax=None, headerOnly=False):
         if headerOnly:
             return meta
 
-        # also extract the body
-        nmax=meta['nmax']
-        shout=shdata(nmax)
+        if shg:
+            #take the nmax from the provided guide
+            nmax=shg.nmax
+        else:
+            nmax=meta['nmax']
+            shg=SHtmnGuide(nmax)
+            meta["shguide"]=shg
+
+        shout=np.zeros([shg.size()])
+        if error:
+            sherr=np.zeros([shg.size()])
+        else:
+            sherr=None
+
         for ln in fid:
             lnspl = ln.split()
             n = int(lnspl[0])
@@ -41,15 +54,18 @@ def read_shstandard(file, nmax=None, headerOnly=False):
                 continue
 
             m = int(lnspl[1])
-            idx = shout.idx(n, m)
+            idxc = shg.idx((n, m,trig.c))
 
-            shout.C[idx] = float(lnspl[2])
-            shout.S[idx] = float(lnspl[3])
-            if len(lnspl) > 5:
-                shout.sigC[idx] = float(lnspl[4])
-                shout.sigS[idx] = float(lnspl[5])
+            shout[idxc] = float(lnspl[2])
+            if m != 0:
+                idxs = shg.idx((n, m, trig.s))
+                shout[idxs] = float(lnspl[3])
+            if error and len(lnspl) > 5:
+                sherr[idxc] = float(lnspl[4])
+                if m != 0:
+                    sherr[idxs] = float(lnspl[5])
 
-    return meta,shout
+    return meta,shout,sherr
 
 def write_shstandard(file,clm,slm,tstamps=[0.0,0.0,0.0]):
     nmax=clm.shape[0]-1

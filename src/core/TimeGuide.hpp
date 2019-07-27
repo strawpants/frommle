@@ -39,13 +39,13 @@ namespace frommle {
 		class TimeGuide : public GuideBase {
 		public:
 		    using Element=Tp;
-			TimeGuide():GuideBase("TimeGuide"){}
+			TimeGuide():GuideBase(typehash("TimeGuide")){}
 
-            TimeGuide(Tp && in):GuideBase("TimeGuide"){
+            TimeGuide(Tp && in):GuideBase(typehash("TimeGuide")){
                 push_back(std::move(in));
             }
 
-            TimeGuide(const Tp in):GuideBase("TimeGuide"){
+            TimeGuide(const Tp in):GuideBase(typehash("TimeGuide")){
                 push_back(in);
             }
 

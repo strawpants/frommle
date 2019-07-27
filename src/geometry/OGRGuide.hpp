@@ -46,7 +46,7 @@ namespace frommle{
             using ElementContainer=std::vector<std::shared_ptr<Element>>;
             //structors
             OGRGuide(){}
-            OGRGuide(const std::string & name):GuideBase(name){}
+            OGRGuide(const std::string & name):GuideBase(core::typehash(name)){}
 
 
             ///@brief push_back family

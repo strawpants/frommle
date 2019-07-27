@@ -21,8 +21,8 @@ from datetime import datetime
 import os
 import re
 import logging
-from frommle.sh import SHtmnDim
-i_from_mn=SHtmnDim.i_from_mn
+from frommle.sh import SHtmnGuide
+i_from_mn=SHtmnGuide.i_from_mn
 import numpy as np
 
 def readGSMv06(filename,  nmax=None, headerOnly=False):

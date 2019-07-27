@@ -45,15 +45,34 @@ namespace core {
  * This abstract base class makes sure that the pure virtual functions are implemented and that
  * containers can store (smart) pointers to DimensionBase
  */
+
+///@brief a structure which holds a hash
+class typehash{
+public:
+    typehash(){}
+    typehash(const std::string base):hash_(base){}
+    //append an integer to the hash
+    typehash add(const int & id){
+        return typehash(hash_+","+std::to_string(id));
+    }
+    operator std::string (){return hash_;}
+    const bool operator == (const typehash &other)const{return hash_==other.hash_;}
+    std::string hash_{};
+private:
+
+};
+
+
+
     class GuideBase {
     public:
 
         GuideBase() {};
 
-        GuideBase(const std::string &type, const index &sz) : type_(type), size_(sz) {}
-        GuideBase(const std::string & name, const std::string &type, const index &sz) : type_(type), size_(sz),name_(name) {}
+        GuideBase(const typehash &type, const index &sz) : type_(type), size_(sz) {}
+        GuideBase(const std::string & name, const typehash &type, const index &sz) : type_(type), size_(sz),name_(name) {}
 
-        GuideBase(const std::string &type) : type_(type) {}
+        GuideBase(const typehash &type) : type_(type) {}
 
         virtual ~GuideBase() {
         }
@@ -63,7 +82,7 @@ namespace core {
         explicit   operator MaskedGuide<G>();
         
         //add 1D index_range and index_gen types here?
-        virtual std::string type() const { return type_; }
+        virtual typehash hash() const { return type_; }
 
         index size() const { return size_; }
 
@@ -77,10 +96,10 @@ namespace core {
         }
         virtual bool isMasked()const{return false;};
         virtual bool isPermuted()const{return false;};
-
+        static constexpr int ndim(){return 1;}
     private:
     protected:
-        std::string type_ = "FROMMLE";
+        typehash type_{"FROMMLE"};
         std::string name_="Guide";
         index size_ = 0;
     };

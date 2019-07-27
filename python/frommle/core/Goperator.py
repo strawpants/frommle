@@ -13,16 +13,26 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
+# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
 
 
-from frommle.sh import SHtmnGuide
-from frommle.sh import shxarray
+from frommle.core import GOperatorBase
 
-nmax=5
-shx=shxarray(nmax)
+class Goperator(GOperatorBase):
+    coords={}
+    """A class which converts data from one dimension to the other"""
+    def __init__(self,coords=None, dims=None, name="GOperator"):
+        super().__init__(name)
 
-print(shx)
-# for (n,m,t) in shg:
-#     print(n,m,t)
 
+        if coords:
+            #assign coordinate dimensions
+            if isinstance(coords,dict):
+                #directly
+                self.coords=coords
+            else:
+                for dname,coord in zip(dims,coords):
+                    self.coords[dname]=coord
+
+            if len(self.coords) != self.ndim:
+                raise RuntimeError("Amount of coordinate values for GOperator must be %d"%self.ndim)

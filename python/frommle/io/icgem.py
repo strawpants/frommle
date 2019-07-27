@@ -8,6 +8,7 @@ import numpy as np
 from frommle.sh.shdata import shdata
 from datetime import datetime
 import math
+from frommle.sh import SHtmnGuide
 
 class icgemLineParser():
     def __init__(self,nmax,epoch):
@@ -68,7 +69,7 @@ class icgemLineParser():
             scale=math.sin(omega*dt)
             return n,m,scale*C,scale*S,scale*sigC,scale*sigS
 
-def read_icgem(filename, nmax=None, headerOnly=False, epoch=None):
+def read_icgem(filename, nmax=None, headerOnly=False, epoch=None,shg=None,error=False):
     """Extract meta information from a (possibly gzipped) icgem file"""
 
     modtime=datetime.fromtimestamp(os.path.getmtime(filename))
@@ -129,8 +130,22 @@ def read_icgem(filename, nmax=None, headerOnly=False, epoch=None):
         fid.close()
         return meta
 
-    # also extract the coefficients
-    shout=shdata(nmax)
+    #extract coefficients
+    if not shg:
+        shg=SHtmnGuide(nmax)
+        #also put the sorting of the sh coefficients in the meta information
+        meta["shguide"]=shg
+    else:
+        #take the nmax from the provided guide
+        if shg.nmax > nmax:
+            logging.warning("warning nmax requested larger than supported, setting to zero")
+        nmax=shg.nmax
+
+    shout=np.zeros([shg.size()])
+    if error:
+        sherr=np.zeros([shg.size()])
+    else:
+        sherr=None
 
     if format == "icgem":
         lParser=icgemLineParser(nmax,epoch)
@@ -143,10 +158,14 @@ def read_icgem(filename, nmax=None, headerOnly=False, epoch=None):
         n,m,c,s,sigc,sigs=lParser(ln)
         if not n :
             continue
-        idx=shout.idx(n,m)
-        shout.C[idx]+=c
-        shout.S[idx]+=s
-        shout.sigC[idx]=math.sqrt(math.pow(shout.sigC[idx],2)+math.pow(sigc,2))
-        shout.sigS[idx]=math.sqrt(math.pow(shout.sigS[idx],2)+math.pow(sigs,2))
+        idxc=shg.idx(n,m,0)
+        shout[idxc]+=c
+        if m != 0:
+            idxs=shg.idx(n,m,1)
+            shout[idxs]+=s
+        if error:
+            sherr[idxc]=math.sqrt(math.pow(sherr[idxc],2)+math.pow(sigc,2))
+            if m != 0:
+                sherr[idxs]=math.sqrt(math.pow(sherr[idxs],2)+math.pow(sigs,2))
 
     return meta,shout

@@ -47,7 +47,7 @@ namespace frommle{
             SHGuideBase()=default;
             int nmax()const{return nmax_;}
             int nmin()const{return nmin_;}
-            SHGuideBase(const std::string & type, const index sz,const int nmax,const int nmin):GuideBase(type,sz),nmax_(nmax),nmin_(nmin){}
+            SHGuideBase(const std::string & name, const core::typehash & type,const index sz,const int nmax,const int nmin):GuideBase(name,type,sz),nmax_(nmax),nmin_(nmin){}
             index idxfromEl(const Element el)const;
             //helper function to make C++ interface consistent
             inline index idx(const Element el)const{return idxfromEl(el);}
@@ -100,7 +100,8 @@ namespace frommle{
             using SHGuideBase::Element;
             using SHGuideBase::idx;
             SHtmnGuide()=default;
-            SHtmnGuide(const int nmax);
+//            SHtmnGuide(const int nmax);
+            SHtmnGuide(const int nmax,const std::string name="SHtmnGuide");
             index idx(const int n, const int m, const trig t=trig::C)const;
             Element operator[](const index idx)const;
 
