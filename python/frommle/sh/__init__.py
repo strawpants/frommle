@@ -2,3 +2,5 @@
 from frommle._core import *
 from frommle._sh import *
 from .shxarray import *
+from .shIsoOperator import *
+

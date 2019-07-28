@@ -32,7 +32,7 @@ void pyexport_core(){
             .add_property("name",&GuideBase::name,&GuideBase::setName)
             .def("size",&GuideBase::size)
             .def("hash",&GuideBase::hash)
-            .add_static_property("ndim",&GuideBase::ndim)
+            .add_static_property("ndim",p::make_getter(&GuideBase::ndim))
             .def("__str__",&GuideBase::hash);
 //            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
 
@@ -42,7 +42,7 @@ void pyexport_core(){
 
     ///Register the operator base as defined in frommle
     p::class_<GOperatorBase>("GOperatorBase").def(p::init<p::optional<std::string>>())
-            .add_static_property("ndim",&GOperatorBase::ndim)
+            .add_static_property("ndim",p::make_getter(&GOperatorBase::ndim))
             .add_property("name",&GOperatorBase::name,&GOperatorBase::setName);
 
 

@@ -49,7 +49,7 @@ namespace core {
         void setName(const std::string & name){
             name_=name;
         }
-        static constexpr int ndim(){return 2;}
+        static constexpr int ndim=2;
     private:
         std::string name_="GOperator";
     protected:

@@ -56,7 +56,7 @@ public:
         return typehash(hash_+","+std::to_string(id));
     }
     operator std::string (){return hash_;}
-    const bool operator == (const typehash &other)const{return hash_==other.hash_;}
+    bool operator == (const typehash &other)const{return hash_==other.hash_;}
     std::string hash_{};
 private:
 
@@ -96,7 +96,7 @@ private:
         }
         virtual bool isMasked()const{return false;};
         virtual bool isPermuted()const{return false;};
-        static constexpr int ndim(){return 1;}
+        static constexpr int ndim=1;
     private:
     protected:
         typehash type_{"FROMMLE"};

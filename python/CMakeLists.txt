@@ -17,7 +17,7 @@ if (PYTHON)
 #            list(APPEND CXXPYCOLLECTOR ${CXXPYCOLLECTBASE}${cppmod}".cpp")
 #        endforeach()
    #set dependencies (python files and wrappers)
-   list(APPEND CXXPYCOLLECTOR ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_core.cpp ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_sh.cpp)
+   list(APPEND CXXPYCOLLECTOR ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_core.cpp ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_sh.cpp ${CMAKE_SOURCE_DIR}/src/pybindings/PYCPPCollect_earth.cpp )
    set(PYDEPS ${CXXPYCOLLECTOR})
 
     add_custom_target(linkpython COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/frommle ${CMAKE_CURRENT_BINARY_DIR}/frommle)

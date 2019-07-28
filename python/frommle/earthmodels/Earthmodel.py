@@ -17,6 +17,9 @@
 
 
 from frommle.earthmodels import LoadLove
+from frommle.earthmodels import WGS84,rho_water,rho_earth
+from frommle.sh import shIsoOperator
+import numpy as np
 
 class EarthModel():
     """Abstract class which models a spherical Earth model"""
@@ -36,14 +39,23 @@ class SNREI(EarthModel):
             lln=LoadLove(loadLovefile)
         else:
             lln=LoadLove(loadLovefile,nmax)
-    def stokes2eqh(self,shg=None):
+    
+    def stokes2eqh(self):
         """returns a diagonal matrix with coefficients to convert from Stokes coefficients to equivalent water height"""
-        pass
+        kernel=np.ones([self.nmax+1])
+        #create the isotropic kernel
+        scale=WGS84.a*rho_earth/(3*rho_water)
+        kernel=np.array([scale*(2*n+1)/(1+self.lln.kdat[n]) for n in range(self.nmax+1)])
+        return shIsoOperator(kernel)
+         
 
-    def stokes2Geoid(self,shg):
-        pass
-
-    def stokes2Uplift(selfself,shg):
-        pass
+    def stokes2Geoid(self):
+        """"Use Brun's Formula to convert from normalized Stokes coefficients to Geoid height"""
+        kernel=WGS84.a*np.ones([self.nmax+1])
+        return shIsoOperator(kernel)
+    
+    def stokes2Uplift(self):
+        kernel=WGS84.a*np.array([self.lln.hdat/(1+self.lln.kdat)])
+        return shIsoOperator(kernel)
 
 

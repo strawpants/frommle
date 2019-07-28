@@ -8,9 +8,24 @@ foreach(tester ${ALLTESTS})
             ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE} ${Boost_LOG_LIBRARY_RELEASE}
             ${Boost_LOG_SETUP_LIBRARY_RELEASE} ${Boost_FILESYSTEM_LIBRARY_RELEASE} ${Boost_IOSTREAMS_LIBRARY_RELEASE}
             ${Boost_SYSTEM_LIBRARY_RELEASE} ${CMAKE_THREAD_LIBS_INIT})
-    add_test(NAME ${tester} COMMAND ${tester})
-    set_target_properties(${tester} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/testing)
+        add_test(NAME ${tester} COMMAND ${tester} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+    #set_target_properties(${tester} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/testing)
 endforeach(tester ${ALLTESTS})
+
+# add python tests
+
+if (PYTHON)
+    
+    list(APPEND ALLPYTESTS PyTests/TestSurfaceLoading.py )
+
+    foreach(pytest ${ALLPYTESTS})
+        get_filename_component(PYTESTNAME ${pytest} NAME_WE)
+        add_test(NAME ${PYTESTNAME} COMMAND ${PYTHON} -m unittest ${pytest})
+        #set_target_properties(${tester} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/testing)
+    endforeach()
+
+
+endif()
 
 
 #copy test datasets

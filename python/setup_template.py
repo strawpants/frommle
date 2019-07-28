@@ -34,7 +34,7 @@ setuptools.setup(
     name="frommle",
     author="Roelof Rietbroek",
     author_email="roelof@wobbly.earth",
-    description="Python interface to the geodetic Earth Science toolbox frommle",
+    description="Python interface to the C++ geodetic Earth Science toolbox frommle",
     long_description=long_description,
     url="https://wobbly.earth/frommle",
     packages=find_packages("."),
@@ -46,4 +46,5 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
         "Development Status :: 1 - Planning"],
     ext_modules=yieldExtensions(),
+    install_requires=["GDAL"],
 )

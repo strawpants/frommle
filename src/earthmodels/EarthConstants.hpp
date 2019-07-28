@@ -35,10 +35,10 @@ namespace earthmodels{
 
     struct WGS84{
         //defining parameters
-        static double a=6378137.0;//m
-        static finv=289.257223563;//-
-        static omegaRate=7292115e-11; //rad/s
-        static double GM=3986004.418 108;//m^3/s^2
+        static constexpr double a=6378137.0;//m
+        static constexpr double finv=289.257223563;//-
+        static constexpr double omegaRate=7292115e-11; //rad/s
+        static constexpr double GM=3986004.418;//m^3/s^2
         //derived parameters
 
     };
