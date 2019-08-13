@@ -20,7 +20,7 @@ if (PYTHON)
 
     foreach(pytest ${ALLPYTESTS})
         get_filename_component(PYTESTNAME ${pytest} NAME_WE)
-        add_test(NAME ${PYTESTNAME} COMMAND ${PYTHON} -m unittest ${pytest})
+        add_test(NAME ${PYTESTNAME} COMMAND ${PYTHON} -m unittest ${pytest} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
         #set_target_properties(${tester} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/testing)
     endforeach()
 

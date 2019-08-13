@@ -26,41 +26,43 @@ class formats:
     icgem=2
     GSMv6=3
 
-def queryformat(filen):
+def queryformat(filename):
     gzip=False
-    ftest=filen
-    if filen.endswith(".gz"):
+
+    ftest=filename
+    
+    if filename.endswith(".gz"):
         gzip=True
-        ftest=filen.strip(".gz")
+        ftest=filename.strip(".gz")
 
     if ftest.endswith("gfc"):
         return formats.icgem,gzip
-
     if gzip:
-        fid=gz.open(filen,'rt')
+        fid=gz.open(filename,'rt')
     else:
-        fid=open(filen,'rt')
+        fid=open(filename,'rt')
 
     ln = fid.readline()
     fid.close()
+
     if re.search("META",ln):
         return formats.standard, gzip
     else:
-        #fall back
+        #fall back by means of exclusion
         return formats.GSMv6,gzip
 
 
-def sh_read(shfile,nmax=None,format=None,epoch=None,headerOnly=False,shg=None,error=False):
+def sh_read(filename,nmax=None,format=None,epoch=None,headerOnly=False,shg=None,error=False):
 
     if not format:
-        format,gz=queryformat(shfile)
+        format,gz=queryformat(filename)
 
 
     if format == formats.standard:
-        return read_shstandard(shfile,nmax=nmax,headerOnly=headerOnly,shg=shg,error=error)
+        return read_shstandard(filename,nmax=nmax,headerOnly=headerOnly,shg=shg,error=error)
 
     if format == formats.icgem:
-        return read_icgem(shfile,nmax=nmax,epoch=epoch,headerOnly=headerOnly,error=error)
+        return read_icgem(filename,nmax=nmax,epoch=epoch,headerOnly=headerOnly,error=error)
 
     if format == formats.GSMv6:
-        return readGSMv06(shfile,nmax=nmax,headerOnly=headerOnly,error=error)
+        return readGSMv06(filename,nmax=nmax,headerOnly=headerOnly,error=error)

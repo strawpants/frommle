@@ -49,7 +49,7 @@ class LoadLove:
                 self.ldat[deg] = float(linespl[2].replace('D', 'E'))
                 self.kdat[deg] = float(linespl[3].replace('D', 'E'))
         # make sure the right degree 1 coefficients are set
-        self.setRefSystem('CM')
+        self.setRefSystem('CF')
 
     # set the reference system of the degree 1 loading Love numbers
     def setRefSystem(self, refsys):

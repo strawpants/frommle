@@ -26,7 +26,7 @@ class shIsoOperator(Goperator):
     scale=1.0
     def __init__(self, kernel):
         self.kernel=kernel
-        self.shg=SHtmnGuide(len(kenel)-1)
+        self.shg=SHtmnGuide(len(kernel)-1)
         # shgar=np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])
         # super().__init__(coords={"nmout":shgar,"nmin":shgar})
 

@@ -22,6 +22,9 @@ def shxarray(nmax):
     shg=SHtmnGuide(nmax,"cnm")
     return xr.DataArray(np.zeros([shg.size()]),dims=[shg.name],coords={shg.name:np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])})
 
+def newshxarray(shg,meta=None):
+        return xr.DataArray(np.zeros([shg.size()]),dims=[shg.name],coords={shg.name:np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])},attrs={"shg":shg,"shmeta":meta})
+
 
 
 def shxarray_load(shfiles,nmax=None,indexTime=False):

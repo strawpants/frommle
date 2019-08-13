@@ -17,18 +17,49 @@
 import unittest
 
 import os
-# from frommle.gravity import Stokes2eqh
-# from frommle.sh import i_from_mn,mn_from_i,nmax_from_sz
-# from frommle.sh.analysis import SH2loc
+from frommle.earthmodels.Earthmodel import  SNREI
 import numpy as np
 import math
+import io 
+
+
+def getStokes(filename):
+    shcoef=io.StringIO("META    5    0.000000    0.000000    0.000000"
+    "0    0  0.11443310195063E+08  0.00000000000000E+00"
+    "1    0  0.33459521883773E+08  0.00000000000000E+00"
+    "2    0  0.82373621262374E+08  0.00000000000000E+00"
+    "3    0  0.99634454013549E+08  0.00000000000000E+00"
+    "4    0  0.11887990641308E+09  0.00000000000000E+00"
+    "5    0  0.14059794911887E+09  0.00000000000000E+00"
+    "1    1  0.33459521883773E+08  0.33459521883773E+08"
+    "2    1  0.82373621262374E+08  0.82373621262374E+08"
+    "3    1  0.99634454013549E+08  0.99634454013549E+08"
+    "4    1  0.11887990641308E+09  0.11887990641308E+09"
+    "5    1  0.14059794911887E+09  0.14059794911887E+09"
+    "2    2  0.82373621262374E+08  0.82373621262374E+08"
+    "3    2  0.99634454013549E+08  0.99634454013549E+08"
+    "4    2  0.11887990641308E+09  0.11887990641308E+09"
+    "5    2  0.14059794911887E+09  0.14059794911887E+09"
+    "3    3  0.99634454013549E+08  0.99634454013549E+08"
+    "4    3  0.11887990641308E+09  0.11887990641308E+09"
+    "5    3  0.14059794911887E+09  0.14059794911887E+09"
+    "4    4  0.11887990641308E+09  0.11887990641308E+09"
+    "5    4  0.14059794911887E+09  0.14059794911887E+09"
+    "5    5  0.14059794911887E+09  0.14059794911887E+09"
+    )
 
 
 class testSurfaceLoading(unittest.TestCase):
     def test_eqh2Stokes(self):
-        print("testing")
+        loadlovef=os.path.join(os.environ['RLFTLBX_DATA'],'love','PREM.love')
+        nmax=200
+        #feed an elastic Earth model some love numbers
+        snrei=SNREI(loadlovef,nmax)
+        
+        #retrieve the stokes2eqqh operator
+        s2eqh=snrei.stokes2eqh();
         self.assertEqual("test","test")
-
+        
 
 if __name__ == '__main__':
     unittest.main()

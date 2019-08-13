@@ -17,11 +17,12 @@
 
 import numpy as np
 from frommle.sh import SHtmnGuide,trig
+from frommle.sh.shxarray import newshxarray
+
+from frommle.core.time import decyear2datetime
 
 def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
-    """Reads the standard SH format as produce by the RLFTLBX (first line has a META tag)"""
-    from frommle.core.time import decyear2datetime
-    from frommle.sh.shdata import shdata
+    """Reads the standard SH format as produce by the RLFTLBX (first line has a META tag, with the maximum degree and start,center and end time)"""
 
 
     with open(file, 'rt') as fid:
@@ -40,10 +41,11 @@ def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
             nmax=meta['nmax']
             shg=SHtmnGuide(nmax)
             meta["shguide"]=shg
+        
+        shxout=newshxarray(shg,meta=meta)
 
-        shout=np.zeros([shg.size()])
         if error:
-            sherr=np.zeros([shg.size()])
+            sherr=newshxarray(shg,meta=meta)
         else:
             sherr=None
 
@@ -54,18 +56,18 @@ def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
                 continue
 
             m = int(lnspl[1])
-            idxc = shg.idx((n, m,trig.c))
+            idxc = (n, m,trig.c)
 
             shout[idxc] = float(lnspl[2])
             if m != 0:
-                idxs = shg.idx((n, m, trig.s))
+                idxs = (n, m, trig.s)
                 shout[idxs] = float(lnspl[3])
             if error and len(lnspl) > 5:
                 sherr[idxc] = float(lnspl[4])
                 if m != 0:
                     sherr[idxs] = float(lnspl[5])
 
-    return meta,shout,sherr
+    return shout,sherr
 
 def write_shstandard(file,clm,slm,tstamps=[0.0,0.0,0.0]):
     nmax=clm.shape[0]-1

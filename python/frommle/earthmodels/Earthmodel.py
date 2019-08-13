@@ -36,10 +36,12 @@ class SNREI(EarthModel):
         super().__init__("SNREI")
         if not nmax:
             asymp=True
-            lln=LoadLove(loadLovefile)
+            self.lln=LoadLove(loadLovefile)
+            self.nmax=self.lln.nmax
         else:
-            lln=LoadLove(loadLovefile,nmax)
-    
+            self.lln=LoadLove(loadLovefile,nmax)
+            self.nmax=nmax
+
     def stokes2eqh(self):
         """returns a diagonal matrix with coefficients to convert from Stokes coefficients to equivalent water height"""
         kernel=np.ones([self.nmax+1])
