@@ -28,7 +28,7 @@ class EarthModel():
         name_=name
 
 
-class SNREI(EarthModel):
+class Snrei(EarthModel):
     lln=None
     #use asymptotic behavior of the Love numbers
     asymp=False
@@ -42,7 +42,7 @@ class SNREI(EarthModel):
             self.lln=LoadLove(loadLovefile,nmax)
             self.nmax=nmax
 
-    def stokes2eqh(self):
+    def stokes2Eqh(self):
         """returns a diagonal matrix with coefficients to convert from Stokes coefficients to equivalent water height"""
         kernel=np.ones([self.nmax+1])
         #create the isotropic kernel

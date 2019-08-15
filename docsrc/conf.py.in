@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Frommle'
-copyright = '2018, Roelof Rietbroek'
+copyright = '@CURRENTYEAR@, Roelof Rietbroek'
 author = 'Roelof Rietbroek'
 
 # The short X.Y version
@@ -185,6 +185,6 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
-breathe_projects = { "frommle": "/home/roelof/work2/Soft/frommlegithub/cmake-build-debug/docsrc/xml/" }
+breathe_projects = { "frommle": "@CMAKE_CURRENT_BINARY_DIR@/xml/" }
 breathe_default_project = "frommle"
 

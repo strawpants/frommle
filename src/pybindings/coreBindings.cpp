@@ -33,7 +33,7 @@ void pyexport_core(){
             .def("size",&GuideBase::size)
             .def("hash",&GuideBase::hash)
             .add_static_property("ndim",p::make_getter(&GuideBase::ndim))
-            .def("__str__",&GuideBase::hash);
+            .def("__str__",&GuideBase::printhash);
 //            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
 
 

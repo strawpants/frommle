@@ -21,7 +21,7 @@ from frommle.sh.shxarray import newshxarray
 
 from frommle.core.time import decyear2datetime
 
-def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
+def read_shstandard(file, nmax=None, headerOnly=False,error=False):
     """Reads the standard SH format as produce by the RLFTLBX (first line has a META tag, with the maximum degree and start,center and end time)"""
 
 
@@ -32,23 +32,20 @@ def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
                 "tcent": decyear2datetime(float(lnspl[3])), "tend": decyear2datetime(float(lnspl[4]))}
 
         if headerOnly:
-            return meta
+            return meta,None,None,None
 
-        if shg:
-            #take the nmax from the provided guide
-            nmax=shg.nmax
-        else:
-            nmax=meta['nmax']
-            shg=SHtmnGuide(nmax)
-            meta["shguide"]=shg
-        
-        shxout=newshxarray(shg,meta=meta)
+        if not nmax:
+            nmax=meta["nmax"]
 
+        shcoef=[]
         if error:
-            sherr=newshxarray(shg,meta=meta)
+            sherr=[]
         else:
             sherr=None
-
+        
+        # import pdb;pdb.set_trace()
+        idx=[]
+        
         for ln in fid:
             lnspl = ln.split()
             n = int(lnspl[0])
@@ -56,20 +53,24 @@ def read_shstandard(file, nmax=None, headerOnly=False,shg=None,error=False):
                 continue
 
             m = int(lnspl[1])
-            idxc = (n, m,trig.c)
+            idx.append((n, m,trig.c))
 
-            shout[idxc] = float(lnspl[2])
+            # import pdb;pdb.set_trace()
+            shcoef.append(float(lnspl[2]))
             if m != 0:
-                idxs = (n, m, trig.s)
-                shout[idxs] = float(lnspl[3])
+                idx.append( (n, m, trig.s))
+                shcoef.append(float(lnspl[3]))
             if error and len(lnspl) > 5:
-                sherr[idxc] = float(lnspl[4])
+                sherr.append(float(lnspl[4]))
                 if m != 0:
-                    sherr[idxs] = float(lnspl[5])
+                    sherr.append(float(lnspl[5]))
+    # pdb.set_trace()
+    return meta,idx,shcoef,sherr
 
-    return shout,sherr
-
-def write_shstandard(file,clm,slm,tstamps=[0.0,0.0,0.0]):
+def write_shstandard(file,idx, shcoef,sherr=None,meta=None):
+    """Write a dataset of spherical harmonic coeficients to a 'standard' sh file"""
+    
+    #create an index vector which is used to fix the 
     nmax=clm.shape[0]-1
     with open(file,'wt') as fid:
         fid.write("META   %d %f %f %f\n"%(nmax,tstamps[0],tstamps[1],tstamps[2]))

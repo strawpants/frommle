@@ -85,15 +85,15 @@ BOOST_AUTO_TEST_CASE(Settings) {
 
     //store and lookup a password
     std::string secretpassword("Blafjasldkmvapdkva;dkvas");
-    UserSettings::setAuth("Frommledummy",secretpassword);
-    auto checkpassword=UserSettings::getAuth("Frommledummy");
+    UserSettings::setAuth("Frommledummy","fuser",secretpassword);
+    auto checkpassword=UserSettings::getAuth("Frommledummy","fuser");
 
     BOOST_TEST(secretpassword == checkpassword);
 
     //the same but now stored unsecurely
     UserSettings::at("Authstore")="unsecure";
-    UserSettings::setAuth("Frommledummy",secretpassword);
-    auto checkunsecurepassword=UserSettings::getAuth("Frommledummy");
+    UserSettings::setAuth("Frommledummy","fuser",secretpassword);
+    auto checkunsecurepassword=UserSettings::getAuth("Frommledummy","fuser");
     BOOST_TEST(secretpassword == checkunsecurepassword);
 
 

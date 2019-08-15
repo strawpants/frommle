@@ -83,7 +83,7 @@ private:
         
         //add 1D index_range and index_gen types here?
         virtual typehash hash() const { return type_; }
-
+        std::string printhash()const{return std::string(hash());}
         index size() const { return size_; }
 
         virtual bool operator==(const GuideBase &in) const {

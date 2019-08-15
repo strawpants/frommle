@@ -35,11 +35,11 @@ namespace frommle {
 		public:
 			template<class T>
 			static YAML::Node at(const T & key){
-				if( UserSettings::get().config_[key]) {
+				//if( UserSettings::get().config_[key]) {
 					return UserSettings::get().config_[key];
-				}else {
-					THROWINPUTEXCEPTION("Key not found in User settings");
-				}
+				//}else {
+					//THROWINPUTEXCEPTION("Key not found in User settings");
+				//}
 			}
 			static void write();
 			static void write(const std::string filename);
@@ -51,8 +51,8 @@ namespace frommle {
 
 			static std::string yamlfile();
 
-			static std::string getAuth(const std::string alias);
-			static void setAuth(const std::string alias,const std::string secret);
+			static std::string getAuth(const std::string service, const std::string username);
+			static void setAuth(const std::string service,const std::string username,const std::string secret);
 			void setDefaults();
 		private:
 			friend Singleton<UserSettings>;
@@ -61,11 +61,11 @@ namespace frommle {
 			UserSettings();
 			void readYaml(const std::string yamlfile);
 
-			std::string getAuthUnsecure(const std::string alias)const;
-			void setAuthUnsecure(const std::string alias,const std::string secret);
+			std::string getAuthUnsecure(const std::string service,const std::string username)const;
+			void setAuthUnsecure(const std::string service,const std::string username,const std::string secret);
 
-			std::string getAuthlibsecret(const std::string alias)const;
-			void setAuthlibsecret(const std::string alias,const std::string secret)const;
+			std::string getAuthlibsecret(const std::string service,const std::string username)const;
+			void setAuthlibsecret(const std::string service,const std::string username,const std::string secret)const;
 			YAML::Node config_{};
 			std::string yamlfile_="";
 

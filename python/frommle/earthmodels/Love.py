@@ -16,6 +16,7 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 from sys import maxsize
 import re
+import gzip
 
 class LoadLove:
     def __init__(self, filename, nmax=None):
@@ -24,10 +25,14 @@ class LoadLove:
             nmax=maxsize
 
         commentreg = re.compile('^#')
-        fid = open(filename, 'r')
+        if filename.endswith('.gz'):
+            fid=gzip.open(filename,'rt')
+        else:
+            fid = open(filename, 'r')
         self.hdat = []
         self.ldat = []
         self.kdat = []
+        self.nmax=0
         for line in fid:
             if commentreg.match(line):
                 continue
@@ -48,9 +53,10 @@ class LoadLove:
                 self.hdat[deg] = float(linespl[1].replace('D', 'E'))
                 self.ldat[deg] = float(linespl[2].replace('D', 'E'))
                 self.kdat[deg] = float(linespl[3].replace('D', 'E'))
+                self.nmax=max(self.nmax,deg)
         # make sure the right degree 1 coefficients are set
         self.setRefSystem('CF')
-
+        fid.close()
     # set the reference system of the degree 1 loading Love numbers
     def setRefSystem(self, refsys):
         self.refsys = refsys

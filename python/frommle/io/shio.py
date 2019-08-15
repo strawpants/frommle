@@ -20,6 +20,10 @@ import gzip as gz
 from frommle.io.shstandard import read_shstandard
 from frommle.io.icgem import read_icgem
 from frommle.io.GSM import readGSMv06
+from frommle.sh.shxarray import newshxarray
+from frommle.core.frlogger import frlogger
+from frommle.sh import SHtmnGuide
+import numpy as np
 
 class formats:
     standard=1
@@ -30,39 +34,76 @@ def queryformat(filename):
     gzip=False
 
     ftest=filename
-    
+
     if filename.endswith(".gz"):
         gzip=True
         ftest=filename.strip(".gz")
 
     if ftest.endswith("gfc"):
-        return formats.icgem,gzip
+        #quick return
+        return formats.icgem
+    
+    #no we open the file to search for format hints
     if gzip:
         fid=gz.open(filename,'rt')
     else:
         fid=open(filename,'rt')
+    try:
+        ln = fid.readline()
+    except Exception as excep:
+        raise IOError("Reading error for %s"%filename)
 
-    ln = fid.readline()
     fid.close()
 
     if re.search("META",ln):
-        return formats.standard, gzip
-    else:
-        #fall back by means of exclusion
-        return formats.GSMv6,gzip
+        return formats.standard
+    
+    #fall back by means of exclusion
+    return formats.GSMv6
+
+def sh_read_asxar(shfiles,nmax=None):
+    """Reads a list of Spherical harmonic files into a 2D xarray.DataArray.
+    The 2nd dimension will be set to the time dimension"""
+    
+    #start with the first file to find out nmax
+    shformat=queryformat(shfiles[0])
+    meta,idx,shc,_=sh_read(shfiles[0],nmax=nmax)
+
+    if not nmax:
+        #take te nmax supported by the file if not provided explicitly
+        nmax=meta["nmax"]
+
+    shg=SHtmnGuide(nmax)
+
+    dtlist=[meta["tcent"]]
+    #allocate space for DataArray
+    shxout=newshxarray(shg,auxcoords={"time":np.array([x for x in range(len(shfiles))])})
+    #copy data in first column
+    shxout.loc[idx,0]=shc
+    ith=1
+    for shfile in shfiles[1:]:
+        frlogger().info("reading %s"%shfile)
+        meta,idx,shc,_=sh_read(shfile,nmax=nmax,format=shformat)
+        shxout.loc[idx,ith]=shc
+        dtlist.append(meta["tcent"])
+        ith+=1
+    #change the coordinate system to the time from the files and return  
+    return shxout.assign_coords(time=dtlist)
 
 
-def sh_read(filename,nmax=None,format=None,epoch=None,headerOnly=False,shg=None,error=False):
 
+    
+def sh_read(shfile,nmax=None,format=None,epoch=None,headerOnly=False,error=False):
+    """Reads meta informaation and spherical harmonic coefficients and their errors into a list"""
     if not format:
-        format,gz=queryformat(filename)
+        format=queryformat(shfile)
 
-
+     
     if format == formats.standard:
-        return read_shstandard(filename,nmax=nmax,headerOnly=headerOnly,shg=shg,error=error)
+        return read_shstandard(shfile,nmax=nmax,headerOnly=headerOnly,error=error)
 
     if format == formats.icgem:
-        return read_icgem(filename,nmax=nmax,epoch=epoch,headerOnly=headerOnly,error=error)
+        return read_icgem(shfile,nmax=nmax,epoch=epoch,headerOnly=headerOnly,error=error)
 
     if format == formats.GSMv6:
-        return readGSMv06(filename,nmax=nmax,headerOnly=headerOnly,error=error)
+        return readGSMv06(shfile,nmax=nmax,headerOnly=headerOnly,error=error)

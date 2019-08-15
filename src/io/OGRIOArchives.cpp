@@ -263,11 +263,13 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
                 //search for a default postgis database entry
                 pgname_=us::at("Defaultdb").as<std::string>();
             }
+            auto username=us::at(pgname_)["user"].as<std::string>();
+
             std::string source = std::string("PG:dbname='") + us::at(pgname_)["db"].as<std::string>() +
                                  "' host='" + us::at(pgname_)["host"].as<std::string>() +
                                  "' port='" + us::at(pgname_)["port"].as<std::string>() +
-                                 "' user='" + us::at(pgname_)["user"].as<std::string>() +
-                                 "' password='" + us::getAuth(pgname_) + "'";
+                                 "' user='" + username +
+                                 "' password='" + us::getAuth("geoslurp",username) + "'";
             if(!schemas.empty()){
                 source+= "schemas="+schemas;
             }

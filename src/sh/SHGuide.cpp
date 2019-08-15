@@ -24,9 +24,6 @@ namespace frommle {
     namespace sh {
         using  frommle::core::index;
 
-//        SHtmnGuide::SHtmnGuide(const int nmax) :SHGuideBase("SHtmnGuide",2*(SHtmnGuide::i_from_mn(nmax,nmax,nmax)+1),nmax,0){
-//
-//        }
 
         SHtmnGuide::SHtmnGuide(const int nmax,const std::string  name) :SHGuideBase(name,core::typehash("SHtmnGuide").add(nmax),2*(SHtmnGuide::i_from_mn(nmax,nmax,nmax)+1),nmax,0){
 
@@ -50,7 +47,30 @@ namespace frommle {
             trig t;
             std::tie(n,m,t)=el;
             return idx(n,m,t);
+        } 
+
+//implementation for SHnmtGuide
+
+        SHnmtGuide::SHnmtGuide(const int nmax,const std::string  name) :SHGuideBase(name,core::typehash("SHnmtGuide").add(nmax),2*(SHnmtGuide::i_from_mn(nmax,nmax,nmax)+1),nmax,0){
+
         }
+
+        index SHnmtGuide::idx(const int n, const int m, const SHGuideBase::trig t) const {
+            index idx=2*(n*(n+1))/2+m)+t;
+            return idx;
+        }
+
+        SHGuideBase::Element SHnmtGuide::operator[](const index idx) const {
+            int n,m;
+            
+            trig t=(idx%2==0)?Base::trig::C : SHGuideBase::trig::S;
+
+            index shft=(t==trig::C)?0:size_/2;
+            std::tie(n,m)=SHtmnGuide::mn_from_i(idx-shft,nmax_);
+            return std::make_tuple(n,m,t);
+        }
+
+        
     }
 }
 

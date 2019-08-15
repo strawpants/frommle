@@ -16,34 +16,25 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
 import xarray as xr
 import numpy as np
-from frommle.sh import SHtmnGuide
+from frommle.core import GuideBase
+def newshxarray(shg,meta=None,auxcoords=None):
+        dims=["SHGuide"]
+        coords={"SHGuide":np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])}
+        coordattr={"guidepack":[shg]}
+        shp=[shg.size()]
+        # import pdb;pdb.set_trace()
+        if meta:
+            for ky,val in meta.items():
+                coordattr[ky]=val
+        if auxcoords:
+            for ky,colist in auxcoords.items():
+                dims.append(ky)
+                coords[ky]=colist
+                shp.append(len(colist))
+                #the other non-Guide coordinates are tagged as GuideBase for the time being
+                coordattr["guidepack"].append(GuideBase())
 
-def shxarray(nmax):
-    shg=SHtmnGuide(nmax,"cnm")
-    return xr.DataArray(np.zeros([shg.size()]),dims=[shg.name],coords={shg.name:np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])})
+        return xr.DataArray(np.zeros(shp),dims=dims,coords=coords,attrs=coordattr)
 
-def newshxarray(shg,meta=None):
-        return xr.DataArray(np.zeros([shg.size()]),dims=[shg.name],coords={shg.name:np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])},attrs={"shg":shg,"shmeta":meta})
-
-
-
-def shxarray_load(shfiles,nmax=None,indexTime=False):
-    """Read spherical harmonic coefficients from a list of files into an xarray"""
-    nfiles=len(shfiles)
-
-    #read the first shfile to find out maximum degree and format
-
-    # if nmax:
-    #     shg=SHtmnGuide(nmax)
-    # else:
-    #     #read the first file to find out the maximum degree
-
-
-
-    # if(indexTime):
-    #     #create a teimindex to be used as a dimension
-    #
-    # else:
-    #     #use the filenames themselves as an index
 
 

@@ -133,7 +133,7 @@ namespace cli {
                                         "Display or set configuration settings. Options can be:\n"
                                         "User:USERNAME (set user name)\n"
                                         "Contact:EMAIL (set contact)\n"
-                                        "Secrets:ALIAS (store password associated with the ALIAS key (prompts for password)");
+                                        "Secrets:SERVICE:USERNAME (store password associated with the USERNAME for the SERVICE key (prompts for password)");
             }
             static void processConfig(std::string opt){
                 std::vector<std::string> splitOpt;
@@ -142,8 +142,8 @@ namespace cli {
                 if(splitOpt[0] == "User" || splitOpt[0] == "Contact") {
                     core::UserSettings::at(splitOpt[0]) = splitOpt[1];
                 }else if (splitOpt[0]=="Secrets"){
-                    auto passw=io::getpass(std::string("Enter secret token (e.g. password) for alias: ")+splitOpt[1]);
-                    core::UserSettings::setAuth(splitOpt[1],passw);
+                    auto passw=io::getpass(std::string("Enter secret token (e.g. password) for: ")+splitOpt[1]+":"+splitOpt[2]);
+                    core::UserSettings::setAuth(splitOpt[1], splitOpt[2],passw);
                 }else{
                     throw frommle::core::InputException("Cannot parse config option");
                 }

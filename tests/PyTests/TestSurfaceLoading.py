@@ -52,7 +52,8 @@ def getStokes(filename):
 class testSurfaceLoading(unittest.TestCase):
     def test_eqh2Stokes(self):
         loadlovef=os.path.join(os.environ['RLFTLBX_DATA'],'love','PREM.love')
-        nmax=200
+        loadlovef=findresource('PREM.love',table='love',scheme='earthmodels')
+        nmax=5
         #feed an elastic Earth model some love numbers
         snrei=SNREI(loadlovef,nmax)
         
@@ -63,36 +64,6 @@ class testSurfaceLoading(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# loadlovef=os.path.join(os.environ['RLFTLBX_DATA'],'love','PREM.love')
-# nmax=100
-
-
-# conv=Stokes2eqh(loadlovef,nmax)
-
-# #prepare dummy input
-# sz=i_from_mn(nmax,nmax,nmax)+1
-# cnm=np.ones((sz,))
-# snm=np.ones((sz,))
-
-# nmaxout=nmax_from_sz(cnm.shape[0])
-# #convert coefficients
-# cnmout,snmout=conv(cnm,snm)
-
-# d2r=math.pi/180
-
-
-# locations=[(10,53),(20,89.8)]
-# locations=[(d2r*lon,d2r*lat) for lon,lat in locations]
-
-# out=SH2loc(locations,cnm,snm)
-
-# for (lon,lat),val in zip(locations,out):
-    # print(lon/d2r,lat/d2r,val)
-
-# # for idx,(c,s) in enumerate(zip(cnmout,snmout)):
-# #     n,m=mn_from_i(idx,nmax)
-# #     print(n,m,c,s)
 
 
 

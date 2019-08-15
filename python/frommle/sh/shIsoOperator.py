@@ -19,20 +19,28 @@ from frommle.core import Goperator
 import numpy as np
 from frommle.sh import SHtmnGuide
 import copy
+import scipy.sparse as sps
+from frommle.sh.shxarray import newshxarray
 
 class shIsoOperator(Goperator):
     """Converts a spherical harmonic dataset into another using an isotropic kernel"""
     kernel=None
-    scale=1.0
     def __init__(self, kernel):
+        """Initialize the operator with a list of degree dependent factors"""
         self.kernel=kernel
-        self.shg=SHtmnGuide(len(kernel)-1)
-        # shgar=np.array([x for x in shg],dtype=[("n",'i8'),("m",'i8'),("t","O")])
-        # super().__init__(coords={"nmout":shgar,"nmin":shgar})
 
     def __call__(self,shxin):
-        """Apply kernel to input data"""
-        pass
+        """Apply kernel to input xarrar.DataArray"""
+        #expand the degree wise coefficients to a diagonal matrix with the same sorting as the input
+        diag=sps.diags([self.kernel[n] for n,m,tr in shxin["SHGuide"].values])
+        
+        #create a new matrix to fill with new values
+        otherdim=shxin.dims[1]
+        shxout=newshxarray(shxin.guidepack[0],auxcoords={otherdim:shxin[otherdim].values})
+        
+        #apply the sparse matrix mulitplication
+        shxout.values=diag.dot(shxin.values)
+        return shxout
 
     def chainright(self,roperator):
         """Apply an operator from the right and return the resulting operator"""
@@ -40,6 +48,6 @@ class shIsoOperator(Goperator):
 
     def inv(self):
         """returns the inverse operator"""
-        return shIsoOperator(np.reciprocal(kernel))
+        return shIsoOperator(np.reciprocal(self.kernel))
 
 

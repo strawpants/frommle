@@ -132,6 +132,21 @@ namespace frommle{
 
         };
 
+        /*!brief
+         * SHnmtGuide holds a SH sorting scheme which varies fastest in trigonometric type, then order and degree is slowest. It includes order 0 sine coefficients
+         */
+        class SHnmtGuide: public SHGuideBase{
+        public:
+            using SHGuideBase::trig;
+            using SHGuideBase::Element;
+            using SHGuideBase::idx;
+            SHnmtGuide()=default;
+//            SHtmnGuide(const int nmax);
+            SHnmtGuide(const int nmax,const std::string name="SHnmtGuide");
+            index idx(const int n, const int m, const trig t=trig::C)const;
+            Element operator[](const index idx)const;
+
+        };
     }
 }
 

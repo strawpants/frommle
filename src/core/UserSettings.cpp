@@ -54,8 +54,7 @@ namespace frommle {
 				config_["Contact"]= username + "@unknown";
 
 				config_["Authstore"]="libsecret";
-				config_["Defaultdb"]="geoslurp";
-				config_["geoslurp"]["db"]= std::string("geoslurp");
+				config_["Defaultdb"]="";
 				config_["geoslurp"]["host"]= std::string("hostname");
 				config_["geoslurp"]["port"]= std::string("5432");
 				config_["geoslurp"]["user"]= username;
@@ -105,14 +104,14 @@ namespace frommle {
 			return UserSettings::get().yamlfile_;
 		}
 
-		std::string UserSettings::getAuth(const  std::string alias) {
+		std::string UserSettings::getAuth(const  std::string service, const  std::string username) {
 			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
 
 			if (method == "libsecret") {
 				//try to retrieve the authentification credentials from the gnome-keyring
-				return UserSettings::get().getAuthlibsecret(alias);
+				return UserSettings::get().getAuthlibsecret(service,username);
 			}else if (method == "unsecure"){
-				return UserSettings::get().getAuthUnsecure(alias);
+				return UserSettings::get().getAuthUnsecure(service,username);
 			}else{
 				throw InputException("Unknown method to retrieve authentification secrets: "+ method);
 			}
@@ -120,13 +119,13 @@ namespace frommle {
 		}
 
 		//@brief stores a secret
-		void UserSettings::setAuth(const std::string alias, const std::string secret) {
+		void UserSettings::setAuth(const std::string service, const std::string username, const std::string secret) {
 			std::string method=UserSettings::at("Authstore").as<std::string>();
 			if (method == "libsecret") {
 				//try to retrieve the authentification credentials from the gnome-keyring
-				UserSettings::get().setAuthlibsecret(alias, secret);
+				UserSettings::get().setAuthlibsecret(service,username, secret);
 			}else if (method == "unsecure"){
-				UserSettings::get().setAuthUnsecure(alias, secret);
+				UserSettings::get().setAuthUnsecure(service,username, secret);
 			}else{
 				throw InputException("Unknown method to store authentification secrets: "+ method);
 			}
@@ -134,13 +133,13 @@ namespace frommle {
 		}
 
 		//@brief store secret passwords in an unsecure way (plain text in config_ tree)
-		void UserSettings::setAuthUnsecure(const std::string alias, const std::string secret) {
-			config_["Secrets"][alias]=secret;
+		void UserSettings::setAuthUnsecure(const std::string service,const std::string username, const std::string secret) {
+			config_["Secrets"][service][username]=secret;
 		}
 
 		//@brief retrieves secrets stored in an unsecure way from config_ tree
-		std::string UserSettings::getAuthUnsecure(const std::string alias) const {
-			return config_["Secrets"][alias].as<std::string>();
+		std::string UserSettings::getAuthUnsecure(const std::string service,const std::string username) const {
+			return config_["Secrets"][service][username].as<std::string>();
 		}
 
 		const SecretSchema *
@@ -149,7 +148,8 @@ namespace frommle {
 			static const SecretSchema the_schema = {
 					"org.frommle.Password", SECRET_SCHEMA_NONE,
 					{
-							{  "alias", SECRET_SCHEMA_ATTRIBUTE_STRING },
+							{  "username", SECRET_SCHEMA_ATTRIBUTE_STRING },
+							{  "service", SECRET_SCHEMA_ATTRIBUTE_STRING },
 							{  "NULL", SECRET_SCHEMA_ATTRIBUTE_STRING },
 					}
 			};
@@ -157,10 +157,11 @@ namespace frommle {
 		}
 
 		//@brief lookup a password or secret token through the libsecret method
-		std::string UserSettings::getAuthlibsecret(const std::string alias) const {
+		std::string UserSettings::getAuthlibsecret(const std::string service, const std::string username) const {
 			GError *error = NULL;
 			gchar *password = secret_password_lookup_sync (frommle_get_schema(), NULL, &error,
-					"alias",alias.c_str(),
+					"username",username.c_str(),
+					"service",service.c_str(),
 					NULL);
 
 			if (error != NULL) {
@@ -173,12 +174,13 @@ namespace frommle {
 		}
 
 		//@brief stores a secret with libsecret
-		void UserSettings::setAuthlibsecret(const std::string alias, const std::string secret) const {
+		void UserSettings::setAuthlibsecret(const std::string service,const std::string username, const std::string secret) const {
 			GError *error = NULL;
 
 			secret_password_store_sync (frommle_get_schema(), SECRET_COLLECTION_DEFAULT,
 										"Frommle", secret.c_str(), NULL, &error,
-										"alias", alias.c_str(),
+										"username", username.c_str(),
+										"service",service.c_str(),
 										NULL);
 
 			if (error != NULL) {

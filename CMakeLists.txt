@@ -7,6 +7,7 @@ project(Frommle)
 option(USE_MPI "Build with MPI enabled" OFF)
 
 
+
 #make sure that we're using c++11 (unfortunately this variable is not supported with cmake <3 .1)
 ##set(CMAKE_CXX_STANDARD 11)
 
@@ -18,6 +19,8 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 endif()
 
+#set a variable to the current year for later reuse
+string(TIMESTAMP CURRENTYEAR "%Y")
 set(FROMMLELIBMAJORVERSION 0)
 set(FROMMLELIBMINORVERSION 1)
 set(FROMMLEVERSION "Alpha V${FROMMLELIBMAJORVERSION}.${FROMMLELIBMINORVERSION}")
