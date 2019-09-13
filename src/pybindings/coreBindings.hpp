@@ -18,82 +18,26 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
-#include <boost/core/noncopyable.hpp>
-#include <boost/python/tuple.hpp>
-#include <boost/multi_array.hpp>
-#include "core/seqGenerator.hpp"
-#include "object.h"
-#include "core/seqGenerator.hpp"
-namespace p = boost::python;
-namespace np = boost::python::numpy;
-#include "pybindings/tupleconversion.hpp"
-#include "core/IndexGuide.hpp"
-//#include "core/GuideAppender.hpp"
+//#include <boost/python.hpp>
+////#include <boost/python/numpy.hpp>
+//#include <boost/core/noncopyable.hpp>
+//#include <boost/python/tuple.hpp>
+//#include "core/seqGenerator.hpp"
+//#include "object.h"
+//#include "core/seqGenerator.hpp"
+//namespace p = boost::python;
+////namespace np = boost::python::numpy;
+//#include "core/IndexGuide.hpp"
+////#include "core/GuideAppender.hpp"
 
 #ifndef FROMMLE_COREBINDINGS_HPP
 #define FROMMLE_COREBINDINGS_HPP
 namespace frommle{
     namespace py{
 
-        ///@brief convert an element to a numpy dtype (specialize for each non built in type)
-        template<class T>
-        np::dtype to_np_dtype(){
-                return np::dtype::get_builtin<T>();
-        }
-
-
-        template<class T>
-        struct vec_to_ndarray{
-            static PyObject* convert( std::vector<T> const & invec){
-                p::tuple shape = p::make_tuple(invec.size());
-                np::dtype dtype = to_np_dtype<T>();
-//        np::ndarray py_array = np::from_data(invec.data(), dtype, p::make_tuple(invec.size()),p::make_tuple(sizeof(ftype)),p::object());
-                np::ndarray py_array = np::empty(shape, dtype);
-                T * dptr = reinterpret_cast<T*> (py_array.get_data());
-                //copy values (not very efficient for large vectors)
-                for (auto & el: invec){
-                    *dptr=el;
-                    dptr++;
-                }
-                return p::incref(py_array.ptr());
-            }
-        };
 
 
 
-
-        template<int ndim>
-        struct arr_to_ptuple{
-            template<class Arr>
-            static PyObject* convert(const Arr &in){
-                return p::incref(make(in).ptr());
-            }
-
-            template<class Arr>
-            static p::tuple make(const Arr &in){
-                return ptuple_from_array(in,typename frommle::core::seqGenerator<ndim>::type());
-            }
-            template<class Arr, int ...S>
-            static p::tuple ptuple_from_array(const Arr & in, frommle::core::sequence<S...>){
-                return p::make_tuple(in[S]...);
-            }
-        };
-
-
-        template<typename T, size_t ndim>
-        struct marray_to_ndarray{
-            static PyObject* convert ( boost::multi_array<T,ndim> & marr){
-                return p::incref(get(marr).ptr());
-            }
-            static np::ndarray get(boost::multi_array<T,ndim> & marr){
-                p::tuple shape = arr_to_ptuple<ndim>::make(marr.shape());
-                p::tuple strides = arr_to_ptuple<ndim>::make(marr.strides());
-                np::dtype dtype = to_np_dtype<T>();
-                return np::from_data(marr.data(),dtype,shape,strides,p::object());
-            }
-        };
     
        //implementation cna be found in GuidePackBindings.cpp 
         void registerGuidePack();

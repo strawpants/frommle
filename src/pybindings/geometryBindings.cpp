@@ -27,7 +27,6 @@
 #include "geometry/fibonacciGrid.hpp"
 
 namespace p = boost::python;
-namespace np = boost::python::numpy;
 
 
 using namespace frommle::geometry;

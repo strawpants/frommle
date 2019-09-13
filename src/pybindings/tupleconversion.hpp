@@ -98,6 +98,23 @@ namespace frommle {
 
         };
 
+        template<int ndim>
+        struct arr_to_ptuple{
+            template<class Arr>
+            static PyObject* convert(const Arr &in){
+                return p::incref(make(in).ptr());
+            }
+
+            template<class Arr>
+            static p::tuple make(const Arr &in){
+                return ptuple_from_array(in,typename frommle::core::seqGenerator<ndim>::type());
+            }
+            template<class Arr, int ...S>
+            static p::tuple ptuple_from_array(const Arr & in, frommle::core::sequence<S...>){
+                return p::make_tuple(in[S]...);
+            }
+        };
+
 /* @brief register tuple conversions from and to python
  *
  */
@@ -108,6 +125,10 @@ namespace frommle {
             p::converter::registry::push_back(&ptuple_to_stdtuple<T>::convertible, &ptuple_to_stdtuple<T>::construct,
                                               p::type_id<T>());
         }
+
+
+        void register_tuple_converters();
+
     }
 }
 

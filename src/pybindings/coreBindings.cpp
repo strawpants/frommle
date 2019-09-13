@@ -1,10 +1,13 @@
-#include "pybindings/coreBindings.hpp"
+//#include "pybindings/coreBindings.hpp"
 #include "core/GuideBase.hpp"
 #include "core/GuidePack.hpp"
 #include "core/GOperatorBase.hpp"
 #include "core/IndexGuide.hpp"
 #include "core/TimeGuide.hpp"
+#include "pybindings/tupleconversion.hpp"
 #include "pybindings/datetimeconversion.hpp"
+#include "pybindings/numpyConverting.hpp"
+#include "pybindings/coreBindings.hpp"
 using namespace frommle::py;
 using namespace frommle::core;
 
@@ -14,15 +17,14 @@ void pyexport_core(){
 
     //Register c++ to python conversions
 
-    //register vector to ndarray converter at runtime
-    p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
 
-    //register specific std:tuple to/from python tuple converters
-    register_tuple<std::tuple<int,int>>(); 
-
+    register_tuple_converters();
     
+    register_numpy_converters();
     //register to/from date converters
     register_datetime();
+
+
 
     //p::to_python_converter<std::tuple<int,int>, stdtuple_to_ptuple<std::tuple<int,int>>> ();
 
@@ -48,7 +50,8 @@ void pyexport_core(){
     p::register_ptr_to_python< GuideBasePtr >();
 
     //IndexGuide
-    p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>());
+    p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>()).
+        def("__array__",&guide_to_ndarray<IndexGuide>);
 
     //TimeGuides
     void (DateGuide::*pbdg)(const gregdate )=&DateGuide::push_back;

@@ -164,6 +164,7 @@ namespace frommle{
 
             RegisterMembers<core::GuideRegistry>::regapp(
                     boostpyGP("GuidePackBase",p::no_init).def("ndim",&core::GuidePackBase::nDim,&GuidePackWrapper::default_nDim).def("__getitem__",p::pure_virtual(cget),p::return_value_policy<p::copy_const_reference>())
+                        .def("__iter__",p::iterator<const core::GuidePackBase>())
             );
             p::register_ptr_to_python< std::shared_ptr<core::GuidePackBase> >();
             p::class_<core::GuidePackDyn<0>,p::bases<core::GuidePackBase>>("GuidePack0");

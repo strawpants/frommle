@@ -43,6 +43,12 @@ class GuidePackBase: public virtual GauxPureVirt{
         virtual int nDim()const{return 0;}
         using Gvar=GuideRegistry::Gvar;
         using GauxPureVirt::append;
+        using iterator=Gvar*;
+        using const_iterator=const Gvar*;
+        virtual iterator begin()=0;
+        virtual iterator end()=0;
+        virtual const_iterator begin()const=0;
+        virtual const_iterator end()const=0;
         //dynamic access to the underlying guides should be implemented
         //virtual Gvar & operator[](const int i)=0;
         
@@ -63,6 +69,10 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         int nDim()const{return n;}
         Gvar & operator[](const int i)override{return gpar_[i];} 
         const Gvar & operator[](const int i)const override {return gpar_[i];} 
+        iterator begin()override{return gpar_.begin();}
+        iterator end()override{return gpar_.end();}
+        const_iterator begin()const override{ return gpar_.begin();}
+        const_iterator end()const override{ return gpar_.end();}
     private:
         std::array<Gvar,n> gpar_{};
 

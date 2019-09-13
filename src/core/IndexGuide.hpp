@@ -19,6 +19,7 @@
  */
 #include "core/GuideBase.hpp"
 #include "io/Group.hpp"
+#include <boost/range.hpp>
 #ifndef FROMMLE_INDEXGUIDE_HPP
 #define FROMMLE_INDEXGUIDE_HPP
 
@@ -36,8 +37,13 @@ namespace frommle{
             IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize),nsize){}
             Element operator[](const frommle::core::index idx)const{return idx;}
 //            Element & operator[](GuideBase::index idx){return idx;}
-            private:
+            //using const_iterator=Element *;
+            //const_iterator begin()const;
+            //const_iterator end()const;
 
+            
+            private:
+            boost::range::range rng_{};
             friend class io::serialize;
             template<class Archive>
             void load(Archive & Ar){

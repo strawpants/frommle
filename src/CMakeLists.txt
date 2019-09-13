@@ -28,7 +28,7 @@ LIST(APPEND EARTHOBJS earthmodels/EarthConstants.cpp)
 
 if (PYTHON)
     #add python wrapper routines
-    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/datetimeconversion.hpp pybindings/tupleconversion.hpp pybindings/earthBindings.cpp)
+    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/datetimeconversion.hpp pybindings/tupleconversion.hpp pybindings/tupleconversion.cpp pybindings/earthBindings.cpp)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/geometryBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/GuidePackBindings.cpp )
