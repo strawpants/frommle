@@ -42,9 +42,11 @@ class shIsoOperator(Goperator):
         shxout.values=diag.dot(shxin.values)
         return shxout
 
-    def chainright(self,roperator):
+    def chain(self,roperator):
         """Apply an operator from the right and return the resulting operator"""
-        pass
+        if type(roperator) != type(self):
+            return shIsoOperator(np.multiply(roperator.kernel,self.kernel))
+        raise NotImplementedError("righthchaining with operator %s is not implemented"%(type(roperator)))
 
     def inv(self):
         """returns the inverse operator"""

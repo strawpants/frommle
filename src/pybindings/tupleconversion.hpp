@@ -85,7 +85,7 @@ namespace frommle {
 
                 p::object ptuple(p::handle<>(p::borrowed(py_obj)));
 
-                T *c_tuple = new(memory_chunk) T(construct_impl(ptuple, seqtype()));
+               new(memory_chunk) T(construct_impl(ptuple, seqtype()));
                 data->convertible = memory_chunk;
             }
 

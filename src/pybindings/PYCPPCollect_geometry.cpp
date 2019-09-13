@@ -22,11 +22,12 @@
 
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
-void pyexport_core();
 
-BOOST_PYTHON_MODULE(_core)
+void pyexport_geometry();
+
+BOOST_PYTHON_MODULE(_geometry)
         {
-        Py_Initialize();
-        boost::python::numpy::initialize();
-                pyexport_core();
+//        Py_Initialize();
+//        boost::python::numpy::initialize();
+                pyexport_geometry();
         }

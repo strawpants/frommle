@@ -19,10 +19,10 @@
  */
 
 #include <string>
-#include <assert.h>
+#include <cassert>
 #include <tuple>
-#include "core/GuidePack.hpp"
-#include "GArrayBase.hpp"
+//#include "core/GuidePack.hpp"
+//#include "GArrayBase.hpp"
 
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
@@ -31,6 +31,11 @@
 namespace frommle {
 namespace core {
 
+template<class T1,class T2>
+    class Garray;
+
+template<class ...Types>
+class GuidePack;
 /*!
  * \brief Abstract base class for describing an operator mapping from one dimension in the other dimensions
  * This class allows the storing of complex functional operators

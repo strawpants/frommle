@@ -73,7 +73,7 @@ private:
         GuideBase(const std::string & name, const typehash &type, const index &sz) : type_(type), size_(sz),name_(name) {}
 
         GuideBase(const typehash &type) : type_(type) {}
-
+        GuideBase(const std::string & name,const typehash &type):type_(type),name_(name){}
         virtual ~GuideBase() {
         }
        
@@ -126,6 +126,9 @@ private:
         Element elVal={};
     private:
     };
+
+    using GuideBasePtr=std::shared_ptr<GuideBase>;
+    using constGuideBasePtr=std::shared_ptr<const GuideBase>;
 
 
     ///@brief this masked guide wraps another guide while masking part of it

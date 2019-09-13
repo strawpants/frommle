@@ -1,6 +1,6 @@
 /*! \file
- \brief Implementation file for the TimeDimension class
- \copyright Roelof Rietbroek 2018
+ \brief some explicitly instantiated templated functions
+ \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -17,15 +17,18 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-
-#include "core/TimeGuide.hpp"
-#include <chrono>
-#include <ctime>
+#include "core/GuidePack.hpp"
 namespace frommle{
-namespace core {
 
-
-    }
-
+	namespace core{
+	//class GuidePackBase;
+	 //explicitly instantiate a few dynamic guidepacks
+	template class GuidePackDyn<0>;
+	template class GuidePackDyn<1>;
+	template class GuidePackDyn<2>;
+	template class GuidePackDyn<3>;
+	template class GuidePackDyn<4>;
+	template class GuidePackDyn<5>;
+	}
 }
+

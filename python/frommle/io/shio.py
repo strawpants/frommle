@@ -17,13 +17,14 @@
 
 import re
 import gzip as gz
-from frommle.io.shstandard import read_shstandard
+from frommle.io.shstandard import read_shstandard,write_shstandard
 from frommle.io.icgem import read_icgem
 from frommle.io.GSM import readGSMv06
 from frommle.sh.shxarray import newshxarray
-from frommle.core.frlogger import frlogger
+from frommle.core.frlogger import logger
 from frommle.sh import SHtmnGuide
 import numpy as np
+from frommle.core.time import npdt64_2_datetime
 
 class formats:
     standard=1
@@ -82,7 +83,7 @@ def sh_read_asxar(shfiles,nmax=None):
     shxout.loc[idx,0]=shc
     ith=1
     for shfile in shfiles[1:]:
-        frlogger().info("reading %s"%shfile)
+        logger.info("reading %s"%shfile)
         meta,idx,shc,_=sh_read(shfile,nmax=nmax,format=shformat)
         shxout.loc[idx,ith]=shc
         dtlist.append(meta["tcent"])
@@ -91,7 +92,12 @@ def sh_read_asxar(shfiles,nmax=None):
     return shxout.assign_coords(time=dtlist)
 
 
-
+def sh_writexarray(shxin,shfiles):
+    """Write shxarray to files"""
+     
+    for i in range(len(shfiles)):
+        meta={"tcent":npdt64_2_datetime(shxin["time"].values[i])}
+        sh_write(shfiles[i],shxin.guidepack[0],shxin[:,i].values,meta=meta)
     
 def sh_read(shfile,nmax=None,format=None,epoch=None,headerOnly=False,error=False):
     """Reads meta informaation and spherical harmonic coefficients and their errors into a list"""
@@ -107,3 +113,14 @@ def sh_read(shfile,nmax=None,format=None,epoch=None,headerOnly=False,error=False
 
     if format == formats.GSMv6:
         return readGSMv06(shfile,nmax=nmax,headerOnly=headerOnly,error=error)
+
+def sh_write(shfile,idx,shcoef,sherr=None,format=None,meta=None):
+    """Write out a spherical harmonic dataset in a file"""
+    if not format:
+        format=formats.standard
+
+    if format == formats.standard:
+        write_shstandard(shfile,idx,shcoef,sherr=sherr,meta=meta)
+        return
+
+    raise NotImplementedError("Output sh format not implemented")

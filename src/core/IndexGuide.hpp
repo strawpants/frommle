@@ -31,7 +31,7 @@ namespace frommle{
         class IndexGuide:public GuideBase{
         public:
             using Element=unsigned long long int;
-            IndexGuide():GuideBase(typehash("IndexGuide").add(0).add(0)){}
+            IndexGuide():GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(0)){}
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize),nsize){}
             IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize),nsize){}
             Element operator[](const frommle::core::index idx)const{return idx;}

@@ -13,25 +13,9 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
+# Author Roelof Rietbroek (roelof@wobbly.earth), 2019
+import shapely.wkb
 
-
-# from frommle.sh import SHtmnGuide
-# from frommle.sh import shxarray
-#
-# nmax=5
-# shx=shxarray(nmax)
-#
-# print(shx)
-# for (n,m,t) in shg:
-#     print(n,m,t)
-
-
-from datetime import datetime
-from frommle.core import printdt
-
-
-tmp=datetime.now()
-
-printdt(tmp)
-
+def toShapely(entry):
+    """ extract a shapely object from the database entry"""
+    return shapely.wkb.loads(str(entry['geom']), hex=True)

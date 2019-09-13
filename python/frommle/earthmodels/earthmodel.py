@@ -17,7 +17,7 @@
 
 
 from frommle.earthmodels import LoadLove
-from frommle.earthmodels import WGS84,rho_water,rho_earth
+from frommle.earthmodels import WGS84,rho_water,rho_seawater,rho_earth
 from frommle.sh import shIsoOperator
 import numpy as np
 
@@ -42,11 +42,14 @@ class Snrei(EarthModel):
             self.lln=LoadLove(loadLovefile,nmax)
             self.nmax=nmax
 
-    def stokes2Eqh(self):
+    def stokes2EqSeah(self):
+        return self.stokes2Eqh(rhowater=rho_seawater)
+    
+    def stokes2Eqh(self,rhowater=rho_water):
         """returns a diagonal matrix with coefficients to convert from Stokes coefficients to equivalent water height"""
         kernel=np.ones([self.nmax+1])
         #create the isotropic kernel
-        scale=WGS84.a*rho_earth/(3*rho_water)
+        scale=WGS84.a*rho_earth/(3*rhowater)
         kernel=np.array([scale*(2*n+1)/(1+self.lln.kdat[n]) for n in range(self.nmax+1)])
         return shIsoOperator(kernel)
          
@@ -57,7 +60,9 @@ class Snrei(EarthModel):
         return shIsoOperator(kernel)
     
     def stokes2Uplift(self):
-        kernel=WGS84.a*np.array([self.lln.hdat/(1+self.lln.kdat)])
+        kernel=WGS84.a*np.array([self.lln.hdat[n]/(1+self.lln.kdat[n]) for n in range(self.nmax+1)])
         return shIsoOperator(kernel)
 
-
+    def stokes2HorizDef(self):
+        kernel=WGS84.a*np.array([self.lln.ldat[n]/(1+self.lln.kdat[n]) for n in range(nmax+1)])
+        return shIsoOperator(kernel)

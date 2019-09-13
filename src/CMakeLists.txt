@@ -1,9 +1,9 @@
 LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp
         io/ArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp )
 
-LIST(APPEND COREOBJS core/TimeGuide.cpp core/GuideBase.cpp core/GOperatorBase.cpp)
+LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp)
 
-LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp)
+LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp)
 LIST(APPEND COREOBJS core/UserSettings.cpp)
 
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
@@ -28,8 +28,10 @@ LIST(APPEND EARTHOBJS earthmodels/EarthConstants.cpp)
 
 if (PYTHON)
     #add python wrapper routines
-    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/tupleconversion.hpp pybindings/earthBindings.cpp)
+    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/datetimeconversion.hpp pybindings/tupleconversion.hpp pybindings/earthBindings.cpp)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
+    list(APPEND CXXPYWRAPS pybindings/geometryBindings.cpp )
+    list(APPEND CXXPYWRAPS pybindings/GuidePackBindings.cpp )
     add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )
 endif()
 

@@ -47,19 +47,21 @@ namespace frommle{
             //structors
             OGRGuide(){}
             OGRGuide(const std::string & name):GuideBase(core::typehash(name)){}
-
+            OGRGuide(const std::string & name, const core::typehash & hash):GuideBase(name,hash){}
+            OGRGuide(const OGRGuide & in)=default;
 
             ///@brief push_back family
             void push_back(Element &&geometry);
             void push_back(const Element &geometry);
             //@brief push back a new geometry from a well-known test representation
             void push_back(const std::string & WKT);
+            using const_iterator=typename ElementContainer::const_iterator;
+            using iterator=typename ElementContainer::iterator;
+            const_iterator begin() const { return geoms_.cbegin(); }
+            const_iterator end() const { return geoms_.cend(); }
 
-           typename ElementContainer::const_iterator cbegin() const { return geoms_.cbegin(); }
-           typename ElementContainer::const_iterator cend() const { return geoms_.cend(); }
-
-            typename ElementContainer::iterator begin() { return geoms_.begin(); }
-            typename ElementContainer::iterator end() { return geoms_.end(); }
+            iterator begin() { return geoms_.begin(); }
+            iterator end() { return geoms_.end(); }
             Element & operator[](const size_t idx){return *(geoms_.at(idx));}
             Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
             //spatial queries
@@ -83,7 +85,7 @@ namespace frommle{
             template<class Archive>
             void save(Archive & Ar)const;
             std::vector <std::shared_ptr<Element>> geoms_={};
-            std::unique_ptr<rtree> rtreeIndex{};
+            std::shared_ptr<rtree> rtreeIndex{};
             void buildRtree();
             OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();
         };

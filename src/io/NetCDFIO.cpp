@@ -27,6 +27,7 @@
 #include "NetCDFIO.hpp"
 #include "core/UserSettings.hpp"
 #include "boost/multi_array.hpp"
+#include "core/VisitorTools.hpp"
 
 namespace frommle{
     namespace io{
@@ -93,7 +94,7 @@ namespace frommle{
 
 
         }
-
+        using AcceptedTypes=core::typelist<double,size_t>;
         core::TreeNodeRef NetCDFGroupBase::convertChild(core::TreeNodeRef &&in) {
             //check if the input node is a group
             try{
@@ -101,7 +102,8 @@ namespace frommle{
                 return core::TreeNodeRef(NetCDFGroup(std::move(in)));
             }catch(std::bad_cast &excep){
                 //ok try different variable casts with different dimensions
-                return tryVarCasts<NetCDFVariable,double,size_t>()(std::move(in));
+                return tryVarCasts<NetCDFVariable,AcceptedTypes>()(std::move(in));
+                //return tryVarCasts<NetCDFVariable,double,size_t>()(std::move(in));
 //                return tryVarCasts<NetCDFVariable,double,int,long long int>()(std::move(in));
 
                     

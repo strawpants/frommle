@@ -23,22 +23,64 @@
 #include "io/Group.hpp"
 #include "seqGenerator.hpp"
 #include <boost/algorithm/string.hpp>
+#include "core/Exceptions.hpp"
+#include "core/GuideAppender.hpp"
+#include "core/Logging.hpp"
 
 #ifndef CORE_GUIDEPACK_HPP_
 #define CORE_GUIDEPACK_HPP_
+
 namespace frommle{
 
     namespace core{
+
+
+///@brief the GuidePackBase provides runtime access to an underlying (templated) Guidepack 
+class GuidePackBase: public virtual GauxPureVirt{
+    public:
+        GuidePackBase(){};
+        ~GuidePackBase(){};
+        virtual int nDim()const{return 0;}
+        using Gvar=GuideRegistry::Gvar;
+        using GauxPureVirt::append;
+        //dynamic access to the underlying guides should be implemented
+        //virtual Gvar & operator[](const int i)=0;
+        
+        virtual Gvar & operator[](const int i)=0;
+        virtual const  Gvar & operator[](const int i)const=0;
+    
+    private:
+
+};
+
+///@brief dynamic GuidePack (holds all possible types,dimension is fixed at compile time)
+template<int n>
+class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
+    public:
+        GuidePackDyn():GauxVirtImpl<n>(this){};
+        using Gvar=GuideRegistry::Gvar;
+        using GauxVirtImpl<n>::append;
+        int nDim()const{return n;}
+        Gvar & operator[](const int i)override{return gpar_[i];} 
+        const Gvar & operator[](const int i)const override {return gpar_[i];} 
+    private:
+        std::array<Gvar,n> gpar_{};
+
+};
+
+
 
 /*!brief
  * Wraps several guides into a tuple and provide access functions
  * @tparam Guides: a variadic list of guides which spans the dimensions
  */
         template< class ... Guides >
-        class GuidePack{
+        class GuidePack {
         public:
             static const int ndim=sizeof...(Guides);
             using guides_t=std::tuple<std::shared_ptr<Guides>...>;
+            //using GApp=GuideRegisterimpl<GuidePack<Guides...>>;
+            //using GApp::append;
             template<int n>
             using g_t=typename std::tuple_element<n,guides_t>::type;
 //            using subguides=typename stripfirst<Guides...>::type;
@@ -49,8 +91,39 @@ namespace frommle{
                 guides_ = std::make_tuple(std::make_shared<Guides>(std::move(Args))...);
 
             }
+            
+            //GuidePack(Guides & ... Args){
+                //extent_={Args.size()...};
+                //guides_ = std::make_tuple(std::make_shared<Guides>((Args))...);
 
+            //}
+            
+            GuidePack(std::shared_ptr<Guides> & ... Args){
+                extent_={Args->size()...};
+                guides_ = std::make_tuple(Args ...);
 
+            }
+            //template<class PlusG>
+            //using GPAppended=GuidePack<Guides...,PlusG>;
+            ///@brief append additional Guide to the end of the Guidepack and return the new version
+            //template<class PlusG>
+            //GPAppended<PlusG> append_impl(std::shared_ptr<PlusG> extraG)const;
+            //{
+               ////auto GPout=std::make_shared<GuidePack< Guides ... , PlusG>>();
+                ////////assign existing Guides
+                //////for(int i=0;i<ndim;++i){
+                    //////GPout->g(i)=g(i);
+                //////}
+                ////////append the new one
+                //////GPout->g<ndim>=extraG;
+
+                ////return GPout;
+            //}
+
+            //template<class PlusG>
+            //std::shared_ptr<GuidePack> append_impl(std::shared_ptr<PlusG> extraG)const{
+                //return std::make_shared<GuidePack>();
+            //}
             template<class Gp>
             GuidePack & operator=(Gp & gpin){
                 assert(ndim == gpin.ndim);
@@ -134,7 +207,7 @@ namespace frommle{
              *
              * @tparam n
              */
-            template<int n=0>
+           template<int n=0>
             typename std::enable_if< n+1 == ndim,std::shared_ptr<GuideBase>>::type  g(const int i){
                 assert(i+1==ndim);
                 return g<n>();
@@ -162,6 +235,18 @@ namespace frommle{
 //            std::tuple< > indices(){
 //                return get_indices<0>();
 //            }
+            //immplement virtual functions from GuidePackBase
+            int  nDim()const{return ndim;}
+            //std::shared_ptr<GuideBase> operator[](const int i){return g(i);}
+            constGuideBasePtr operator[](const int i)const {return g(i);}
+            //GuidePackPtr append(GuideBase & in)const{
+                //return append<GuideBase>(in);
+            //}
+            
+        //virtual GuidePackPtr append(Gappend & gpapp){
+            //return gpapp(*this);
+        //}
+            //GPINJECTAPPEND;  
 
         private:
 
@@ -189,24 +274,24 @@ namespace frommle{
                 Ar << *(std::get<n>(guides_));
                 //also recursively save the remaining guides
                 saveGuides<Archive,n+1>(Ar);
-            };
+            }
             
             template<class Archive,int n>
             typename std::enable_if< n+1 == ndim>::type saveGuides(Archive & Ar)const{
                 Ar << *(std::get<n>(guides_));
-            };
+            }
 
             template<class Archive,int n>
             typename std::enable_if< n+1 != ndim>::type loadGuides(Archive & Ar){
                 Ar >> *(std::get<n>(guides_));
                 //also recursively save the remaining guides
                 loadGuides<Archive,n+1>(Ar);
-            };
+            }
 
             template<class Archive,int n>
             typename std::enable_if< n+1 == ndim>::type loadGuides(Archive & Ar){
                 Ar >> *(std::get<n>(guides_));
-            };
+            }
 
             template<class G,class Gin>
                 static typename std::enable_if<std::is_same< typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
@@ -233,7 +318,8 @@ namespace frommle{
             typename std::enable_if< n+1 == ndim>::type assignGuides(Gpackother &gpother){
                 assign(g<n>(),gpother.template g<n>());
 
-            };
+            }
+
             
 //            template<int n>
 //            typename std::enable_if< n+1 != ndim >::type get_indices()const{
@@ -251,6 +337,45 @@ namespace frommle{
             guides_t guides_{};
             std::array<size_t,ndim> extent_={0};
         };
+
+
+
+        
+        ////specialization for an empty Guidepack
+        //template<>
+        //class GuidePack<>:public GuidePackBase,public GuideRegisterimpl<GuidePack<>>{
+            //public:
+            //int ndim=0;
+            //GuidePack(){};
+            
+            ////template<class PlusG>
+            ////using GPAppended=GuidePack<PlusG>;
+            /////@brief append additional Guide to the end of the Guidepack and return the new version
+            ////template<class PlusG>
+            ////GPAppended<PlusG> append_impl(std::shared_ptr<PlusG> extraG)const
+            ////{
+                //////return std::make_shared<GuidePack<PlusG>>(extraG);
+               ////return std::make_shared<GuidePack<PlusG>>(extraG);
+            ////}
+            ////template<class PlusG>
+            ////std::shared_ptr<GuidePack> append_impl(std::shared_ptr<PlusG> extraG)const{
+                ////return std::make_shared<GuidePack>();
+            ////}
+            //private:
+
+        //};
+
+        ////template<class ... Guides>
+        ////template<class PlusG>
+        ////typename GuidePack<Guides...>::template GPAppended<PlusG> GuidePack<Guides...>::append_impl(std::shared_ptr<PlusG> extraG )const{
+                
+               ////return std::make_shared<GuidePack<Guides...,PlusG>>();
+        ////}
+
+    ////GuidePackPtr makeGuidePack(GuideBase & in);
+    
+
+    ////GuidePackPtr makeGuidePack(GuideBase & in,GuideBase & in2);
 
 
     }

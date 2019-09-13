@@ -20,6 +20,7 @@
 #include "io/OGRIOArchives.hpp"
 #include "io/OGRArchive.hpp"
 #include "core/Exceptions.hpp"
+#include "core/VisitorTools.hpp"
 namespace frommle{
     namespace io{
 
@@ -237,10 +238,12 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
             //}
         //};
 
+           using AcceptedTypes= core::typelist<double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >;
 
         core::TreeNodeRef OGRGroup::convertChild(core::TreeNodeRef &&in) {
             //return try_casts<double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
-            return tryVarCasts<OGRVarBase,double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
+            return tryVarCasts<OGRVarBase,AcceptedTypes>()(std::move(in));
+            //return tryVarCasts<OGRVarBase,double,int,long long int, std::string, OGRPolygon, OGRPoint, OGRGeometry >()(std::move(in));
         }
 
         OGRGroup::~OGRGroup() {

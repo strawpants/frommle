@@ -57,11 +57,17 @@ namespace frommle{
             MethodException(const std::string message):std::runtime_error(message){}
         };
 
+        ///@brief Exception thrown when class methods are requested which don't exist for this runtime instance
+        class NotImplementedException:public std::runtime_error{
+        public:
+            NotImplementedException(const std::string message):std::runtime_error(message){}
+        };
     }
 }
 
 #define THROWIOEXCEPTION(x) throw frommle::core::IOException(HERE + x)
 #define THROWINPUTEXCEPTION(x) throw frommle::core::InputException(HERE + x)
 #define THROWMETHODEXCEPTION(x) throw frommle::core::MethodException(HERE + x)
+#define THROWNOTIMPLEMENTED(x) throw frommle::core::NotImplementedException(HERE + x)
 
 #endif //FROMMLE_EXCEPTIONS_HPP

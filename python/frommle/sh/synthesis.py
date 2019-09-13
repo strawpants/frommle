@@ -13,27 +13,16 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
-
-from sqlalchemy.sql import text
-from sqlalchemy import select
-
-def uriMatch(dbcon,uriregex,table,scheme="public"):
-    tbl=dbcon.getTable(table,scheme)
-    ses=dbcon.Session()
-    qry=select([tbl]).where(text("uri ~ :reg ").bindparams(reg=uriregex))
-    return dbcon.dbeng.execute(qry)
+# Author Roelof Rietbroek (roelof@wobbly.earth), 2019
 
 
+from frommle.core import Goperator
 
-def nameMatch(dbcon,nameregex,table,scheme="public"):
-    tbl=dbcon.getTable(table,scheme)
-    qry=select([tbl]).where(text("name ~ :reg ").bindparams(reg=nameregex))
-    return dbcon.dbeng.execute(qry)
+class shSynthesisInt(Goperator):
+    """Computes Spherical Harmonic coefficients from area weighted point measurements, using the integral approach"""
+    def __init__(self,solidAngleWeights):
+        """""" 
+        
+        pass
 
-
-def nameEquals(dbcon,name,table,scheme="public"):
-    tbl=dbcon.getTable(table,scheme)
-    qry=select([tbl]).where(text("name = :reg ").bindparams(reg=name))
-    return dbcon.dbeng.execute(qry)
 

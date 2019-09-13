@@ -15,6 +15,8 @@
 
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 from frommle.sh import Legendre_nm
+from frommle.core import Goperator
+
 import math
 import numpy as np
 
@@ -36,3 +38,16 @@ def SH2loc(loc,cnm,nmax=None):
                 out[i]+=math.sin(m*lon)*np.dot(pnm[istart:iend+1],cnm.S[istart:iend+1])
 
     return out
+
+
+class ShAnalysis(Goperator):
+    """Converts  sets of spherical harmonic datasets into the spatial domain"""
+    def __init__(self,geoGuide):
+        pass
+   
+   def __call__(self,shxin):
+       """Propagate spherical harmonic datasets to spatial location"""
+       pass
+
+
+

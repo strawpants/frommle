@@ -13,27 +13,17 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
+# Author Roelof Rietbroek (roelof@wobbly.earth), 2019
+from sqlalchemy import select,text
 
-from sqlalchemy.sql import text
-from sqlalchemy import select
+def gshhs(dbcon,res='i',groundingLine=True):
+    """Query the gssh shoreline database"""
+    tablename='gshhs_'+res
+    tbl=dbcon.getTable(tablename,'globalgis')
 
-def uriMatch(dbcon,uriregex,table,scheme="public"):
-    tbl=dbcon.getTable(table,scheme)
-    ses=dbcon.Session()
-    qry=select([tbl]).where(text("uri ~ :reg ").bindparams(reg=uriregex))
+    if groundingLine:
+        qry=select([tbl]).where(text("level < 5 OR level = 6"))
+    else:
+        qry=select([tbl]).where(text("level <= 5"))
+
     return dbcon.dbeng.execute(qry)
-
-
-
-def nameMatch(dbcon,nameregex,table,scheme="public"):
-    tbl=dbcon.getTable(table,scheme)
-    qry=select([tbl]).where(text("name ~ :reg ").bindparams(reg=nameregex))
-    return dbcon.dbeng.execute(qry)
-
-
-def nameEquals(dbcon,name,table,scheme="public"):
-    tbl=dbcon.getTable(table,scheme)
-    qry=select([tbl]).where(text("name = :reg ").bindparams(reg=name))
-    return dbcon.dbeng.execute(qry)
-

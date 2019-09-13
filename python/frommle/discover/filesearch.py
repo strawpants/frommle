@@ -13,25 +13,20 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
-
-
-# from frommle.sh import SHtmnGuide
-# from frommle.sh import shxarray
-#
-# nmax=5
-# shx=shxarray(nmax)
-#
-# print(shx)
-# for (n,m,t) in shg:
-#     print(n,m,t)
-
-
+# Author Roelof Rietbroek (roelof@wobbly.earth), 2019
 from datetime import datetime
-from frommle.core import printdt
+import re
+import os
 
+def findFiles(dir,pattern,since=None):
+    """Generator to recursively search a directory"""
+    if not since:
+        since=datetime.min
 
-tmp=datetime.now()
+    for dpath,dnames,files in os.walk(dir):
+        for file in files:
+            if re.search(pattern,file):
+                fullp=os.path.join(dpath,file)
 
-printdt(tmp)
-
+                if since < datetime.fromtimestamp(os.path.getmtime(fullp)):
+                    yield fullp

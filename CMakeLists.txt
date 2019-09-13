@@ -6,7 +6,8 @@ project(Frommle)
 #set some options
 option(USE_MPI "Build with MPI enabled" OFF)
 
-
+#Export the compile commands to a json file (works nicely with vim' plugin youcompleteme)
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 #make sure that we're using c++11 (unfortunately this variable is not supported with cmake <3 .1)
 ##set(CMAKE_CXX_STANDARD 11)

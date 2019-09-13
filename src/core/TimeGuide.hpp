@@ -24,14 +24,14 @@
 #include "core/GuideBase.hpp"
 #include <boost/date_time.hpp>
 
-
 namespace frommle {
 	namespace core {
-		using time_point=boost::posix_time::ptime;
-
+            
+        using gregdate=boost::gregorian::date;
+        using ptime=boost::posix_time::ptime;
 
 /*! \brief Holds a vector of time stamps (possibly irregular)
- * The TimeDimension is essentially a vector with time stamps. Internally it stores a vector of std::chrono::time_point
+ * The TimeDimension is essentially a vector with time stamps. Internally it stores a vector 
  * This can then be converted to different kinds of time formats
  */
 
@@ -39,6 +39,7 @@ namespace frommle {
 		class TimeGuide : public GuideBase {
 		public:
 		    using Element=Tp;
+		    using ElementContainer=std::vector<Tp>;
 			TimeGuide():GuideBase(typehash("TimeGuide")){}
 
             TimeGuide(Tp && in):GuideBase(typehash("TimeGuide")){
@@ -62,6 +63,16 @@ namespace frommle {
                 TimeVec_.push_back(in);
                 ++size_;
             }
+
+            using const_iterator=typename ElementContainer::const_iterator;
+            using iterator=typename ElementContainer::iterator;
+            const_iterator begin() const { return TimeVec_.cbegin(); }
+            const_iterator end() const { return TimeVec_.cend(); }
+
+            iterator begin() { return TimeVec_.begin(); }
+            iterator end() { return TimeVec_.end(); }
+            Element & operator[](const size_t idx){return TimeVec_.at(idx);}
+            const Element & operator[](const size_t idx)const{return TimeVec_.at(idx);}
 		private:
 			std::vector<Tp> TimeVec_ = {};
 		};
@@ -87,6 +98,8 @@ namespace frommle {
             return tg;
         }
 
+	using DateGuide=TimeGuide<gregdate>;
+	using PTimeGuide=TimeGuide<ptime>;
     }
 
 }

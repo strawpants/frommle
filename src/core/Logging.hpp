@@ -12,7 +12,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/expressions/message.hpp>
-#include "core/Singleton.hpp"
+//#include "core/Singleton.hpp"
 //Define preprocessor macros (currently wrap around trivial logging)
 #define LOGDEBUG BOOST_LOG_TRIVIAL(debug)
 #define LOGINFO BOOST_LOG_TRIVIAL(info)
@@ -25,8 +25,8 @@ namespace frommle {
 
 	namespace core{
 
-//@brief Singleton logging class provides a centralized way to tweak logging settings
-class Logging: public Singleton<Logging> {
+//@brief logging class provides a centralized way to tweak logging settings
+class Logging{
 public:
 	static void setInfoLevel(){
 		Logging::setLevel(boost::log::trivial::info);
@@ -38,19 +38,24 @@ public:
 	static void setDebugLevel(){
 		Logging::setLevel(boost::log::trivial::debug);
 	}
+
+	static void setErrorLevel(){
+
+		Logging::setLevel(boost::log::trivial::error);
+	}
 private:
-	friend class Singleton<Logging>;
+//	friend class Singleton<Logging>;
 	
 	static void setLevel(const boost::log::trivial::severity_level level ){
 		boost::log::core::get()->set_filter(
 				boost::log::trivial::severity >= level
 				);
 	}
-	//@brief private (!) constructor
-	Logging(){
-		//default severity level is info and above
-		setLevel(boost::log::trivial::info);
-	}
+//	//@brief private (!) constructor
+//	Logging(){
+//		//default severity level is info and above
+//		setLevel(boost::log::trivial::info);
+//	}
 };
 
 	}

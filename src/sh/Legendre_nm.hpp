@@ -28,7 +28,7 @@
 #include "sh/SHGuide.hpp"
 #include "core/GArrayBase.hpp"
 //#include <boost/multiprecision/float128.hpp>
-
+//#include "core/GuideAppender_impl.hpp"
 #ifndef FROMMLE_SHLEGE_HPP
 #define FROMMLE_SHLEGE_HPP
 

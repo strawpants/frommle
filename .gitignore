@@ -4,3 +4,5 @@ cmake-build*
 __pycache__
 docsrc/Doxyfile
 python/setup.py
+build
+compile_commands.json

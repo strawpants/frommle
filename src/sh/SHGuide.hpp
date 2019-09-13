@@ -145,6 +145,9 @@ namespace frommle{
             SHnmtGuide(const int nmax,const std::string name="SHnmtGuide");
             index idx(const int n, const int m, const trig t=trig::C)const;
             Element operator[](const index idx)const;
+            inline static index i_from_nmt(const int n, const int m, const SHGuideBase::trig t){
+                return 2*((n*(n+1))/2+m)+t;
+            }
 
         };
     }
