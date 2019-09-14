@@ -43,7 +43,6 @@ namespace frommle{
 
             
             private:
-            boost::range::range rng_{};
             friend class io::serialize;
             template<class Archive>
             void load(Archive & Ar){

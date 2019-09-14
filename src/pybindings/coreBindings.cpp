@@ -50,8 +50,8 @@ void pyexport_core(){
     p::register_ptr_to_python< GuideBasePtr >();
 
     //IndexGuide
-    p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>()).
-        def("__array__",&guide_to_ndarray<IndexGuide>);
+    p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>());
+    //.def("__array__",&guide_to_ndarray<IndexGuide>);
 
     //TimeGuides
     void (DateGuide::*pbdg)(const gregdate )=&DateGuide::push_back;
