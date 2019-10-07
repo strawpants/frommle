@@ -41,7 +41,7 @@ namespace frommle {
 
         //@brief precompute factors with square roots for reuse later
         template<class ftype>
-        Legendre_nm<ftype>::Legendre_nm(const int nmax):Garr(SHtmnGuide(nmax)) {
+        Legendre_nm<ftype>::Legendre_nm(const int nmax):Garr(SHnmHalfGuide(nmax)) {
             //precompute factors involving square roots
             wnn_ = std::vector<ftype>(nmax + 1);
             wnn_[0] = 0.0;

@@ -37,6 +37,51 @@ namespace frommle{
             return (std::sqrt(1.0+8*(sz-1))-1.0)/2.0;
         }
 
+        ///@brief describes a Guide which has no separate entry for trigonometric C/S (e.g. to store associated legendre polynomials)
+        class SHnmHalfGuide:public frommle::core::GuideBase{
+            public:
+            using Element=std::tuple<int,int>;
+            SHnmHalfGuide();
+            SHnmHalfGuide(const int nmax); //:GuideBase("SHnmHalfGuide",core::typehash("SHnmHalfGuide").add(nmax)sz),nmax_(nmax),nmin_(nmin){}
+            int nmax()const{return nmax_;}
+            int nmin()const{return 0;}
+            
+            /*! brief returns a vectorized index for order sorted spherical harmonics (no trigonometric variable)
+             * @param n input degree
+             * @param m input order
+             * @param nmax maximum degree to accomodate for
+             * @return zero based index of the corresponding entry
+             */
+            inline static index i_from_nm(const int n,const int m, const int nmax){
+                assert(m<=n);
+                return m*(nmax+1)-(m*(m+1))/2+n;
+            }
+
+            /*!brief retrieve the degree and order from a index sorted by order and degree (no trig variable
+            *
+            * @param idx input index (zero based)
+            * @param nmax maximum degree for which has been allocated
+            * @return a tuple containing the degree and order in the first and second element respectively
+            */
+            inline static std::tuple<int,int> nm_from_i(const index idx, const int nmax){
+                int m=(3.0+2*nmax)/2-std::sqrt(std::pow(3+2*nmax,2)/4.0-2*idx);
+                int n=idx-(((m+1)*(m+2))/2+m*(nmax-m))+m+1;
+                assert(m<=n);
+                return std::make_tuple(n,m);
+
+            }
+
+            //inline index idx(const Element el)const{return idxfromEl(el);}
+
+            index idx(const int n,const int m)const{return i_from_nm(n,m,nmax_);}
+            virtual Element operator[](const index idx)const{return nm_from_i(idx,nmax_);}
+            private:
+                int nmax_=-1;
+        };
+
+
+
+
         /*!brief
          * SHGuideBase groups all SH harmonic dimensions together
          */
@@ -56,32 +101,32 @@ namespace frommle{
             virtual Element operator[](const index idx)const=0;
 //            virtual Element & operator[](const index idx)=0;
 
-        //nested class which acts as an iterator
-        class const_iterator:public frommle::core::Guideiterator<Element ,const_iterator>{
-        public:
-            const_iterator():Guideiterator(Element(-1,-1,trig::C)){}
-            const_iterator(const SHGuideBase * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
-            const_iterator operator++(int){
-                const_iterator retval(*this);
-                ++(*this);
-                return retval;
-            }
-            const_iterator & operator++(){
-                ++idx_;
-                if (idx_==sz_){
-                    //stops iteration
-                    elVal=Element(-1,-1,trig::C);
-                }else {
-                    elVal = gptr_->operator[](idx_);
+            //nested class which acts as an iterator
+            class const_iterator:public frommle::core::Guideiterator<Element ,const_iterator>{
+            public:
+                const_iterator():Guideiterator(Element(-1,-1,trig::C)){}
+                const_iterator(const SHGuideBase * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
+                const_iterator operator++(int){
+                    const_iterator retval(*this);
+                    ++(*this);
+                    return retval;
                 }
-                return *this;
-            }
+                const_iterator & operator++(){
+                    ++idx_;
+                    if (idx_==sz_){
+                        //stops iteration
+                        elVal=Element(-1,-1,trig::C);
+                    }else {
+                        elVal = gptr_->operator[](idx_);
+                    }
+                    return *this;
+                }
 
-        private:
-            const SHGuideBase* gptr_=nullptr;
-            index sz_=0;
-            index idx_=0;
-        };
+            private:
+                const SHGuideBase* gptr_=nullptr;
+                index sz_=0;
+                index idx_=0;
+            };
             const_iterator begin()const{return const_iterator(this);}
             const_iterator end()const{return const_iterator();}
         protected:
@@ -105,30 +150,6 @@ namespace frommle{
             index idx(const int n, const int m, const trig t=trig::C)const;
             Element operator[](const index idx)const;
 
-            /*! brief returns a vectorized index for order sorted spherical harmonics (no trigonometric variable)
-             * @param n input degree
-             * @param m input order
-             * @param nmax maximum degree to accomodate for
-             * @return zero based index of the corresponding entry
-             */
-            inline static index i_from_mn(const int n,const int m, const int nmax){
-                assert(m<=n);
-                return m*(nmax+1)-(m*(m+1))/2+n;
-            }
-
-            /*!brief retrieve the degree and order from a index sorted by order and degree (no trig variable
-            *
-            * @param idx input index (zero based)
-            * @param nmax maximum degree for which has been allocated
-            * @return a tuple containing the degree and order in the first and second element respectively
-            */
-            inline static std::tuple<int,int> mn_from_i(const index idx, const int nmax){
-                int m=(3.0+2*nmax)/2-std::sqrt(std::pow(3+2*nmax,2)/4.0-2*idx);
-                int n=idx-(((m+1)*(m+2))/2+m*(nmax-m))+m+1;
-                assert(m<=n);
-                return std::make_tuple(n,m);
-
-            }
 
         };
 
@@ -150,6 +171,7 @@ namespace frommle{
             }
 
         };
+
     }
 }
 

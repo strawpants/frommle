@@ -64,16 +64,21 @@ template<int n>
 class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
     public:
         GuidePackDyn():GauxVirtImpl<n>(this){};
+        template<class ... Guides>
+        GuidePackDyn(Guides && ... Args){
+            gpar_={{std::make_shared<Guides>(std::move(Args))...}};
+        }
         using Gvar=GuideRegistry::Gvar;
         using GauxVirtImpl<n>::append;
         int nDim()const{return n;}
+        static const int ndim=n;
         Gvar & operator[](const int i)override{return gpar_[i];} 
         const Gvar & operator[](const int i)const override {return gpar_[i];} 
         iterator begin()override{return gpar_.begin();}
         iterator end()override{return gpar_.end();}
         const_iterator begin()const override{ return gpar_.begin();}
         const_iterator end()const override{ return gpar_.end();}
-    private:
+    protected:
         std::array<Gvar,n> gpar_{};
 
 };
@@ -85,20 +90,26 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
  * @tparam Guides: a variadic list of guides which spans the dimensions
  */
         template< class ... Guides >
-        class GuidePack {
+        class GuidePack: public GuidePackDyn<sizeof ...(Guides)> {
         public:
-            static const int ndim=sizeof...(Guides);
+            using GPdyn=GuidePackDyn<sizeof ... (Guides)>;
+            using GPdyn::ndim;
+            using GPdyn::gpar_;
+            ///@brief alias to store the types of the input
             using guides_t=std::tuple<std::shared_ptr<Guides>...>;
-            //using GApp=GuideRegisterimpl<GuidePack<Guides...>>;
-            //using GApp::append;
+
+            ///@brief this allows the compile time extraction of the Guide type
             template<int n>
             using g_t=typename std::tuple_element<n,guides_t>::type;
-//            using subguides=typename stripfirst<Guides...>::type;
+            
+            template<int n>
+            using gptr_t=typename std::shared_ptr<typename std::tuple_element<n,guides_t>::type>;
+            
             GuidePack(){}
-            GuidePack(Guides&& ... Args){
-                extent_={Args.size()...};
+            GuidePack(Guides&& ... Args):GPdyn(std::move(Args)...){
+                //extent_={Args.size()...};
 //                guides_ = std::make_tuple(std::forward<(std::make_shared<Guides>(std::forward<Guides>(Args)...)...);
-                guides_ = std::make_tuple(std::make_shared<Guides>(std::move(Args))...);
+                //guides_ = std::make_tuple(std::make_shared<Guides>(std::move(Args))...);
 
             }
             
@@ -166,14 +177,15 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
              * @return a reference to the Guide instance belonging to the Garray
              */
             template<int n>
-            typename std::tuple_element<n,guides_t>::type & g() {
+            g_t<n> & g() {
                 assert(n<=ndim);
-                return std::get<n>(guides_);
+                return *boost::get<g_t<n>>(gpar_[n]);
             }
+            
             template<int n>
-            const typename std::tuple_element<n,guides_t>::type & g()const{
+            const g_t<n> & g()const{
                 assert(n<=ndim);
-                return std::get<n>(guides_);
+                return *boost::get<g_t<n>>(gpar_[n]);
             }
 
             /*!brief
@@ -248,7 +260,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             //immplement virtual functions from GuidePackBase
             int  nDim()const{return ndim;}
             //std::shared_ptr<GuideBase> operator[](const int i){return g(i);}
-            constGuideBasePtr operator[](const int i)const {return g(i);}
+            //constGuideBasePtr operator[](const int i)const {return g(i);}
             //GuidePackPtr append(GuideBase & in)const{
                 //return append<GuideBase>(in);
             //}
@@ -386,8 +398,37 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
     
 
     ////GuidePackPtr makeGuidePack(GuideBase & in,GuideBase & in2);
+    
 
+    template<class addG, class ... T>
+    struct GuidePackGrow;
 
+    template<class addG, class ... Guides>
+    struct GuidePackGrow<addG,GuidePack<Guides...>>{
+        using right=GuidePack<Guides...,addG>;
+        using left=GuidePack<addG, Guides...>;
+    };
+
+    template<class ... T>
+    struct GuidePackUtils;
+
+    //specialization which allows the separation of Guides
+    template<class ... Guides>
+    struct GuidePackUtils<GuidePack<Guides...>>{
+        static const int ndim=sizeof...(Guides);
+        
+        template<class G>
+        using rapp_t=GuidePack<Guides...,G>;
+        
+        template<class G>
+        using lapp_t=GuidePack<G, Guides...>;
+
+        template<int Ncut>
+        struct cut{
+        
+ };
+
+    };
     }
 }
 

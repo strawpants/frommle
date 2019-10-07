@@ -21,7 +21,7 @@
 #include <string>
 #include <cassert>
 #include <tuple>
-//#include "core/GuidePack.hpp"
+#include "core/GuidePack.hpp"
 //#include "GArrayBase.hpp"
 
 #ifndef SRC_CPP_OPERATORBASE_HPP_
@@ -62,26 +62,51 @@ class GuidePack;
     };
 
 
-    template<class outGuide, class inGuide>
+    template<class T,class outGP, class inGP>
     class GOperator : public GOperatorBase  {
     public:
-        using GPack=GuidePack<outGuide,inGuide>;
-        using gin=typename GPack::template g_t<1>;
-        using gout=typename GPack::template g_t<0>;
-        
+        using outgp=outGP;
+        using ingp=inGP;
         GOperator() {}
 
-        GOperator(outGuide &&out, inGuide &&in):gp_(std::move(out),std::move(in)) {
+        GOperator(outGP &&out, inGP &&in):gpo_(std::move(out)),gpi_(std::move(in)) {
         }
-        template<class rhsGuide>
-        core::Garray<outGuide,rhsGuide> operator()(core::Garray<inGuide,rhsGuide> & inGar){
-
+       
+        template<class addG>
+        using garout=core::Garray<T,typename GuidePackGrow<addG,outGP>::right>;
+        
+        template<class addG>
+        using garin=core::Garray<T,typename GuidePackGrow<addG,inGP>::right>;
+        
+        template<class addG>
+        garout<addG> apply(garin<addG> & inGar){
+            //check for proper guide matching
+            // possibly resort?
+            // //...
+            
+            //allocate garray for output
+            garout<addG> gout(gpo_.append(inGar.template g<garin<addG>::ndim>())); 
+            //get the size of the auxiliary dimension
+            auto sz=inGar.template g<inGP::ndim>().size();
+            using range=boost::multi_array_types::index_range;
+            typename garin<addG>::index_gen indin;
+            typename garout<addG>::index_gen indout;
+            for(size_t i=0;i<sz;++i){
+                fwdOp(inGar[indin[range()][i]],gout[indout[range()][i]]);
+            }
+            return gout;
+            
         }
 
+        using maroutv=typename boost::multi_array_ref<T,outGP::ndim+1>::template array_view<outGP::ndim>;
+        using marin=boost::multi_array_ref<T,inGP::ndim>;
+
+        //the actual forward operator to be implemented
+        virtual void fwdOp(const marin & in, maroutv & out)=0;     
 
     protected:
-    private:
-        GPack gp_{};
+        outGP gpo_{};
+        inGP gpi_{};
 
 
     };

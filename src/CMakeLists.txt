@@ -9,7 +9,7 @@ LIST(APPEND COREOBJS core/UserSettings.cpp)
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
 LIST(APPEND COREOBJS core/TreeNode.cpp)
 
-LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp)
+LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp sh/Ynm.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
 
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp geometry/OGR2boost.hpp geometry/OGRiteratorBase.hpp geometry/fibonacciGrid.hpp geometry/geomOperator.hpp)

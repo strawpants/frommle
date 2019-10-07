@@ -33,9 +33,6 @@ namespace frommle{
 
 		using GuidePackPtr=std::shared_ptr<GuidePackBase>;
 	
-		template<class ... Guides>
-		class GuidePack;
-		
 		template<int n>
 		class GuidePackDyn;
 
@@ -168,111 +165,6 @@ namespace frommle{
 		template<int n>
 		using GauxVirtImpl=GauxMembers_impl<n,GuideRegistry>;
 		
-		////general template forwward  delaration
-		//template<class ... T>
-		//class GAppender;
-
-		////specialization for multiple temaptle arguments
-		//template<class T, class ... Types>
-		//class GAppender<T,Types...>:public virtual GAppender<Types...>{
-			//public:
-				//using next=GAppender<Types...>;
-				//using next::append;
-				//virtual  GuidePackPtr append(T& Guide)=0;
-		//};
-		
-		////specialization for multiple temaptle arguments
-		//template<class T, class ... Types>
-		//class GAppender<GuideTlist<T,Types...>>:public virtual GAppender<Types...>{
-			//public:
-				//using next=GAppender<Types...>;
-				//using next::append;
-				//virtual GuidePackPtr append(T& Guide)=0;
-		//};
-
-		////specialization for multiple temaptle arguments
-		//template<class T>
-		//class GAppender<GuideTlist<T>>{
-			//public:
-				//virtual  GuidePackPtr append(T& Guide)=0;
-		//};
-
-
-		/////@brief specialiation for the final type to be considered
-		//template<class T>
-			//class GAppender<T>{
-			//public:
-			//virtual GuidePackPtr append(T & Guide)=0;
-		//};
-
-
-
-		//template<class T, class ... Guides>
-		//struct appendtoGuide;
-
-
-		//template<class T,class ... Guides>
-		//struct appendtoGuide<T, GuidePack<Guides...>>{
-			//static GuidePackPtr app(const GuidePack<Guides...> * gp,T & guide);
-		//};
-		
-
-		////general template forwward  delaration
-		//template<class GP,class ... T>
-		//class GAppenderimpl;
-
-		////specialization for typelisted specialization
-		//template<class GP,class T, class ... Types>
-		//class GAppenderimpl<GP,GuideTlist<T,Types...>>:public virtual GAppenderimpl<GP,Types...>,public virtual GAppender<GuideTlist<T,Types...>>{
-			//public:
-				//GAppenderimpl(){}
-				//GAppenderimpl(const GP * gpin):GAppenderimpl<GP,Types...>(gpin){} 
-				//using GAppenderimpl<GP,Types...>::append;
-				//using GAppenderimpl<GP,Types...>::gp_;
-				//GuidePackPtr append(T& Guide)override{
-					//return appendtoGuide<T,GP>::app(gp_,Guide);
-				//}
-
-		//};
-
-		////specialization for multiple temaptle arguments
-		//template<class GP,class T, class ... Types>
-		//class GAppenderimpl<GP,T,Types...>:public GAppenderimpl<GP,Types...>,public virtual GAppender<T,Types...>{
-			//public:
-				//GAppenderimpl(){}
-				//GAppenderimpl(const GP * gpin):GAppenderimpl<GP,Types...>(gpin){} 
-				//using GAppenderimpl<GP,Types...>::append;
-				//using GAppenderimpl<GP,Types...>::gp_;
-				//GuidePackPtr append(T& Guide)override{
-					//return appendtoGuide<T,GP>::app(gp_,Guide);
-					////LOGINFO << Guide.name() << typeid(T).name() ;
-				//}
-		//};
-		/////@brief specialiation for the final type to be considered
-		//template<class GP,class T>
-			//class GAppenderimpl<GP,T>: public virtual GAppender<T>{
-			//public:
-			//GAppenderimpl(){}
-			//GAppenderimpl(const GP * gpin):gp_(gpin){
-			
-					//LOGINFO << "initializing top level appender";
-			//} 
-				//GuidePackPtr append(T & Guide)override{
-					//return appendtoGuide<T,GP>::app(gp_,Guide);
-					////LOGINFO << Guide.name() << typeid(T).name() ;
-			//}
-			
-				//const GP* gp_=nullptr;
-		//};
-
-
-
-
-		//using GuideRegister=GAppender<GuideRegistry>;
-		//template<class GP>
-		//using GuideRegisterimpl=GAppenderimpl<GP,GuideRegistry>;
-
-
 }
 }
 #endif /* #SRC_CORE_GUIDE_APPEND_HPP_*/
