@@ -24,7 +24,7 @@
 #define FROMMLE_INDEXGUIDE_HPP
 
 namespace frommle{
-    namespace core{
+    namespace guides{
 
         /*!brief
          * A guide which keeps track on (permuted) indices
@@ -35,7 +35,7 @@ namespace frommle{
             IndexGuide():GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(0)){}
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize),nsize){}
             IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize),nsize){}
-            Element operator[](const frommle::core::index idx)const{return idx;}
+            Element operator[](const size_t idx)const{return idx;}
 //            Element & operator[](GuideBase::index idx){return idx;}
             //using const_iterator=Element *;
             //const_iterator begin()const;

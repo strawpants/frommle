@@ -79,8 +79,8 @@ void pyexport_core(){
     
     ///Register the operator base as defined in frommle
     p::class_<GOperatorBase>("GOperatorBase").def(p::init<p::optional<std::string>>())
-            .add_static_property("ndim",p::make_getter(&GOperatorBase::ndim))
             .add_property("name",&GOperatorBase::name,&GOperatorBase::setName);
+            //.add_static_property("ndim",p::make_getter(&GOperatorBase::ndim))
 
     //export setting logging levels for C++
     p::def("setcppInfoLevel",&Logging::setInfoLevel);

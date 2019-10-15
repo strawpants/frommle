@@ -22,10 +22,10 @@
 #include "core/Exceptions.hpp"
 #include <assert.h>
 namespace frommle {
-    namespace geometry {
+    namespace guides {
 
         GeoGrid::GeoGrid(double west, double east, double south, double north, double dlon, double dlat, const gridreg reg)
-                : GuideBase(core::typehash("GeoGrid")) {
+                : GuideBase(typehash("GeoGrid")) {
             /*The input may not be perfectly constistent so we will respect the resolution, but
              possibly snap the max values of the bounding box to appropriate values
              */
@@ -51,12 +51,12 @@ namespace frommle {
 
         }
 
-        index GeoGrid::idx(const lint ilon, const lint ilat) const {
+        size_t GeoGrid::idx(const lint ilon, const lint ilat) const {
             //note that we index such that the latitude loops slowest
             return ilat * nlon_ + ilon;
         }
 
-        std::tuple<long unsigned int, long unsigned int> GeoGrid::ilonilat(const index idx) const {
+        std::tuple<long unsigned int, long unsigned int> GeoGrid::ilonilat(const size_t idx) const {
             lint ilat = idx / nlon_;
             return std::make_tuple(idx - ilat * nlon_, ilat);
         }
@@ -83,7 +83,7 @@ namespace frommle {
             //set first point
             double lon,lat;
             std::tie(lon,lat)=gridPtr->lonlat(ilon,ilat);
-            currentpoint_=geopoint(lon,lat);
+            currentpoint_=geometry::geopoint(lon,lat);
         }
 
         void GeoGrid::const_iterator::increment(){
@@ -105,7 +105,7 @@ namespace frommle {
             //create the new point
             double lon,lat;
             std::tie(lon,lat)=gridPtr->lonlat(ilon,ilat);
-            currentpoint_=geopoint(lon,lat);
+            currentpoint_=geometry::geopoint(lon,lat);
 
         }
 

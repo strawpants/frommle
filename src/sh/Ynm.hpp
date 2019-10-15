@@ -26,7 +26,7 @@
 #ifndef SRC_SH_YNM_HPP_
 #define SRC_SH_YNM_HPP_
 namespace frommle{
-
+    using namespace guides;
     namespace sh{
 
 template<class SH, class GEO>
@@ -34,19 +34,19 @@ class Ynm{};
 
 
 //template specializations   
-using OGRPGuide=geometry::OGRGuide<OGRPoint>;
+using OGRPGuide=OGRGuide<OGRPoint>;
 template<>
-class Ynm<SHtmnGuide,OGRPGuide>:public core::GOperator<double,core::GuidePack<SHtmnGuide>,core::GuidePack<OGRPGuide>> {
+class Ynm<SHtmnGuide,OGRPGuide>:public core::GOperator<double,GuidePack<SHtmnGuide>,GuidePack<OGRPGuide>> {
     public:
-        using GOpBase=core::GOperator<double,core::GuidePack<SHtmnGuide>,core::GuidePack<OGRPGuide>>;
-        Ynm(const int nmax,std::shared_ptr<OGRPGuide> & OGRptr):GOpBase(GOpBase::outgp(nmax),GOBase::ingp(OGRptr)){
+        using GOpBase=core::GOperator<double,GuidePack<guides::SHtmnGuide>,GuidePack<OGRPGuide>>;
+        Ynm(const int nmax,std::shared_ptr<OGRPGuide> & OGRptr):GOpBase(GOpBase::outgp(nmax),GOpBase::ingp(OGRptr)){
             
         }
-    using GOpBase::marin;
-    using GOpBase::maroutv;
-    void fwdOp(const marin & in,maroutv & out){
-        //apply Spherical harmonics to values 
-    }
+//    using GOpBase::marin;
+//    using GOpBase::maroutv;
+//    void fwdOp(const marin & in,maroutv & out){
+//        //apply Spherical harmonics to values
+//    }
 
     private:
 

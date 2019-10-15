@@ -32,7 +32,7 @@
 
 namespace frommle{
 
-    namespace core{
+    namespace guides{
 
 
 ///@brief the GuidePackBase provides runtime access to an underlying (templated) Guidepack 
@@ -164,7 +164,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             void setNames(const std::string & coordinatenames){
                 std::vector<std::string> splits;
                 boost::split(splits,coordinatenames,boost::is_any_of(" "));
-                for(int i=0;i<splits.size();++i){
+                for(size_t i=0;i<splits.size();++i){
                     g(i)->setName(splits[i]);
                 }
 
@@ -179,13 +179,13 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             template<int n>
             g_t<n> & g() {
                 assert(n<=ndim);
-                return *boost::get<g_t<n>>(gpar_[n]);
+                return *boost::get<gptr_t<n>>(gpar_[n]);
             }
             
             template<int n>
             const g_t<n> & g()const{
                 assert(n<=ndim);
-                return *boost::get<g_t<n>>(gpar_[n]);
+                return *boost::get<gptr_t<n>>(gpar_[n]);
             }
 
             /*!brief
@@ -239,7 +239,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             template<int i>
             struct maskpack {
                     template<class Gother>
-                    using mask_g=typename std::conditional<std::is_same<Gother,typename g_t<i>::element_type>::value,core::MaskedGuide<Gother>,Gother>::type;
+                    using mask_g=typename std::conditional<std::is_same<Gother,typename g_t<i>::element_type>::value,MaskedGuide<Gother>,Gother>::type;
                     using type=GuidePack< mask_g<Guides>...>;
             };
 
@@ -401,34 +401,15 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
     
 
     template<class addG, class ... T>
-    struct GuidePackGrow;
+    struct GPappend;
 
     template<class addG, class ... Guides>
-    struct GuidePackGrow<addG,GuidePack<Guides...>>{
+    struct GPappend<addG,GuidePack<Guides...>>{
         using right=GuidePack<Guides...,addG>;
         using left=GuidePack<addG, Guides...>;
     };
 
-    template<class ... T>
-    struct GuidePackUtils;
 
-    //specialization which allows the separation of Guides
-    template<class ... Guides>
-    struct GuidePackUtils<GuidePack<Guides...>>{
-        static const int ndim=sizeof...(Guides);
-        
-        template<class G>
-        using rapp_t=GuidePack<Guides...,G>;
-        
-        template<class G>
-        using lapp_t=GuidePack<G, Guides...>;
-
-        template<int Ncut>
-        struct cut{
-        
- };
-
-    };
     }
 }
 

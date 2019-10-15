@@ -38,16 +38,16 @@ namespace bgi = boost::geometry::index;
 #define FROMMLE_OGRGUIDE_HPP
 
 namespace frommle{
-    namespace geometry{
+    namespace guides{
         template<class T>
-        class OGRGuide:public core::GuideBase{
+        class OGRGuide:public GuideBase{
         public:
             using Element=T;
             using ElementContainer=std::vector<std::shared_ptr<Element>>;
             //structors
             OGRGuide(){}
-            OGRGuide(const std::string & name):GuideBase(core::typehash(name)){}
-            OGRGuide(const std::string & name, const core::typehash & hash):GuideBase(name,hash){}
+            OGRGuide(const std::string & name):GuideBase(typehash(name)){}
+            OGRGuide(const std::string & name, const typehash & hash):GuideBase(name,hash){}
             OGRGuide(const OGRGuide & in)=default;
 
             ///@brief push_back family
@@ -77,7 +77,7 @@ namespace frommle{
             //operator core::MaskedGuide<OGRGuide>(){
             //return core::MaskedGuide<OGRGuide>(static_cast<const OGRGuide&>(*this));
             //}
-            using core::GuideBase::operator core::MaskedGuide<OGRGuide>;
+            using GuideBase::operator MaskedGuide<OGRGuide>;
         private:
             friend class io::serialize;
             template<class Archive>

@@ -1,5 +1,5 @@
 /*! \file
- \brief some explicitly instantiated templated functions
+ \brief Testing main for routines in the core module of the toolbox
  \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
@@ -16,19 +16,18 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-#include "core/GuidePack.hpp"
-namespace frommle{
 
-	namespace guides{
-	//class GuidePackBase;
-	 //explicitly instantiate a few dynamic guidepacks
-	template class GuidePackDyn<0>;
-	template class GuidePackDyn<1>;
-	template class GuidePackDyn<2>;
-	template class GuidePackDyn<3>;
-	template class GuidePackDyn<4>;
-	template class GuidePackDyn<5>;
-	}
+ Created by Roelof Rietbroek, 2019
+
+ */
+
+#define BOOST_TEST_MODULE GuideTesting
+#include <boost/test/unit_test.hpp>
+
+
+BOOST_AUTO_TEST_CASE(GuidePacktest){
+
+    BOOST_TEST(1 == 1);
 }
+
 

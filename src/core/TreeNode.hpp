@@ -147,17 +147,7 @@ namespace frommle{
             const Attribs & getAttribMap(){return attrib_;}
 
             template <class T>
-            bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval){
-                if (!testfunc(this,retval)){
-                    if (parent_) {
-                        return parent_->findUpstream(testfunc, retval);
-                    }else{
-                        return false;
-                    }
-                }else{
-                    return true;
-                }
-            }
+            bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval);
             ///@brief standard way to retrieve an attribute
             template<class Value>
             typename std::enable_if<!std::is_same<Value,std::string>::value,Value>::type getAttribute(const std::string &name){
@@ -337,6 +327,18 @@ namespace frommle{
 
 
 
+        template<class T>
+        bool TreeNodeBase::findUpstream(std::function<bool(const TreeNodeBase *, T &)> testfunc, T &retval) {
+            if (!testfunc(this,retval)){
+                if (parent_) {
+                    return parent_->findUpstream(testfunc, retval);
+                }else{
+                    return false;
+                }
+            }else{
+                return true;
+            }
+        }
 
 
 

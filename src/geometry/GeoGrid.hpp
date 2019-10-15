@@ -27,28 +27,27 @@
 #define FROMMLE_GEOGRID_HPP
 
 namespace frommle{
-    namespace geometry{
-        using frommle::core::index;
+    namespace guides{
         /*!brief
          * A guide class which contains the description of an equidistant grid
          * a different stepsize in longitude and latitude direction is allowed
          */
-        class GeoGrid:public frommle::core::GuideBase{
+        class GeoGrid:public GuideBase{
         public:
-            using Element=geopoint;
+            using Element=geometry::geopoint;
             enum gridreg{pix=0,grid=1};
             using lint=long unsigned int;
 
             GeoGrid(double west=-180.0, double east=180.0, double south=-90, double north=90,double dlon=1.0,double dlat=1.0, const gridreg reg = gridreg::pix);
 
-            index idx(const lint ilon,const lint ilat)const;
+            size_t idx(const lint ilon,const lint ilat)const;
 
-            std::tuple<lint,lint> ilonilat(const index idx)const;
+            std::tuple<lint,lint> ilonilat(const size_t idx)const;
 
             std::tuple<double,double> lonlat(const lint ilon, const lint ilat)const;
 
             ///@brief nested iterator class using boost iterators to loop over the points of the grid
-            class const_iterator:public  boost::iterator_facade<const_iterator,geopoint const,boost::forward_traversal_tag>{
+        class const_iterator:public  boost::iterator_facade<const_iterator,geometry::geopoint const,boost::forward_traversal_tag>{
             public:
                 ~const_iterator(){}
                 const_iterator();
@@ -75,7 +74,7 @@ namespace frommle{
             const_iterator  end()const{return const_iterator();}
         private:
             //bounding box(envelope)
-            bbox bbox_;
+            geometry::bbox bbox_;
             //degree steps in x and y
             double dx_=1.0;
             double dy_=1.0;

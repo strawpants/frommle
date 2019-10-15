@@ -30,15 +30,14 @@
 #define FROMMLE_SHDIMENSION_HPP
 
 namespace frommle{
-    namespace sh{
-        using frommle::core::index;
+    namespace guides{
 
         inline int nmax_from_sz(const size_t sz){
             return (std::sqrt(1.0+8*(sz-1))-1.0)/2.0;
         }
 
         ///@brief describes a Guide which has no separate entry for trigonometric C/S (e.g. to store associated legendre polynomials)
-        class SHnmHalfGuide:public frommle::core::GuideBase{
+        class SHnmHalfGuide:public GuideBase{
             public:
             using Element=std::tuple<int,int>;
             SHnmHalfGuide();
@@ -52,7 +51,7 @@ namespace frommle{
              * @param nmax maximum degree to accomodate for
              * @return zero based index of the corresponding entry
              */
-            inline static index i_from_nm(const int n,const int m, const int nmax){
+            inline static size_t i_from_nm(const int n,const int m, const int nmax){
                 assert(m<=n);
                 return m*(nmax+1)-(m*(m+1))/2+n;
             }
@@ -63,7 +62,7 @@ namespace frommle{
             * @param nmax maximum degree for which has been allocated
             * @return a tuple containing the degree and order in the first and second element respectively
             */
-            inline static std::tuple<int,int> nm_from_i(const index idx, const int nmax){
+            inline static std::tuple<int,int> nm_from_i(const size_t idx, const int nmax){
                 int m=(3.0+2*nmax)/2-std::sqrt(std::pow(3+2*nmax,2)/4.0-2*idx);
                 int n=idx-(((m+1)*(m+2))/2+m*(nmax-m))+m+1;
                 assert(m<=n);
@@ -73,8 +72,8 @@ namespace frommle{
 
             //inline index idx(const Element el)const{return idxfromEl(el);}
 
-            index idx(const int n,const int m)const{return i_from_nm(n,m,nmax_);}
-            virtual Element operator[](const index idx)const{return nm_from_i(idx,nmax_);}
+            size_t idx(const int n,const int m)const{return i_from_nm(n,m,nmax_);}
+            virtual Element operator[](const size_t idx)const{return nm_from_i(idx,nmax_);}
             private:
                 int nmax_=-1;
         };
@@ -85,24 +84,24 @@ namespace frommle{
         /*!brief
          * SHGuideBase groups all SH harmonic dimensions together
          */
-        class SHGuideBase:public frommle::core::GuideBase{
+        class SHGuideBase:public GuideBase{
         public:
             using trig=enum {C=0,S=1};
             using Element=std::tuple<int,int,trig>;
             SHGuideBase()=default;
             int nmax()const{return nmax_;}
             int nmin()const{return nmin_;}
-            SHGuideBase(const std::string & name, const core::typehash & type,const index sz,const int nmax,const int nmin):GuideBase(name,type,sz),nmax_(nmax),nmin_(nmin){}
-            index idxfromEl(const Element el)const;
+            SHGuideBase(const std::string & name, const typehash & type,const size_t sz,const int nmax,const int nmin):GuideBase(name,type,sz),nmax_(nmax),nmin_(nmin){}
+            size_t idxfromEl(const Element el)const;
             //helper function to make C++ interface consistent
-            inline index idx(const Element el)const{return idxfromEl(el);}
+            inline size_t idx(const Element el)const{return idxfromEl(el);}
 
-            virtual index idx(const int n,const int m,const trig t=trig::C)const=0;
-            virtual Element operator[](const index idx)const=0;
-//            virtual Element & operator[](const index idx)=0;
+            virtual size_t idx(const int n,const int m,const trig t=trig::C)const=0;
+            virtual Element operator[](const size_t idx)const=0;
+//            virtual Element & operator[](const size_t idx)=0;
 
             //nested class which acts as an iterator
-            class const_iterator:public frommle::core::Guideiterator<Element ,const_iterator>{
+            class const_iterator:public Guideiterator<Element ,const_iterator>{
             public:
                 const_iterator():Guideiterator(Element(-1,-1,trig::C)){}
                 const_iterator(const SHGuideBase * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
@@ -124,8 +123,8 @@ namespace frommle{
 
             private:
                 const SHGuideBase* gptr_=nullptr;
-                index sz_=0;
-                index idx_=0;
+                size_t sz_=0;
+                size_t idx_=0;
             };
             const_iterator begin()const{return const_iterator(this);}
             const_iterator end()const{return const_iterator();}
@@ -147,8 +146,8 @@ namespace frommle{
             SHtmnGuide()=default;
 //            SHtmnGuide(const int nmax);
             SHtmnGuide(const int nmax,const std::string name="SHtmnGuide");
-            index idx(const int n, const int m, const trig t=trig::C)const;
-            Element operator[](const index idx)const;
+            size_t idx(const int n, const int m, const trig t=trig::C)const;
+            Element operator[](const size_t idx)const;
 
 
         };
@@ -164,9 +163,9 @@ namespace frommle{
             SHnmtGuide()=default;
 //            SHtmnGuide(const int nmax);
             SHnmtGuide(const int nmax,const std::string name="SHnmtGuide");
-            index idx(const int n, const int m, const trig t=trig::C)const;
-            Element operator[](const index idx)const;
-            inline static index i_from_nmt(const int n, const int m, const SHGuideBase::trig t){
+            size_t idx(const int n, const int m, const trig t=trig::C)const;
+            Element operator[](const size_t idx)const;
+            inline static size_t i_from_nmt(const int n, const int m, const SHGuideBase::trig t){
                 return 2*((n*(n+1))/2+m)+t;
             }
 

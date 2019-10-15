@@ -1,7 +1,7 @@
 #include "core/GuideBase.hpp"
 
 namespace frommle{
-	namespace core{
+	namespace guides{
 
 		constexpr int GuideBase::ndim;
 	}

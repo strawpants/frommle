@@ -25,7 +25,7 @@
 
 namespace frommle{
 
-    namespace geometry{
+    namespace guides{
 
         OGRGuide<OGRPoint> makeFibonacciGrid(const size_t npoints);
 

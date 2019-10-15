@@ -18,15 +18,13 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "core/IndexGuide.hpp"
-#include "core/TimeGuide.hpp"
+#include "core/GuideRegistry.hpp"
 #include "core/Logging.hpp"
 #include "core/Exceptions.hpp"
-#include <boost/variant.hpp>
 #ifndef SRC_CORE_GUIDE_APPEND_HPP_
 #define SRC_CORE_GUIDE_APPEND_HPP_
 namespace frommle{
-	namespace core{
+	namespace guides{
 
 		//forward declare ipolymprhic access to the guidePac
 		class GuidePackBase;
@@ -37,16 +35,7 @@ namespace frommle{
 		class GuidePackDyn;
 
 		template<int n>
-		using GPackPtr=std::shared_ptr<GuidePackDyn<n>>;
-		
-		template<class ... T>
-		struct GuideTlist{
-            static const int nguides=sizeof...(T);
-			using Gvar=boost::variant<std::shared_ptr<T>...>;	
-		};
-		
-		
-		using GuideRegistry=GuideTlist<IndexGuide,DateGuide>;
+		using GPackDynPtr=std::shared_ptr<GuidePackDyn<n>>;
 		
 
 		//general template forwward  delaration
@@ -81,7 +70,7 @@ namespace frommle{
 
 		template<int n,class T>
 		struct GPHelpBase{ 
-			static GPackPtr<n+1> append(T& Guide,const GuidePackDyn<n> & gp){
+			static GPackDynPtr<n+1> append(T& Guide,const GuidePackDyn<n> & gp){
 			auto gpout=std::make_shared<GuidePackDyn<n+1>>();
 			for(int i=0; i<n;++i){
 				(*gpout)[i]=gp[i];
@@ -93,7 +82,7 @@ namespace frommle{
 		
 		template<int n,class T>
 		struct GPHelp{
-			static GPackPtr<n+1> append(T & Guide, const GuidePackDyn<n> & gp){
+			static GPackDynPtr<n+1> append(T & Guide, const GuidePackDyn<n> & gp){
 				THROWNOTIMPLEMENTED(std::string("Please specialize GPHelp<n,T> for n=")+std::to_string(n));					
 			};
 		};

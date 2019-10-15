@@ -3,7 +3,7 @@ namespace frommle{
 
 	namespace core{
 
-		constexpr int GOperatorBase::ndim;
+		//constexpr int GOperatorBase::ndim;
 
 	}
 }

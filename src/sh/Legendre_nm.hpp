@@ -30,13 +30,13 @@
 //#include "core/GuideAppender_impl.hpp"
 #ifndef FROMMLE_SHLEGE_HPP
 #define FROMMLE_SHLEGE_HPP
-
+using namespace frommle::guides;
 namespace frommle{
     namespace sh{
         template<class ftype>
-    class Legendre_nm:public frommle::core::Garray<ftype,core::GuidePack<SHnmHalfGuide>>{
+    class Legendre_nm:public frommle::core::GArray<ftype,guides::GuidePack<SHnmHalfGuide>>{
         public:
-            using Garr=frommle::core::Garray<ftype,core::GuidePack<SHnmHalfGuide>>;
+            using Garr=frommle::core::GArray<ftype,guides::GuidePack<SHnmHalfGuide>>;
             using Garr::mat;
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life
             inline SHnmHalfGuide & shg(){return *(this->template g<0>());}

@@ -25,7 +25,7 @@
 #include <boost/date_time.hpp>
 
 namespace frommle {
-	namespace core {
+	namespace guides {
             
         using gregdate=boost::gregorian::date;
         using ptime=boost::posix_time::ptime;

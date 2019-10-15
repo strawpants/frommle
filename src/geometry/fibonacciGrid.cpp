@@ -25,7 +25,7 @@
 #include <cmath>
 namespace frommle{
 
-    namespace geometry{
+    namespace guides{
 
         OGRGuide<OGRPoint> makeFibonacciGrid(const size_t npoints){
             size_t np=npoints;
@@ -37,7 +37,7 @@ namespace frommle{
             ptrdiff_t Nhalf=(np-1)/2;
             const double PHI= (1+sqrt(5.0))/2.0;
 
-            OGRGuide<OGRPoint> fibgrid{"PointGuide",core::typehash("FibGuide").add(np)};
+            OGRGuide<OGRPoint> fibgrid{"PointGuide",typehash("FibGuide").add(np)};
             for(ptrdiff_t i=-Nhalf;i<Nhalf+1;++i){
                 double lat=asin((2.0*i)/(2*Nhalf+1))/D2R;
                 double lon=fmod(i,PHI)*(360/PHI);

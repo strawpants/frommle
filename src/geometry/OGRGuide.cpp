@@ -21,7 +21,7 @@
 #include "geometry/OGRGuide.hpp"
 
 namespace frommle{
-    namespace geometry{
+    namespace guides{
 
         template<class T>
         void OGRGuide<T>::push_back(Element &&geometry) {

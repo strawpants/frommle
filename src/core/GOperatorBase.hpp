@@ -32,7 +32,7 @@ namespace frommle {
 namespace core {
 
 template<class T1,class T2>
-    class Garray;
+    class GArray;
 
 template<class ...Types>
 class GuidePack;
@@ -54,7 +54,6 @@ class GuidePack;
         void setName(const std::string & name){
             name_=name;
         }
-        static constexpr int ndim=2;
     private:
         std::string name_="GOperator";
     protected:
@@ -73,36 +72,50 @@ class GuidePack;
         }
        
         template<class addG>
-        using garout=core::Garray<T,typename GuidePackGrow<addG,outGP>::right>;
+        using garout=core::GArray<T,typename guides::GPappend<addG,outGP>::right>;
         
         template<class addG>
-        using garin=core::Garray<T,typename GuidePackGrow<addG,inGP>::right>;
-        
+        using garin=core::GArray<T,typename guides::GPappend<addG,inGP>::right>;
+       
+        ///@brief virtual function which return the adjoint (possibly linearized wrt g0)
+        //virtual core::Garray<T,outGP,inGP> adjoint(const core::Garray<T,inGP> & g0)=0;
+
+
         template<class addG>
         garout<addG> apply(garin<addG> & inGar){
             //check for proper guide matching
             // possibly resort?
             // //...
             
+            //extract the guidepack from the input
+            //gpi_=inGar.g            
             //allocate garray for output
             garout<addG> gout(gpo_.append(inGar.template g<garin<addG>::ndim>())); 
-            //get the size of the auxiliary dimension
-            auto sz=inGar.template g<inGP::ndim>().size();
-            using range=boost::multi_array_types::index_range;
-            typename garin<addG>::index_gen indin;
-            typename garout<addG>::index_gen indout;
-            for(size_t i=0;i<sz;++i){
-                fwdOp(inGar[indin[range()][i]],gout[indout[range()][i]]);
-            }
+            
+            //call forward operator for matrices
+            fwdOp(inGar.mat(),gout.mat());
+
+            ////get the size of the auxiliary dimension
+            //auto sz=inGar.template g<inGP::ndim>().size();
+            //using range=boost::multi_array_types::index_range;
+            //typename garin<addG>::index_gen indin;
+            //typename garout<addG>::index_gen indout;
+            //for(size_t i=0;i<sz;++i){
+                //fwdOp(inGar[indin[range()][i]],gout[indout[range()][i]]);
+            //}
             return gout;
             
         }
+        
+
 
         using maroutv=typename boost::multi_array_ref<T,outGP::ndim+1>::template array_view<outGP::ndim>;
-        using marin=boost::multi_array_ref<T,inGP::ndim>;
+        using marinv=typename boost::multi_array_ref<T,inGP::ndim+1>::template array_view<inGP::ndim>;
 
-        //the actual forward operator to be implemented
-        virtual void fwdOp(const marin & in, maroutv & out)=0;     
+        using marout=boost::multi_array_ref<T,outGP::ndim+1>;
+        using marin=boost::multi_array_ref<T,inGP::ndim+1>;
+        //the actual forward operator to be implemented int he derived classes
+        virtual void fwdOp(const marin & in, marout & out)=0;     
 
     protected:
         outGP gpo_{};

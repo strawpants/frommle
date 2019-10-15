@@ -27,11 +27,11 @@
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <memory>
 namespace frommle {
-namespace core {
+namespace guides {
     template<class G>
     class MaskedGuide;
 
-    using index=size_t;
+
 /*!
  * \brief Base class for describing  guided dimensions
  * The general idea behind the Guide classes is that they are used to add value to the dimension of an array/vector
@@ -69,8 +69,8 @@ private:
 
         GuideBase() {};
 
-        GuideBase(const typehash &type, const index &sz) : type_(type), size_(sz) {}
-        GuideBase(const std::string & name, const typehash &type, const index &sz) : type_(type), size_(sz),name_(name) {}
+        GuideBase(const typehash &type, const size_t &sz) : type_(type), size_(sz) {}
+        GuideBase(const std::string & name, const typehash &type, const size_t &sz) : type_(type), size_(sz),name_(name) {}
 
         GuideBase(const typehash &type) : type_(type) {}
         GuideBase(const std::string & name,const typehash &type):type_(type),name_(name){}
@@ -84,7 +84,7 @@ private:
         //add 1D index_range and index_gen types here?
         virtual typehash hash() const { return type_; }
         std::string printhash()const{return std::string(hash());}
-        index size() const { return size_; }
+        size_t size() const { return size_; }
 
         virtual bool operator==(const GuideBase &in) const {
             return type_ == in.type_;
@@ -101,7 +101,7 @@ private:
     protected:
         typehash type_{"FROMMLE"};
         std::string name_="Guide";
-        index size_ = 0;
+        size_t size_ = 0;
     };
 
 

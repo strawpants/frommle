@@ -1,5 +1,5 @@
 /*! \file
- \brief some explicitly instantiated templated functions
+ \brief 
  \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
@@ -17,18 +17,32 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "core/GuidePack.hpp"
-namespace frommle{
 
-	namespace guides{
-	//class GuidePackBase;
-	 //explicitly instantiate a few dynamic guidepacks
-	template class GuidePackDyn<0>;
-	template class GuidePackDyn<1>;
-	template class GuidePackDyn<2>;
-	template class GuidePackDyn<3>;
-	template class GuidePackDyn<4>;
-	template class GuidePackDyn<5>;
-	}
+#include <boost/variant.hpp>
+#include "core/IndexGuide.hpp"
+#include "core/TimeGuide.hpp"
+#include "sh/SHGuide.hpp"
+
+#ifndef FROMMLE_GUIDEREGISTRY_HPP
+#define FROMMLE_GUIDEREGISTRY_HPP
+namespace frommle{
+    namespace guides{
+
+        template<class ... T>
+        struct GuideTlist{
+            static const int nguides=sizeof...(T);
+            using Gvar=boost::variant<std::shared_ptr<T>...>;
+        };
+
+
+        using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide>;
+
+
+    }
+
+
 }
 
+
+
+#endif //FROMMLE_GUIDEREGISTRY_HPP
