@@ -55,11 +55,23 @@ namespace frommle {
         template<class T,int n>
         class GArrayDyn:public GArrayBase{
             public:
+            template<class ... Guides>
+            GArrayDyn(Guides && ... Args):gp_(std::move(Args)...),
+                data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),
+                ar_(data_.get(),gp_.extent()){
+                    
+                }
+            GArrayDyn(){};
             static const int ndim=n;
             using GArrayBase::name;
             using GArrayBase::setName;
+            using arr=boost::multi_array_ref<T,ndim>;
+            inline arr & mat(){return ar_;}
+            const guides::GuidePackDyn<n> & gp()const{return gp_;}
             private:
-
+            guides::GuidePackDyn<n> gp_{};
+            std::shared_ptr<T[]> data_{};
+            arr ar_{};
         };
 
 

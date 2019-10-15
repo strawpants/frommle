@@ -38,6 +38,16 @@ namespace frommle{
         using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide>;
 
 
+     //some useful visitors to be applied to the boost variant of the registered guides
+    class gvar_size:public boost::static_visitor<size_t>{
+    public:
+        template<class G>
+        size_t operator()(const G & guide)const{
+            return guide->size();
+        }
+    };
+
+
     }
 
 

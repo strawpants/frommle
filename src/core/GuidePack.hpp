@@ -74,6 +74,14 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         static const int ndim=n;
         Gvar & operator[](const int i)override{return gpar_[i];} 
         const Gvar & operator[](const int i)const override {return gpar_[i];} 
+
+        //extract a specific type of guide from the guidepack
+        template<class T>
+        inline const std::shared_ptr<T> as(const int i)const{return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+        template<class T>
+        inline std::shared_ptr<T> as(const int i){return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+        size_t num_elements()const;
+        std::array<size_t,n> extent()const;
         iterator begin()override{return gpar_.begin();}
         iterator end()override{return gpar_.end();}
         const_iterator begin()const override{ return gpar_.begin();}
@@ -83,7 +91,21 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
 
 };
 
+        template<int n>
+        size_t GuidePackDyn<n>::num_elements() const {
+            //extract the elements from the guides
+            auto ext=extent();
+            return std::accumulate(ext.cbegin(),ext.cend(),0);
+        }
 
+        template<int n>
+        std::array<size_t,n> GuidePackDyn<n>::extent()const{
+            std::array<size_t,n> ext;
+            std::transform(gpar_.cbegin(),gpar_.cend(),ext.begin(),[](const Gvar & gb){
+                return boost::apply_visitor(gvar_size(),gb);
+            });
+            return ext;
+        };
 
 /*!brief
  * Wraps several guides into a tuple and provide access functions
