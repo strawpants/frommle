@@ -31,7 +31,7 @@ namespace frommle{
 
         ///@brief create a boost rtree index of the geometry using the packing algorithm
         template<class T>
-        void geometry::OGRGuide<T>::buildRtree() {
+        void OGRGuide<T>::buildRtree() {
             //construct a vector with idxmap (box + index)
             std::vector<idxmap> idxboxes{};
             size_t indx=0;

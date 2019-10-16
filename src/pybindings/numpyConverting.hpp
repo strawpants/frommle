@@ -67,12 +67,15 @@ namespace frommle{
 
         template<typename T, size_t ndim>
         struct marray_to_ndarray{
-            static PyObject* convert ( boost::multi_array<T,ndim> & marr){
+            using bma=boost::multi_array<T,ndim>;
+            using szt=typename bma::size_type;
+            using strt=typename bma::index;
+            static PyObject* convert ( bma & marr){
                 return p::incref(get(marr).ptr());
             }
-            static np::ndarray get(boost::multi_array<T,ndim> & marr){
-                p::tuple shape = arr_to_ptuple<ndim>::make(marr.shape());
-                p::tuple strides = arr_to_ptuple<ndim>::make(marr.strides());
+            static np::ndarray get(bma & marr){
+                p::tuple shape = arr_to_ptuple<ndim,const szt*>::make(marr.shape());
+                p::tuple strides = arr_to_ptuple<ndim,const strt*>::make(marr.strides());
                 np::dtype dtype = np_dtype<T>::get();
                 return np::from_data(marr.data(),dtype,shape,strides,p::object());
             }

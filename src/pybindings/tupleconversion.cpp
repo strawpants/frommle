@@ -27,6 +27,10 @@ namespace frommle{
 
             //register specific std:tuple to/from python tuple converters
             register_tuple<std::tuple<int,int>>(); 
+            
+            //register stdarray to python tuple conversion
+            register_stdarray<size_t,6>();
+            
 
         }
 

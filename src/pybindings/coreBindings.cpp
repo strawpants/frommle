@@ -8,7 +8,9 @@
 #include "pybindings/datetimeconversion.hpp"
 #include "pybindings/numpyConverting.hpp"
 #include "pybindings/coreBindings.hpp"
+#include <memory>
 using namespace frommle::py;
+using namespace frommle::guides;
 using namespace frommle::core;
 
 
@@ -70,7 +72,8 @@ void pyexport_core(){
 
 
     //register the GuidePack
-    registerGuidePack(); 
+    registerGuidePack();
+
     //GuidePackPtr (*mkgp1) (GuideBase &) =&makeGuidePack;
     //p::def("makeGuidePack",mkgp1);
     ////BOOST_PYTHON_FUNCTION_OVERLOADS(makegp_overloads, &makeGuidePack, 1, 2);

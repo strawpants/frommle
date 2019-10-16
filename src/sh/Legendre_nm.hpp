@@ -40,7 +40,7 @@ namespace frommle{
             using Garr::mat;
             using Garr::gp;
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life
-            inline std::shared_ptr<guides::SHnmHalfGuide> shg()const{return gp().as<guides::SHnmHalfGuide>(0);}
+            inline std::shared_ptr<guides::SHnmHalfGuide> shg()const{return gp().template as<guides::SHnmHalfGuide>(0);}
             Legendre_nm(const int nmax);
             void set(const ftype costheta);
 

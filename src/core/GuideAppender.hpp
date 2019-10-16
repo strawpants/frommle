@@ -75,7 +75,8 @@ namespace frommle{
 			for(int i=0; i<n;++i){
 				(*gpout)[i]=gp[i];
 			}
-			(*gpout)[n]=std::make_shared<T>(Guide);
+			(*gpout)[n]=std::shared_ptr<GuideBase>(new T(Guide));
+			//LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
 			return gpout;
 		}
 		};

@@ -33,7 +33,7 @@
 #ifndef FROMMLE_COREBINDINGS_HPP
 #define FROMMLE_COREBINDINGS_HPP
 namespace frommle{
-    namespace py{
+    namespace guides{
 
 
 

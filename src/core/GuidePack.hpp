@@ -41,19 +41,22 @@ class GuidePackBase: public virtual GauxPureVirt{
         GuidePackBase(){};
         ~GuidePackBase(){};
         virtual int nDim()const{return 0;}
-        using Gvar=GuideRegistry::Gvar;
+        //using Gvar=GuideRegistry::Gvar;
         using GauxPureVirt::append;
-        using iterator=Gvar*;
-        using const_iterator=const Gvar*;
+        //using iterator=Gvar*;
+        //using const_iterator=const Gvar*;
+        using iterator=GuideBasePtr*;
+        using const_iterator=const GuideBasePtr*;
         virtual iterator begin()=0;
         virtual iterator end()=0;
         virtual const_iterator begin()const=0;
         virtual const_iterator end()const=0;
         //dynamic access to the underlying guides should be implemented
+        virtual size_t num_elements()const=0;
         //virtual Gvar & operator[](const int i)=0;
         
-        virtual Gvar & operator[](const int i)=0;
-        virtual const  Gvar & operator[](const int i)const=0;
+        virtual GuideBasePtr & operator[](const int i)=0;
+        virtual const GuideBasePtr operator[](const int i)const=0;
     
     private:
 
@@ -68,26 +71,33 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         GuidePackDyn(Guides && ... Args){
             gpar_={{std::make_shared<Guides>(std::move(Args))...}};
         }
-        using Gvar=GuideRegistry::Gvar;
+        //using Gvar=GuideRegistry::Gvar;
         using GauxVirtImpl<n>::append;
         int nDim()const{return n;}
         static const int ndim=n;
-        Gvar & operator[](const int i)override{return gpar_[i];} 
-        const Gvar & operator[](const int i)const override {return gpar_[i];} 
-
+        GuideBasePtr & operator[](const int i)override{return gpar_[i];} 
+        const  GuideBasePtr operator[](const int i)const override {return gpar_[i];}
+        
         //extract a specific type of guide from the guidepack
+        //template<class T>
+        //inline const std::shared_ptr<T> as(const int i)const{return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+        //template<class T>
+        //inline std::shared_ptr<T> as(const int i){return boost::get<std::shared_ptr<T>>(gpar_[i]);}
         template<class T>
-        inline const std::shared_ptr<T> as(const int i)const{return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+        inline const std::shared_ptr<T> as(const int i)const{return std::static_pointer_cast<T>(gpar_[i]);}
         template<class T>
-        inline std::shared_ptr<T> as(const int i){return boost::get<std::shared_ptr<T>>(gpar_[i]);}
-        size_t num_elements()const;
+        inline std::shared_ptr<T> as(const int i){return std::static_pointer_cast<T>(gpar_[i]);}
+
+        size_t num_elements()const override;
         std::array<size_t,n> extent()const;
+        
         iterator begin()override{return gpar_.begin();}
         iterator end()override{return gpar_.end();}
         const_iterator begin()const override{ return gpar_.begin();}
         const_iterator end()const override{ return gpar_.end();}
     protected:
-        std::array<Gvar,n> gpar_{};
+        //std::array<Gvar,n> gpar_{};
+        std::array<GuideBasePtr,n> gpar_{};
 
 };
 
@@ -101,8 +111,9 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         template<int n>
         std::array<size_t,n> GuidePackDyn<n>::extent()const{
             std::array<size_t,n> ext;
-            std::transform(gpar_.cbegin(),gpar_.cend(),ext.begin(),[](const Gvar & gb){
-                return boost::apply_visitor(gvar_size(),gb);
+            std::transform(gpar_.cbegin(),gpar_.cend(),ext.begin(),[](const GuideBasePtr & gb){
+                //return boost::apply_visitor(gvar_size(),gb);
+                return gb->size();
             });
             return ext;
         };

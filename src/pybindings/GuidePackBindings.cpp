@@ -29,82 +29,96 @@ namespace p = boost::python;
 
 
 namespace frommle{
-    namespace py{
+    namespace guides{
         
-        class gvar_visitor: public boost::static_visitor<core::GuideBasePtr>{
-            public:
-                template<class T>
-                core::GuideBasePtr operator()(T & gvar)const{
-                    return std::static_pointer_cast<core::GuideBase>(gvar);
-                }
 
-        };
+        //struct gvar_to_pGuide {
+            //static PyObject *convert(GuideRegistry::Gvar const  & tin) {
+                //auto guideptr=boost::apply_visitor(gvar_baseptr(),tin).get();
+                //return p::incref(p::object(guideptr).ptr());
 
-        struct gvar_to_pGuide {
-            static PyObject *convert(core::GuideRegistry::Gvar const  & tin) {
-                auto guideptr=boost::apply_visitor(gvar_visitor(),tin).get();
-                return p::incref(p::object(guideptr).ptr());
-
-            }
-        };
+            //}
+        //};
         
         template<class ...T>
             struct GuidePackAppendOverride;
         
         template<class T, class ... Types>
-            struct GuidePackAppendOverride<core::GuideTlist<T,Types...>>: public virtual core::GauxMembers<core::GuideTlist<T,Types...>>, public GuidePackAppendOverride<Types...>{
+            struct GuidePackAppendOverride<GuideTlist<T,Types...>>: public virtual GauxMembers<GuideTlist<T,Types...>>, public GuidePackAppendOverride<Types...>{
             using next=GuidePackAppendOverride<Types...>;
             using next::append;
-            core::GuidePackPtr append(T & guide)override{
+            GuidePackPtr append(T & guide)override{
                return this->get_override("append")(guide);
             }
             };
         
         
         template<class T, class ... Types>
-            struct GuidePackAppendOverride<T,Types...>:public virtual core::GauxMembers<T,Types...>,public GuidePackAppendOverride<Types...>{
+            struct GuidePackAppendOverride<T,Types...>:public virtual GauxMembers<T,Types...>,public GuidePackAppendOverride<Types...>{
                 public:
             using next=GuidePackAppendOverride<Types...>;
             using next::append;
-            core::GuidePackPtr append(T & guide)override{
+            GuidePackPtr append(T & guide)override{
                return this->get_override("append")(guide);
             }
         
             };
 
         template<class T>
-            struct GuidePackAppendOverride<T>: public virtual core::GauxMembers<T>{
-                core::GuidePackPtr append(T & guide)override{
+            struct GuidePackAppendOverride<T>: public virtual GauxMembers<T>{
+                GuidePackPtr append(T & guide)override{
                return this->get_override("append")(guide);
             }
         
             };
         
-        using GPWrapOverride=GuidePackAppendOverride<core::GuideRegistry>;
+        using GPWrapOverride=GuidePackAppendOverride<GuideRegistry>;
 
-        struct GuidePackWrapper : public core::GuidePackBase, public GPWrapOverride, p::wrapper<core::GuidePackBase> {
+        struct GuidePackWrapper : public GuidePackBase, public GPWrapOverride, p::wrapper<GuidePackBase> {
         public:
+
+
+            size_t num_elements()const override{
+                if (p::override numel = this->get_override("num_elements")){
+                    return numel(); 
+                }
+                return this->GuidePackBase::num_elements();
+            }
+            size_t default_numelements()const{return this->GuidePackBase::num_elements();}
             
             int nDim()const{
                 if (p::override nDimf = this->get_override("nDim")){
                     return nDimf(); 
                 }
-                return this->core::GuidePackBase::nDim();
+                return this->GuidePackBase::nDim();
             }
             int default_nDim()const{return this->GuidePackBase::nDim();}
-        
-            const core::GuideRegistry::Gvar & operator[](const int i)const override
+            
+            const GuideBasePtr operator[](const int i)const override
             {
                 if (p::override fdispatch = this->get_override("operator[](const int)const")){
                     return fdispatch(i); // *note*
                 }
-                return this->core::GuidePackBase::operator[](i);
+                return this->GuidePackBase::operator[](i);
             
             }
 
-            const core::GuideRegistry::Gvar &default_getguide(const int i)const{
-               return this->core::GuidePackBase::operator[](i);
+            const GuideBasePtr default_getguide(const int i)const{
+               return this->GuidePackBase::operator[](i);
             }
+        
+            //const GuideRegistry::Gvar & operator[](const int i)const override
+            //{
+                //if (p::override fdispatch = this->get_override("operator[](const int)const")){
+                    //return fdispatch(i); // *note*
+                //}
+                //return this->GuidePackBase::operator[](i);
+            
+            //}
+
+            //const GuideRegistry::Gvar &default_getguide(const int i)const{
+               //return this->GuidePackBase::operator[](i);
+            //}
 
 
         };
@@ -116,11 +130,11 @@ namespace frommle{
 
 
         template<class T, class ... Types>
-        struct RegisterMembers<core::GuideTlist<T,Types...>> {
+        struct RegisterMembers<GuideTlist<T,Types...>> {
             static boostpyGP & regapp(boostpyGP & gpin){
-            using gapp=core::GauxMembers<core::GuideTlist<T,Types...>>;
+            using gapp=GauxMembers<GuideTlist<T,Types...>>;
             //function pointer to pure virtual function
-            core::GuidePackPtr (gapp::*appf)(T &)=&gapp::append; 
+            GuidePackPtr (gapp::*appf)(T &)=&gapp::append;
             
             return RegisterMembers<Types...>::regapp(gpin.def("append",p::pure_virtual(appf)));
 
@@ -131,9 +145,9 @@ namespace frommle{
         template<class T, class ... Types>
         struct RegisterMembers<T,Types...> {
             static boostpyGP & regapp(boostpyGP & gpin){
-            using gapp=core::GauxMembers<T,Types...>;
+            using gapp=GauxMembers<T,Types...>;
             //function pointer to pure virtual function
-            core::GuidePackPtr  (gapp::*appf)(T &)=&gapp::append; 
+            GuidePackPtr  (gapp::*appf)(T &)=&gapp::append;
             
             return RegisterMembers<Types...>::regapp(gpin.def("append",p::pure_virtual(appf)));
 
@@ -146,8 +160,8 @@ namespace frommle{
             static boostpyGP & regapp(boostpyGP & gpin){
 
             //function pointer to pure virtual function
-            using gapp=core::GauxMembers<T>;
-            core::GuidePackPtr  (gapp::*appf)(T &)=&gapp::append; 
+            using gapp=GauxMembers<T>;
+            GuidePackPtr  (gapp::*appf)(T &)=&gapp::append;
             
             return gpin.def("append",p::pure_virtual(appf));
 
@@ -157,22 +171,30 @@ namespace frommle{
 
 
         void registerGuidePack(){
-            p::to_python_converter<core::GuideRegistry::Gvar, gvar_to_pGuide> ();
+            //p::to_python_converter<GuideRegistry::Gvar, gvar_to_pGuide> ();
 
             //set up some pointers to the const and non const versions of the virtual [] operator
-            const core::GuideRegistry::Gvar & (core::GuidePackBase::*cget)(const int)const =&core::GuidePackBase::operator[];
+            //const GuideRegistry::Gvar & (GuidePackBase::*cget)(const int)const =&GuidePackBase::operator[];
+            const GuideBasePtr (GuidePackBase::*cget)(const int)const =&GuidePackBase::operator[];
 
-            RegisterMembers<core::GuideRegistry>::regapp(
-                    boostpyGP("GuidePackBase",p::no_init).def("ndim",&core::GuidePackBase::nDim,&GuidePackWrapper::default_nDim).def("__getitem__",p::pure_virtual(cget),p::return_value_policy<p::copy_const_reference>())
-                        .def("__iter__",p::iterator<const core::GuidePackBase>())
-            );
-            p::register_ptr_to_python< std::shared_ptr<core::GuidePackBase> >();
-            p::class_<core::GuidePackDyn<0>,p::bases<core::GuidePackBase>>("GuidePack0");
+            
+            RegisterMembers<GuideRegistry>::regapp(
+                    boostpyGP("GuidePackBase",p::no_init)
+                    .def("ndim",&GuidePackBase::nDim,&GuidePackWrapper::default_nDim)
+                    .def("__getitem__",p::pure_virtual(cget))
+                    .def("__iter__",p::iterator<const GuidePackBase>())
+                    .def("num_elements",p::pure_virtual(&GuidePackBase::num_elements))
+                    //.def("shape",&GuidePackWrapper::getshape)
+                    );
+            p::register_ptr_to_python< std::shared_ptr<GuidePackBase> >();
 
-            p::class_<core::GuidePackDyn<1>,p::bases<core::GuidePackBase>>("GuidePack1");
-
-
-
+            p::class_<GuidePackDyn<0>,p::bases<GuidePackBase>>("GuidePack0");
+            p::class_<GuidePackDyn<1>,p::bases<GuidePackBase>>("GuidePack1");
+            p::class_<GuidePackDyn<2>,p::bases<GuidePackBase>>("GuidePack2");
+            p::class_<GuidePackDyn<3>,p::bases<GuidePackBase>>("GuidePack3");
+            p::class_<GuidePackDyn<4>,p::bases<GuidePackBase>>("GuidePack4");
+            p::class_<GuidePackDyn<5>,p::bases<GuidePackBase>>("GuidePack5");
+            p::class_<GuidePackDyn<6>,p::bases<GuidePackBase>>("GuidePack6");
         }
     }
 }

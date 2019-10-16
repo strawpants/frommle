@@ -29,8 +29,6 @@
 namespace p = boost::python;
 
 
-using namespace frommle::geometry;
-using namespace frommle::core;
 
 namespace frommle{
     namespace geometry {
@@ -111,8 +109,11 @@ PyObject* toShapely(const T & geom ){
                 return p::incref(pygeom.ptr());
 
    }
-      
 
+
+
+using namespace frommle::guides;
+using namespace frommle::core;
 
 using OGRPointGuide=OGRGuide<OGRPoint>;
 
