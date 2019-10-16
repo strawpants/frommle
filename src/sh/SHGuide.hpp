@@ -53,6 +53,7 @@ namespace frommle{
              */
             inline static size_t i_from_nm(const int n,const int m, const int nmax){
                 assert(m<=n);
+                assert(n<=nmax);
                 return m*(nmax+1)-(m*(m+1))/2+n;
             }
 
@@ -66,13 +67,19 @@ namespace frommle{
                 int m=(3.0+2*nmax)/2-std::sqrt(std::pow(3+2*nmax,2)/4.0-2*idx);
                 int n=idx-(((m+1)*(m+2))/2+m*(nmax-m))+m+1;
                 assert(m<=n);
+                assert(n<=nmax);
                 return std::make_tuple(n,m);
 
             }
 
             //inline index idx(const Element el)const{return idxfromEl(el);}
 
-            size_t idx(const int n,const int m)const{return i_from_nm(n,m,nmax_);}
+            size_t idx(const int n,const int m)const{
+                return i_from_nm(n,m,nmax_);
+            }
+            inline size_t idx(const Element & el)const{
+               return idx(std::get<0>(el),std::get<1>(el)); 
+            }
             virtual Element operator[](const size_t idx)const{return nm_from_i(idx,nmax_);}
             private:
                 int nmax_=-1;

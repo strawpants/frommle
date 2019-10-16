@@ -16,10 +16,25 @@
 # Author Roelof Rietbroek (roelof@wobbly.earth), 2019
 
 
-from frommle.core import GArray0
-from frommle.core import makeGuidePack
+from frommle.core import makeGArray_float64,makeGArray_uint64,makeGuidePack
+import numpy as np
 
-# def makeGArray(*guides):
+def makeGArray(*guides,**kwargs):
+    if "dtype" in kwargs:
+         dt=kwargs["dtype"]
+    else:
+        dt=np.float64
+
+    if dt == np.float64:
+        return makeGArray_float64(makeGuidePack(*guides))
+
+    if dt == np.dtype('uint64'):
+        return makeGArray_uint64(makeGuidePack(*guides))
+
+    raise NotImplementedError("cannot (yet) create a GArray with dtype %s"%str(dt))
+
+
+
 #     """Dynamically construct a garray from various input guides"""
 #     ndim=len(guides)
 #     return type("GArray")

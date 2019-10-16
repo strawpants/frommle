@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(SHguidetest){
         std::tie(n,m,t)=tpl;
         checkDegOrdTrigIndex = shg[ii++]==tpl;
         BOOST_TEST(checkDegOrdTrigIndex);
-        std::cout << n<<" "<<m<<" "<<t<<std::endl;
+        //std::cout << n<<" "<<m<<" "<<t<<std::endl;
     }
     //also check whether the iterator covered al of the coefficients
     BOOST_TEST(ii==shg.size());
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
     for(int i=0;i<=nsteps+1;i++){
         theta=dt*i*d2r;
         Pnm.set(cos(theta));
-        auto indx=SHtmnGuide::Element(5,2,SHGuideBase::trig::C);
+        auto indx=SHnmHalfGuide::Element(5,2);
         BOOST_TEST(Pnm[indx]==P52(theta));
     }
 
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
 
         for (int m = 0; m <= nmax; ++m) {
             for (int n = m; n <= nmax; ++n) {
-                auto idx = Pnm.shg->idx(n, m);
+                auto idx = Pnm.shg().idx(n, m);
                 val=Pnm.mat()[idx];
                 //convert to double to compare properly
                 valld=Pnmld.mat()[idx];

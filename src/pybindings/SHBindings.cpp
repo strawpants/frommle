@@ -48,6 +48,9 @@ namespace frommle{
 
 using namespace frommle::guides;
 
+using namespace frommle::sh;
+using namespace frommle;
+
 void pyexport_sh()
 {
 
@@ -78,8 +81,8 @@ void pyexport_sh()
 
     p::def("nmax_from_sz",&nmax_from_sz);
 
-//    p::class_<sh::Legendre_nm_d>("Legendre_nm",p::init<int>())
-//            .def("__call__",&sh::Legendre_nm_d::operator())
+    p::class_<Legendre_nm<double>,p::bases<core::GArrayDyn<double,1>>>("Legendre_nm",p::init<int>())
+            .def("set",&sh::Legendre_nm_d::set);
 //            .def("indxnm", &sh::Legendre_nm_d::indxnm);
 
 }

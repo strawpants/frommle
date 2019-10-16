@@ -60,10 +60,10 @@ namespace frommle {
             public:
             using gp_t=guides::GuidePackDyn<n>;
             using gp_tptr=std::shared_ptr<guides::GuidePackDyn<n>>;
-            template<class ... Guides>
-            GArrayDyn(Guides && ... Args):gp_(std::make_shared<gp_t>(std::move(Args)...)),
-                data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
-                ar_(data_.get(),gp_->extent()){}
+            //template<class ... Guides>
+            //GArrayDyn(Guides && ... Args):gp_(std::make_shared<gp_t>(std::move(Args)...)),
+                //data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
+                //ar_(data_.get(),gp_->extent()){}
 
              ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
             template<class GP, typename std::enable_if< std::is_base_of<guides::GuidePackDyn<n>,GP>::value_type,int>::type =0 >
@@ -95,6 +95,7 @@ namespace frommle {
             private:
             gp_tptr gp_{};
             std::shared_ptr<T[]> data_{};
+            protected:
             arr ar_{{}};
         };
 
@@ -112,6 +113,7 @@ namespace frommle {
             using GAdyn::ndim;
             using GAdyn::name;
             using GAdyn::arr;
+            using GAdyn::ar_;
             //note this shadows
             inline const std::shared_ptr<GPack> gp()const{return std::static_pointer_cast<GPack>(GAdyn::gp());}
 
@@ -123,13 +125,13 @@ namespace frommle {
             using gptr_t=typename GPack::template gptr_t<n>;
 
             template<int n>
-            inline gptr_t<n> & g(){
-                return gp()->template as<g_t<n>>(n);
+            inline gptr_t<n>  g(){
+                return gp()->template g<n>();
             }
 
             template<int n>
-            inline const gptr_t<n> & g()const{
-                return gp()->template as<g_t<n>>(n);
+            inline const gptr_t<n> g()const{
+                return gp()->template g<n>();
             }
 //
 //            ///@brief polymorphic version
@@ -145,14 +147,14 @@ namespace frommle {
             GArray(GPack && gp):GAdyn(std::move(gp)){
             }
 
-            GArray(Guides && ... guides):GAdyn(std::move(guides)...){}
+            GArray(Guides && ... guides):GAdyn(GPack(std::move(guides)...)){}
 
             //indexing
-//            template<int i=0>
-//            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::element_type::Element & indx){
-//                assert(1==ndim);
-//                return ar_[g<0>()->idx(indx)];
-//            }
+            template<int i=0>
+            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<i>::Element & indx){
+                assert(1==ndim);
+                return ar_[g<0>()->idx(indx)];
+            }
 //
 //            // return a subview of the current GArray (i.e. strip a dimension)
 //            using subGArray=typename arr::template array_view<ndim-1>::type;
@@ -325,11 +327,12 @@ namespace frommle {
 //         * @param inpack
 //         * @return
 //         */
-//        template<class T=double,class... Guides>
-//        GArray<T,Guides...> make_garray(Guides && ... inpack){
-//            return GArray<T,Guides...>(guides::GuidePack<Guides...>(std::forward<Guides>(std::move(inpack))...));
-//        }
-//
+
+    //template<class T,class... Guides>
+    //std::shared_ptr<GArrayDyn<T,sizeof...(Guides)>> make_garray(guides::GuidePackDyn<sizeof ...(Guides)> & inpack){
+            //return GArray<T,Guides...>(guides::GuidePack<Guides...>(std::forward<Guides>(std::move(inpack))...));
+    //}
+
 
 
 

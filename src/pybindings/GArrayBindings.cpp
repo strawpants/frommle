@@ -37,11 +37,21 @@ namespace frommle{
         template<class T, int n>
         struct register_dyngar{
             static void reg(const std::string & basename){
-            p::class_<GArrayDyn<T,n>,p::bases<GArrayBase>>(std::string(basename).append(std::to_string(n)).c_str())
+            p::class_<GArrayDyn<T,n>,p::bases<GArrayBase>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
             .def(p::init<const guides::GuidePackDyn<n> &>())
             .def("mat",&GArrayDyn<T,n>::mat,p::return_value_policy<p::copy_non_const_reference>());
+            
+            //also register a shared_ptr
+            p::register_ptr_to_python< std::shared_ptr<GArrayDyn<T,n>>>();
+            
+            p::def(std::string("make").append(basename).c_str(),&register_dyngar<T,n>::makegarr);
             register_dyngar<T,n-1>::reg(basename);
             }
+
+        static  std::shared_ptr<GArrayDyn<T,n>> makegarr(const guides::GuidePackDyn<n> & gpin){
+            return std::make_shared<GArrayDyn<T,n>>(gpin);
+        }
+
         };
 
         template<class T>
@@ -58,8 +68,8 @@ namespace frommle{
             p::class_<GArrayBase,boost::noncopyable>("GArrayBase").def("name",&GArrayBase::name);
 
             //register dynamic versions
-            register_dyngar<double,5>::reg("GArray_d");
-            register_dyngar<size_t,5>::reg("GArray_si");
+            register_dyngar<double,5>::reg("GArray_float64");
+            register_dyngar<size_t,5>::reg("GArray_uint64");
 
         }
 

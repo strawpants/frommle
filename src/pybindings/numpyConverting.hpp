@@ -75,9 +75,19 @@ namespace frommle{
             }
             static np::ndarray get(const bma & marr){
                 p::tuple shape = arr_to_ptuple<ndim,const szt*>::make(marr.shape());
-                p::tuple strides = arr_to_ptuple<ndim,const strt*>::make(marr.strides());
                 np::dtype dtype = np_dtype<T>::get();
-                //note that we're removing the constness of the data because we want to allow modifications from python
+                int itemsize=dtype.get_itemsize();
+                
+                //note: strides must be given in terms of bytes (itemsize)
+                strt stridear[ndim];
+                const strt* sbegin=marr.strides();
+                std::transform(sbegin,sbegin+ndim,stridear,[&itemsize](const strt & in){
+                        return in*itemsize;
+                        });
+                
+                p::tuple strides = arr_to_ptuple<ndim,const strt*>::make(stridear);
+                 
+                //note: that we're removing the constness of the data because we want to allow modifications from python
                 return np::from_data(const_cast<T *>(marr.data()),dtype,shape,strides,p::object());
             }
         };

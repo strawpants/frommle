@@ -76,7 +76,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         }
         template<class ... Guides>
         GuidePackDyn(Guides && ... Args){
-            gpar_={{std::make_shared<Guides>(std::move(Args))...}};
+            gpar_={{std::make_shared<GuideBase>(std::move(Args))...}};
         }
 
         GuidePackDyn(const GuidePackDyn & in){
@@ -221,13 +221,13 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
              * @return a reference to the Guide instance belonging to the Garray
              */
             template<int n>
-            gptr_t<n> & g() {
+            gptr_t<n>  g() {
                 assert(n<=ndim);
                 return std::static_pointer_cast<g_t<n>>(gpar_[n]);
             }
             
             template<int n>
-            const gptr_t<n> & g()const{
+            const gptr_t<n> g()const{
                 assert(n<=ndim);
                 return std::static_pointer_cast<g_t<n>>(gpar_[n]);
 //                return *boost::get<gptr_t<n>>(gpar_[n]);
