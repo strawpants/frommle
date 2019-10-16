@@ -74,6 +74,11 @@ void pyexport_core(){
     //register the GuidePack
     registerGuidePack();
 
+
+    //register GArrays
+    registerGArrays();
+
+
     //GuidePackPtr (*mkgp1) (GuideBase &) =&makeGuidePack;
     //p::def("makeGuidePack",mkgp1);
     ////BOOST_PYTHON_FUNCTION_OVERLOADS(makegp_overloads, &makeGuidePack, 1, 2);

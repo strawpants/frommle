@@ -62,14 +62,25 @@ class GuidePackBase: public virtual GauxPureVirt{
 
 };
 
+using GuidePackBasePtr=std::shared_ptr<GuidePackBase>;
+
 ///@brief dynamic GuidePack (holds all possible types,dimension is fixed at compile time)
 template<int n>
 class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
     public:
-        GuidePackDyn():GauxVirtImpl<n>(this){};
+        GuidePackDyn():GauxVirtImpl<n>(this){
+            //fill up the internal array with empty GuideBases
+            std::for_each(gpar_.begin(),gpar_.end(),[](GuideBasePtr & gb){
+                gb=std::make_shared<GuideBase>();
+            });
+        }
         template<class ... Guides>
         GuidePackDyn(Guides && ... Args){
             gpar_={{std::make_shared<Guides>(std::move(Args))...}};
+        }
+
+        GuidePackDyn(const GuidePackDyn & in){
+            gpar_=in.gpar_;
         }
         //using Gvar=GuideRegistry::Gvar;
         using GauxVirtImpl<n>::append;
@@ -97,15 +108,20 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         const_iterator end()const override{ return gpar_.end();}
     protected:
         //std::array<Gvar,n> gpar_{};
-        std::array<GuideBasePtr,n> gpar_{};
+        std::array<GuideBasePtr,n> gpar_{{}};
 
 };
 
         template<int n>
         size_t GuidePackDyn<n>::num_elements() const {
             //extract the elements from the guides
+            //quick return when dimension is 0
+            if(n ==0){
+                return 0;
+            }
+
             auto ext=extent();
-            return std::accumulate(ext.cbegin(),ext.cend(),0);
+            return std::accumulate(ext.cbegin(),ext.cend(),1,std::multiplies<size_t>());
         }
 
         template<int n>
@@ -128,8 +144,11 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             using GPdyn=GuidePackDyn<sizeof ... (Guides)>;
             using GPdyn::ndim;
             using GPdyn::gpar_;
+            using GPdyn::extent;
+            using GPdyn::num_elements;
+
             ///@brief alias to store the types of the input
-            using guides_t=std::tuple<std::shared_ptr<Guides>...>;
+            using guides_t=std::tuple<Guides...>;
 
             ///@brief this allows the compile time extraction of the Guide type
             template<int n>
@@ -186,14 +205,6 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             }
 
 
-            std::array<size_t,ndim> getExtent()const{
-                return extent_;
-            };
-
-            long long unsigned int num_elements()const{
-                return std::accumulate(extent_.cbegin(),extent_.cend(),0);
-            }
-
             void setNames(const std::string & coordinatenames){
                 std::vector<std::string> splits;
                 boost::split(splits,coordinatenames,boost::is_any_of(" "));
@@ -210,15 +221,16 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
              * @return a reference to the Guide instance belonging to the Garray
              */
             template<int n>
-            g_t<n> & g() {
+            gptr_t<n> & g() {
                 assert(n<=ndim);
-                return *boost::get<gptr_t<n>>(gpar_[n]);
+                return std::static_pointer_cast<g_t<n>>(gpar_[n]);
             }
             
             template<int n>
-            const g_t<n> & g()const{
+            const gptr_t<n> & g()const{
                 assert(n<=ndim);
-                return *boost::get<gptr_t<n>>(gpar_[n]);
+                return std::static_pointer_cast<g_t<n>>(gpar_[n]);
+//                return *boost::get<gptr_t<n>>(gpar_[n]);
             }
 
             /*!brief

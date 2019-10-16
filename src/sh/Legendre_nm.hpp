@@ -34,13 +34,14 @@ using namespace frommle::guides;
 namespace frommle{
     namespace sh{
         template<class ftype>
-    class Legendre_nm:public frommle::core::GArrayDyn<ftype,1>{
+    class Legendre_nm:public frommle::core::GArray<ftype,guides::SHnmHalfGuide>{
         public:
-            using Garr=frommle::core::GArrayDyn<ftype,1>;
+            using shg_t=guides::SHnmHalfGuide;
+            using Garr=frommle::core::GArray<ftype,shg_t>;
             using Garr::mat;
-            using Garr::gp;
+            inline const shg_t & shg()const{return *(Garr::template g<0>());}
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life
-            inline std::shared_ptr<guides::SHnmHalfGuide> shg()const{return gp().template as<guides::SHnmHalfGuide>(0);}
+//            inline std::shared_ptr<guides::SHnmHalfGuide> shg()const{return gp()->template as<guides::SHnmHalfGuide>(0);}
             Legendre_nm(const int nmax);
             void set(const ftype costheta);
 

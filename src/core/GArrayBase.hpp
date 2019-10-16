@@ -28,6 +28,8 @@
 #include <eigen3/Eigen/Core>
 #include <type_traits>
 #include "io/Group.hpp"
+#include "GuidePack.hpp"
+
 namespace frommle {
     namespace core {
 
@@ -45,6 +47,7 @@ namespace frommle {
             void setName(const std::string & name){
                 name_=name;
             }
+//            virtual guides::GuidePackBasePtr gp()const=0;
         private:
             std::string name_="data";
 
@@ -55,23 +58,44 @@ namespace frommle {
         template<class T,int n>
         class GArrayDyn:public GArrayBase{
             public:
+            using gp_t=guides::GuidePackDyn<n>;
+            using gp_tptr=std::shared_ptr<guides::GuidePackDyn<n>>;
             template<class ... Guides>
-            GArrayDyn(Guides && ... Args):gp_(std::move(Args)...),
-                data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),
-                ar_(data_.get(),gp_.extent()){
-                    
-                }
-            GArrayDyn(){};
+            GArrayDyn(Guides && ... Args):gp_(std::make_shared<gp_t>(std::move(Args)...)),
+                data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
+                ar_(data_.get(),gp_->extent()){}
+
+             ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
+            template<class GP, typename std::enable_if< std::is_base_of<guides::GuidePackDyn<n>,GP>::value_type,int>::type =0 >
+            GArrayDyn(GP && guidepack):gp_(std::make_shared<GP>(std::move(guidepack))),
+                data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
+                ar_(data_.get(),gp_->extent()){}
+
+            GArrayDyn(const guides::GuidePackDyn<n> & gp):gp_(std::make_shared<guides::GuidePackDyn<n>>(gp)),
+                    data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
+                    ar_(data_.get(),gp_->extent()){
+
+            }
+            //note although empty, we always need to construct the multi_array_ref using a non-default constructor
+            GArrayDyn():gp_(std::make_shared<gp_t>()),ar_(data_.get(),gp_->extent()){}
             static const int ndim=n;
             using GArrayBase::name;
             using GArrayBase::setName;
             using arr=boost::multi_array_ref<T,ndim>;
-            inline arr & mat(){return ar_;}
-            const guides::GuidePackDyn<n> & gp()const{return gp_;}
+            using eigm=typename Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ,Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>>;
+            arr & mat(){return ar_;}
+//            const arr & mat()const{return ar_;}
+            const gp_tptr & gp()const{return gp_;}
+            //Extract eigen matrix (but only for 2D arrays)
+            template<int dim=ndim>
+            typename std::enable_if<dim==2,eigm>::type  eig(){
+                auto marrStrd=Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>(ar_.strides()[0],ar_.strides()[1]);
+                return eigm(ar_.data(),ar_.shape()[0],ar_.shape()[1],marrStrd);
+            }
             private:
-            guides::GuidePackDyn<n> gp_{};
+            gp_tptr gp_{};
             std::shared_ptr<T[]> data_{};
-            arr ar_{};
+            arr ar_{{}};
         };
 
 
@@ -80,64 +104,68 @@ namespace frommle {
          * @tparam T element type of the multiarray
          * @tparam Guides a variadic set of Guides
          */
-        template<class T, class GPack>
-        class GArray:public GArrayDyn<T,GPack::ndim>{
+    template<class T, class ... Guides>
+    class GArray:public GArrayDyn<T,sizeof ...(Guides)>{
         public:
-            static const int ndim=GPack::ndim;
-            using GAdyn=GArrayDyn<T,ndim>;
+            using GPack=guides::GuidePack<Guides...>;
+            using GAdyn=GArrayDyn<T,sizeof ... (Guides)>;
+            using GAdyn::ndim;
             using GAdyn::name;
-//            using GPack=GuidePack<Guides...>;
-//            static const int ndim=sizeof...(Guides);
+            using GAdyn::arr;
+            //note this shadows
+            inline const std::shared_ptr<GPack> gp()const{return std::static_pointer_cast<GPack>(GAdyn::gp());}
+
+            ///allows the extraction of the guide types during compile time
             template<int n>
             using g_t=typename GPack::template g_t<n>;
 
             template<int n>
-            inline g_t<n> & g();
+            using gptr_t=typename GPack::template gptr_t<n>;
 
             template<int n>
-            inline const g_t<n> & g()const;
+            inline gptr_t<n> & g(){
+                return gp()->template as<g_t<n>>(n);
+            }
 
-            ///@brief polymorphic version
-            std::shared_ptr<const guides::GuideBase>  g(const int n)const;
-            std::shared_ptr<guides::GuideBase>  g(const int n);
+            template<int n>
+            inline const gptr_t<n> & g()const{
+                return gp()->template as<g_t<n>>(n);
+            }
+//
+//            ///@brief polymorphic version
+//            std::shared_ptr<const guides::GuideBase>  g(const int n)const;
+//            std::shared_ptr<guides::GuideBase>  g(const int n);
 
-            using arr=boost::multi_array_ref<T,ndim>;
-            inline arr & mat(){return ar_;}
             ///structors
-            GArray():gp_(),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){
+            GArray():GAdyn(){
 
             }
 
 
-            GArray(GPack && gp):gp_(std::move(gp)),data_(std::shared_ptr<T[]>(new T[gp_.num_elements()])),ar_(data_.get(),gp_.getExtent()){
+            GArray(GPack && gp):GAdyn(std::move(gp)){
             }
+
+            GArray(Guides && ... guides):GAdyn(std::move(guides)...){}
 
             //indexing
-            template<int i=0>
-            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::element_type::Element & indx){
-                assert(1==ndim);
-                return ar_[g<0>()->idx(indx)];
-            }
+//            template<int i=0>
+//            typename std::enable_if< i+1 == ndim, T >::type & operator[](const typename g_t<0>::element_type::Element & indx){
+//                assert(1==ndim);
+//                return ar_[g<0>()->idx(indx)];
+//            }
+//
+//            // return a subview of the current GArray (i.e. strip a dimension)
+//            using subGArray=typename arr::template array_view<ndim-1>::type;
+//            template<int i=0>
+//            typename std::enable_if< i+1 != ndim, subGArray >::type & operator[](const typename g_t<0>::element_type::Element & indx){
+//                assert(i<ndim-1);
+//                return ar_[g<0>()->idx(indx)];
+//            }
+//
+//
+//            ///@brief fill the matrix with a scalar value
+//            GArray & operator=(const T scalar);
 
-            // return a subview of the current GArray (i.e. strip a dimension)
-            using subGArray=typename arr::template array_view<ndim-1>::type;
-            template<int i=0>
-            typename std::enable_if< i+1 != ndim, subGArray >::type & operator[](const typename g_t<0>::element_type::Element & indx){
-                assert(i<ndim-1);
-                return ar_[g<0>()->idx(indx)];
-            }
-
-
-            ///@brief fill the matrix with a scalar value
-            GArray & operator=(const T scalar);
-
-            //Extract eigen matrix (but only for 2D arrays)
-            using eigm=typename Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ,Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>>;
-            template<int dim=ndim>
-            typename std::enable_if<dim==2,eigm>::type  eig(){
-                auto marrStrd=Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>(ar_.strides()[0],ar_.strides()[1]);
-                return eigm(ar_.data(),ar_.shape()[0],ar_.shape()[1],marrStrd);
-            }
 
             
 //            template<int ... n>
@@ -176,19 +204,8 @@ namespace frommle {
         protected:
         private:
             friend class io::serialize;
-            template<class Y,class Gp>
-            friend class GArray;
-
-            GPack gp_{};
-            std::shared_ptr<T[]> data_{};
-            arr ar_;
-
-            static std::array<size_t,ndim> getExtent(arr & in){
-                std::array<size_t,ndim> out{};
-                std::copy(in.shape(), in.shape()+out.size(), out.begin());
-                return out;
-
-            }
+//            template<class Y,class Gp>
+//            friend class GArray;
 
             template<class Archive>
             void load(Archive & Ar);
@@ -236,83 +253,83 @@ namespace frommle {
         //templatei function implementations for GArray
 
 
-        template<class T, class GPack>
-        template<int n>
-        const typename GArray<T, GPack>::template g_t <n> &core::GArray<T, GPack>::g() const {return gp_.template g<n>();}
-
-        template<class T, class GPack>
-        template<int n>
-        typename GArray<T,GPack>::template g_t <n> &GArray<T, GPack>::g() {return gp_.template g<n>();}
-
-        template<class T, class GPack>
-        std::shared_ptr<const guides::GuideBase> GArray<T, GPack>::g(const int n) const {return gp_.g(n);}
-
-        template<class T, class GPack>
-        std::shared_ptr<guides::GuideBase> GArray<T, GPack>::g(const int n) {return gp_.g(n);}
-
+//        template<class T, class ... Guides>
+//        template<int n>
+//        const typename GArray<T, Guides...>::template g_t <n> &GArray<T, Guides ...>::g() const {return Ggp_.template g<n>();}
+//
 //        template<class T, class GPack>
-//        template<int... n>
-//        GArray::GArrayView<typename GPack::template maskpack<n>::type> GArray<T, GPack>::maskdims() {}
-
-        template<class T, class GPack>
-        GArray<T,GPack> &GArray<T, GPack>::operator=(const T scalar) {
-            std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
-            return *this;
-        }
-
-        template<class T, class GPack>
-        template<class Archive>
-        void GArray<T, GPack>::save(Archive &Ar) const {
-            //save the Guidepack
-            Ar << gp_;
-
-
-            //save the multiarray data
-            auto & mvar=Ar.template getVariable<T>(name());
-
-            //link the coordinate variables in the attributes
-            std::string coord=g(0)->name();
-            for (auto i=1; i< ndim;++i){
-                coord+=" "+g(i)->name();
-            }
-            mvar.setAttribute("coordinates",coord);
-            mvar.setValue(core::Hyperslab<T>(ar_));
-
-        }
-
-        template<class T, class GPack>
-        template<class Archive>
-        void GArray<T, GPack>::load(Archive &Ar) {
-            //first load the matrix variable
-            auto & mvar=Ar.template getVariable<T>(name());
-
-            //set the appropriate names for the guidepacks
-            gp_.setNames(mvar.template getAttribute<std::string>("coordinates"));
-            //then load the appropriate guides
-
-            Ar >> gp_;
-
-
-            //also load the matrix data
-            core::Hyperslab<T> hslab{};
-            mvar.getValue(hslab);
-            //
-
-        }
-
-
-        /*!brief
-         * Factory function to quickly create garrays from initialized Guides
-         * @tparam T
-         * @tparam Guides
-         * @param inpack
-         * @return
-         */
-        template<class T=double,class... Guides>
-        GArray<T,guides::GuidePack<Guides...>> make_garray(Guides && ... inpack){
-            return GArray<T,guides::GuidePack<Guides...>>(guides::GuidePack<Guides...>(std::forward<Guides>(std::move(inpack))...));
-        }
-
+//        template<int n>
+//        typename GArray<T,GPack>::template g_t <n> &GArray<T, GPack>::g() {return gp_.template g<n>();}
+//
+//        template<class T, class GPack>
+//        std::shared_ptr<const guides::GuideBase> GArray<T, GPack>::g(const int n) const {return gp_.g(n);}
+//
+//        template<class T, class GPack>
+//        std::shared_ptr<guides::GuideBase> GArray<T, GPack>::g(const int n) {return gp_.g(n);}
+//
+////        template<class T, class GPack>
+////        template<int... n>
+////        GArray::GArrayView<typename GPack::template maskpack<n>::type> GArray<T, GPack>::maskdims() {}
+//
+//        template<class T, class GPack>
+//        GArray<T,GPack> &GArray<T, GPack>::operator=(const T scalar) {
+//            std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
+//            return *this;
+//        }
+//
+//        template<class T, class GPack>
+//        template<class Archive>
+//        void GArray<T, GPack>::save(Archive &Ar) const {
+//            //save the Guidepack
+//            Ar << gp_;
+//
+//
+//            //save the multiarray data
+//            auto & mvar=Ar.template getVariable<T>(name());
+//
+//            //link the coordinate variables in the attributes
+//            std::string coord=g(0)->name();
+//            for (auto i=1; i< ndim;++i){
+//                coord+=" "+g(i)->name();
+//            }
+//            mvar.setAttribute("coordinates",coord);
+//            mvar.setValue(core::Hyperslab<T>(ar_));
+//
+//        }
+//
+//        template<class T, class GPack>
+//        template<class Archive>
+//        void GArray<T, GPack>::load(Archive &Ar) {
+//            //first load the matrix variable
+//            auto & mvar=Ar.template getVariable<T>(name());
+//
+//            //set the appropriate names for the guidepacks
+//            gp_.setNames(mvar.template getAttribute<std::string>("coordinates"));
+//            //then load the appropriate guides
+//
+//            Ar >> gp_;
+//
+//
+//            //also load the matrix data
+//            core::Hyperslab<T> hslab{};
+//            mvar.getValue(hslab);
+//            //
+//
+//        }
+//
+//
+//        /*!brief
+//         * Factory function to quickly create garrays from initialized Guides
+//         * @tparam T
+//         * @tparam Guides
+//         * @param inpack
+//         * @return
+//         */
+//        template<class T=double,class... Guides>
+//        GArray<T,Guides...> make_garray(Guides && ... inpack){
+//            return GArray<T,Guides...>(guides::GuidePack<Guides...>(std::forward<Guides>(std::move(inpack))...));
+//        }
+//
 
 
 

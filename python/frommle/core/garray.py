@@ -16,5 +16,18 @@
 # Author Roelof Rietbroek (roelof@wobbly.earth), 2019
 
 
-def guides2zeros():
+from frommle.core import GArray0
+from frommle.core import makeGuidePack
+
+# def makeGArray(*guides):
+#     """Dynamically construct a garray from various input guides"""
+#     ndim=len(guides)
+#     return type("GArray")
+#
+#     gp=GArray0()
+#
+#     for gd in guides:
+#         gp=gp.append(gd)
+#
+#     return gp
 

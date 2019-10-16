@@ -33,15 +33,15 @@
 #ifndef FROMMLE_COREBINDINGS_HPP
 #define FROMMLE_COREBINDINGS_HPP
 namespace frommle{
-    namespace guides{
+    namespace guides {
 
 
-
-
-    
-       //implementation cna be found in GuidePackBindings.cpp 
+        //implementation cna be found in GuidePackBindings.cpp
         void registerGuidePack();
+    }
 
+    namespace core{
+        void registerGArrays();
 
     }
 }

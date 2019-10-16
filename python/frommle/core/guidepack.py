@@ -14,6 +14,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 # Author Roelof Rietbroek (roelof@wobbly.earth), 2019
+from frommle.core import GuidePack0
 
-class GuidePack():
-    """Holds a dynamic guidepack"""
+def makeGuidePack(*guides):
+    """Dynamically construct a guidepack from various input guides"""
+    gp=GuidePack0()
+
+    for gd in guides:
+        gp=gp.append(gd)
+
+    return gp

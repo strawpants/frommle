@@ -136,11 +136,14 @@ namespace frommle {
             }
         };
 
+        ///@brief specialized regsitry class which stops the recursion
         template<class T>
         struct register_stdarray<T,0>
         {
             using stdar=std::array<T,0>;
-            register_stdarray(){}
+            register_stdarray() {
+                p::to_python_converter<stdar, arr_to_ptuple<0, stdar>>();
+            }
         };
 
 

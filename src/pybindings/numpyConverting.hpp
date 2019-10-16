@@ -66,20 +66,37 @@ namespace frommle{
 
 
         template<typename T, size_t ndim>
-        struct marray_to_ndarray{
-            using bma=boost::multi_array<T,ndim>;
+        struct marrayref_to_ndarray{
+            using bma=boost::multi_array_ref<T,ndim>;
             using szt=typename bma::size_type;
             using strt=typename bma::index;
-            static PyObject* convert ( bma & marr){
+            static PyObject* convert (const bma & marr){
                 return p::incref(get(marr).ptr());
             }
-            static np::ndarray get(bma & marr){
+            static np::ndarray get(const bma & marr){
                 p::tuple shape = arr_to_ptuple<ndim,const szt*>::make(marr.shape());
                 p::tuple strides = arr_to_ptuple<ndim,const strt*>::make(marr.strides());
                 np::dtype dtype = np_dtype<T>::get();
-                return np::from_data(marr.data(),dtype,shape,strides,p::object());
+                //note that we're removing the constness of the data because we want to allow modifications from python
+                return np::from_data(const_cast<T *>(marr.data()),dtype,shape,strides,p::object());
             }
         };
+
+        template<class T, int n>
+        struct register_mar{
+            register_mar(){
+                p::to_python_converter<boost::multi_array_ref<T,n>, marrayref_to_ndarray<T,n> >();
+                register_mar<T,n-1>();
+            }
+        };
+
+        template<class T>
+        struct register_mar<T,-1>{
+            register_mar(){
+                //do nothing (stops recursion)
+            }
+        };
+
 
 
     template<class G>
@@ -97,8 +114,11 @@ namespace frommle{
         
         //register vector to ndarray converter at runtime
         p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
-        
-    
+
+        register_mar<double,6>();
+        register_mar<size_t,6>();
+
+
     }        
 
     }

@@ -49,10 +49,10 @@ namespace frommle {
             for (int n = 2; n <= nmax; ++n) {
                 wnn_[n] = sqrt((2 * n + 1) / (2.0 * n));
             }
-            wnm_ = std::vector<ftype>(shg()->size());
+            wnm_ = std::vector<ftype>(shg().size());
             for (int m = 0; m <= nmax; ++m) {
                 for (int n = m + 1; n <= nmax; ++n) {
-                    wnm_[shg()->idx(n, m)] = sqrt((2 * n + 1.0) / (n + m) * (2 * n - 1.0) / (n - m));
+                    wnm_[shg().idx(n, m)] = sqrt((2 * n + 1.0) / (n + m) * (2 * n - 1.0) / (n - m));
                 }
 
             }
@@ -75,7 +75,7 @@ namespace frommle {
             size_t idx;
             cacheEntry<ftype> L1CacheEntry;
 
-            int nmax_=shg()->nmax();
+            int nmax_=shg().nmax();
 
             //initial rescaling is 1e280
             L1CacheEntry.sectorial = 1.0 / numericStabilityFactor;
@@ -84,7 +84,7 @@ namespace frommle {
             mat()[0] = 1.0; // or Pnm[0] = L1CacheEntry.sectorial*numericStabilityFactor
 
             for (int m = 0; m < nmax_; ++m) {
-                idx = shg()->idx(m, m);
+                idx = shg().idx(m, m);
                 L1CacheEntry.pnmin2 = numericStabilityFactor;
 
                 //compute offdiagonal element
@@ -92,7 +92,7 @@ namespace frommle {
                 mat()[idx + 1] = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
                 //loop over remaining degrees
                 for (int n = m + 2; n <= nmax_ + 1; ++n) {
-                    idx = shg()->idx(n, m);
+                    idx = shg().idx(n, m);
 
                     L1CacheEntry.pn =
                             wnm_[idx] * (costheta * L1CacheEntry.pnmin1 - L1CacheEntry.pnmin2 / wnm_[idx - 1]);
@@ -106,7 +106,7 @@ namespace frommle {
                 //Update the m+1 sectorial (applies n+1,n+1 <- n,n recursion)
                 L1CacheEntry.sectorial *= wnn_[m + 1] * sinTheta;
                 //also write the next sectorial to the output vector (scaled correctly)
-                mat()[shg()->idx(m + 1, m + 1)] = L1CacheEntry.sectorial * numericStabilityFactor;
+                mat()[shg().idx(m + 1, m + 1)] = L1CacheEntry.sectorial * numericStabilityFactor;
 
 
             }

@@ -32,13 +32,13 @@ namespace frommle{
     namespace guides{
         
 
-        //struct gvar_to_pGuide {
-            //static PyObject *convert(GuideRegistry::Gvar const  & tin) {
-                //auto guideptr=boost::apply_visitor(gvar_baseptr(),tin).get();
-                //return p::incref(p::object(guideptr).ptr());
+        struct gvar_to_pGuide {
+            static PyObject *convert(GuideRegistry::Gvar const  & tin) {
+                auto guideptr=boost::apply_visitor(gvar_baseptr(),tin).get();
+                return p::incref(p::object(guideptr).ptr());
 
-            //}
-        //};
+            }
+        };
         
         template<class ...T>
             struct GuidePackAppendOverride;
@@ -169,9 +169,32 @@ namespace frommle{
             }
         };
 
+        template<int n>
+        struct register_dyngpack{
+            register_dyngpack(){
+                p::class_<GuidePackDyn<n>,p::bases<GuidePackBase>>(std::string("GuidePack").append(std::to_string(n)).c_str())
+                        .def("shape",&GuidePackDyn<n>::extent);
+                //recursively call the next version to register
+                register_dyngpack<n-1>();
+            }
+
+        };
+
+        template<>
+        struct register_dyngpack<-1>{
+            register_dyngpack() {
+                //the recursion stops here
+            }
+        };
+
+
+
+
+#define REGISTERDYNGP(N) p::class_<GuidePackDyn<N>,p::bases<GuidePackBase>>("GuidePack" #N)\
+                        .def("shape",&GuidePackDyn<N>::extent);
 
         void registerGuidePack(){
-            //p::to_python_converter<GuideRegistry::Gvar, gvar_to_pGuide> ();
+            p::to_python_converter<GuideRegistry::Gvar, gvar_to_pGuide> ();
 
             //set up some pointers to the const and non const versions of the virtual [] operator
             //const GuideRegistry::Gvar & (GuidePackBase::*cget)(const int)const =&GuidePackBase::operator[];
@@ -188,13 +211,18 @@ namespace frommle{
                     );
             p::register_ptr_to_python< std::shared_ptr<GuidePackBase> >();
 
-            p::class_<GuidePackDyn<0>,p::bases<GuidePackBase>>("GuidePack0");
-            p::class_<GuidePackDyn<1>,p::bases<GuidePackBase>>("GuidePack1");
-            p::class_<GuidePackDyn<2>,p::bases<GuidePackBase>>("GuidePack2");
-            p::class_<GuidePackDyn<3>,p::bases<GuidePackBase>>("GuidePack3");
-            p::class_<GuidePackDyn<4>,p::bases<GuidePackBase>>("GuidePack4");
-            p::class_<GuidePackDyn<5>,p::bases<GuidePackBase>>("GuidePack5");
-            p::class_<GuidePackDyn<6>,p::bases<GuidePackBase>>("GuidePack6");
+            //register all dynamic guidepacks up to dimension 10
+            register_dyngpack<10>();
+
+
+
+//            p::class_<GuidePackDyn<0>,p::bases<GuidePackBase>>("GuidePack0");
+//            p::class_<GuidePackDyn<1>,p::bases<GuidePackBase>>("GuidePack1");
+//            p::class_<GuidePackDyn<2>,p::bases<GuidePackBase>>("GuidePack2");
+//            p::class_<GuidePackDyn<3>,p::bases<GuidePackBase>>("GuidePack3");
+//            p::class_<GuidePackDyn<4>,p::bases<GuidePackBase>>("GuidePack4");
+//            p::class_<GuidePackDyn<5>,p::bases<GuidePackBase>>("GuidePack5");
+//            p::class_<GuidePackDyn<6>,p::bases<GuidePackBase>>("GuidePack6");
         }
     }
 }

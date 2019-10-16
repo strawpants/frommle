@@ -32,6 +32,7 @@ if (PYTHON)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/geometryBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/GuidePackBindings.cpp )
+    list(APPEND CXXPYWRAPS pybindings/GArrayBindings.cpp )
     add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )
 endif()
 

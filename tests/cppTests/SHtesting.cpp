@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
 
         for (int m = 0; m <= nmax; ++m) {
             for (int n = m; n <= nmax; ++n) {
-                auto idx = Pnm.shg().idx(n, m);
+                auto idx = Pnm.shg->idx(n, m);
                 val=Pnm.mat()[idx];
                 //convert to double to compare properly
                 valld=Pnmld.mat()[idx];
