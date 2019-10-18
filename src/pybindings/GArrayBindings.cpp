@@ -37,9 +37,16 @@ namespace frommle{
         template<class T, int n>
         struct register_dyngar{
             static void reg(const std::string & basename){
-            p::class_<GArrayDyn<T,n>,p::bases<GArrayBase>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
+
+                using dyngar=GArrayDyn<T,n>;
+                typename dyngar::arr & (dyngar::*matf)()=&dyngar::mat;
+
+                const typename dyngar::gp_tptr & (dyngar::*gpfc)()const=&dyngar::gp;
+
+                p::class_<dyngar,p::bases<GArrayBase>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
             .def(p::init<const guides::GuidePackDyn<n> &>())
-            .def("mat",&GArrayDyn<T,n>::mat,p::return_value_policy<p::copy_non_const_reference>());
+            .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>())
+            .def("mat",matf,p::return_value_policy<p::copy_non_const_reference>());
             
             //also register a shared_ptr
             p::register_ptr_to_python< std::shared_ptr<GArrayDyn<T,n>>>();

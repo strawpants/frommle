@@ -25,9 +25,11 @@
 #include <boost/test/unit_test.hpp>
 #include "sh/Legendre_nm.hpp"
 #include "sh/SHGuide.hpp"
+#include "sh/Ynm.hpp"
 #include <math.h>
 #include <iomanip>
 #include <algorithm>
+
 using namespace frommle::sh;
 
 
@@ -135,4 +137,11 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
 
     }
 
+}
+
+
+BOOST_AUTO_TEST_CASE(YNMtest){
+    
+    BOOST_TEST(1 ==1);
+    
 }

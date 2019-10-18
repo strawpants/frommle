@@ -74,13 +74,13 @@ namespace frommle{
 
             //inline index idx(const Element el)const{return idxfromEl(el);}
 
-            size_t idx(const int n,const int m)const{
+            inline size_t idx(const int n,const int m)const{
                 return i_from_nm(n,m,nmax_);
             }
             inline size_t idx(const Element & el)const{
                return idx(std::get<0>(el),std::get<1>(el)); 
             }
-            virtual Element operator[](const size_t idx)const{return nm_from_i(idx,nmax_);}
+            Element operator[](const size_t idx)const{return nm_from_i(idx,nmax_);}
             private:
                 int nmax_=-1;
         };

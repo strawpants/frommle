@@ -3,7 +3,7 @@ LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hp
 
 LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp)
 
-LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp)
+LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp core/GPCookieCut.hpp)
 LIST(APPEND COREOBJS core/UserSettings.cpp)
 
 LIST(APPEND COREHEADERS core/TreeNode.hpp)

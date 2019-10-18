@@ -76,7 +76,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         }
         template<class ... Guides>
         GuidePackDyn(Guides && ... Args){
-            gpar_={{std::make_shared<GuideBase>(std::move(Args))...}};
+            gpar_={{std::make_shared<Guides>(std::move(Args))...}};
         }
 
         GuidePackDyn(const GuidePackDyn & in){

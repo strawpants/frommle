@@ -23,11 +23,25 @@
 
 #define BOOST_TEST_MODULE GuideTesting
 #include <boost/test/unit_test.hpp>
+#include "core/GuidePack.hpp"
 
+BOOST_AUTO_TEST_CASE(GuideBase){
 
-BOOST_AUTO_TEST_CASE(GuidePacktest){
 
     BOOST_TEST(1 == 1);
+
+
+
 }
 
+
+
+BOOST_AUTO_TEST_CASE(GuidePack){
+
+
+    BOOST_TEST(1 == 1);
+
+
+
+}
 

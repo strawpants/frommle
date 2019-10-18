@@ -60,7 +60,7 @@ namespace frommle {
         }
 
         template<class ftype>
-        void Legendre_nm<ftype>::set(const ftype costheta){
+        Legendre_nm<ftype> & Legendre_nm<ftype>::set(const ftype costheta){
             assert(costheta >= -1.0 and costheta <= 1.0);
 
 //            std::vector<ftype> Pnm(indxnm(nmax_, nmax_) + 1);
@@ -91,7 +91,7 @@ namespace frommle {
                 L1CacheEntry.pnmin1 = wnm_[idx + 1] * costheta * L1CacheEntry.pnmin2;
                 mat()[idx + 1] = L1CacheEntry.pnmin1 * L1CacheEntry.sectorial;
                 //loop over remaining degrees
-                for (int n = m + 2; n <= nmax_ + 1; ++n) {
+                for (int n = m + 2; n <= nmax_ ; ++n) {
                     idx = shg().idx(n, m);
 
                     L1CacheEntry.pn =
@@ -110,6 +110,7 @@ namespace frommle {
 
 
             }
+            return *this;
         }
 
 //        template<class ftype>

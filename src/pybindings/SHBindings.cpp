@@ -13,7 +13,8 @@ namespace np = boost::python::numpy;
 #include "../core/GuideBase.hpp"
 #include "coreBindings.hpp"
 #include "tupleconversion.hpp"
-
+#include <boost/python/copy_non_const_reference.hpp>
+#include <boost/python/return_value_policy.hpp>
 
 namespace frommle{
     namespace guides{
@@ -61,6 +62,18 @@ void pyexport_sh()
 
     frommle::py::register_tuple<SHGuideBase::Element >();
 
+    //export SHHalfguide
+    size_t (SHnmHalfGuide::*idxfromel)(const SHnmHalfGuide::Element &)const=&SHnmHalfGuide::idx;
+    size_t (SHnmHalfGuide::*idxfromnm)(const int, const int)const=&SHnmHalfGuide::idx;
+    p::class_<SHnmHalfGuide,p::bases<GuideBase>>("SHnmHalfGuide",p::init<int>())
+    .add_property("nmax",&SHnmHalfGuide::nmax)
+    .add_property("nmin",&SHnmHalfGuide::nmin)
+    .def("idx",idxfromel)
+    .def("idx",idxfromnm)
+    .def("__getitem__",&SHnmHalfGuide::operator[])
+    ;
+
+
     //the SHGuideBase
     p::class_<SHGuideBaseWrapper,p::bases<GuideBase>,boost::noncopyable>("SHGuideBase")
             .add_property("nmax",&SHGuideBase::nmax)
@@ -79,10 +92,11 @@ void pyexport_sh()
             .def("i_from_nmt",&SHnmtGuide::i_from_nmt).staticmethod("i_from_nmt");
 
 
+
     p::def("nmax_from_sz",&nmax_from_sz);
 
     p::class_<Legendre_nm<double>,p::bases<core::GArrayDyn<double,1>>>("Legendre_nm",p::init<int>())
-            .def("set",&sh::Legendre_nm_d::set);
+            .def("set",&sh::Legendre_nm_d::set,p::return_value_policy<p::copy_non_const_reference>());
 //            .def("indxnm", &sh::Legendre_nm_d::indxnm);
 
 }

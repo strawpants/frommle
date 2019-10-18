@@ -83,15 +83,21 @@ namespace frommle {
             using GArrayBase::setName;
             using arr=boost::multi_array_ref<T,ndim>;
             using eigm=typename Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ,Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>>;
-            arr & mat(){return ar_;}
-//            const arr & mat()const{return ar_;}
-            const gp_tptr & gp()const{return gp_;}
+            inline arr & mat(){return ar_;}
+            inline const arr & mat()const{return ar_;}
+            const gp_tptr & gp()const {return gp_;}
+            gp_tptr & gp(){return gp_;}
             //Extract eigen matrix (but only for 2D arrays)
             template<int dim=ndim>
             typename std::enable_if<dim==2,eigm>::type  eig(){
                 auto marrStrd=Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic>(ar_.strides()[0],ar_.strides()[1]);
                 return eigm(ar_.data(),ar_.shape()[0],ar_.shape()[1],marrStrd);
             }
+
+        GArrayDyn & operator=(const T scalar) {
+            std::fill(ar_.data(),ar_.data()+ar_.num_elements(),scalar);
+            return *this;
+        }
             private:
             gp_tptr gp_{};
             std::shared_ptr<T[]> data_{};
@@ -100,13 +106,19 @@ namespace frommle {
         };
 
 
+
+        ///general template declaration (the specialization below allows us to separate out the Guides using template magic)
+        template<class T, class ... Guides>
+    class GArray{};
+
+
         /*!brief
          * This is essentially a wrapper around boost multiarray class with guides
          * @tparam T element type of the multiarray
          * @tparam Guides a variadic set of Guides
          */
     template<class T, class ... Guides>
-    class GArray:public GArrayDyn<T,sizeof ...(Guides)>{
+    class GArray<T,guides::GuidePack<Guides...>>:public GArrayDyn<T,sizeof ...(Guides)>{
         public:
             using GPack=guides::GuidePack<Guides...>;
             using GAdyn=GArrayDyn<T,sizeof ... (Guides)>;
@@ -216,6 +228,15 @@ namespace frommle {
 
         
         };
+
+
+        template<class T,int n>
+        GArrayDyn<T,n> GA_ones(const guides::GuidePackDyn<n> & gpin){
+            GArrayDyn<T,n> gout(gpin);
+            gout=1;
+            return gout;
+
+        }
 
 
 //        ///@brief a wrapper class which provides 'view access' (i.e. subarray with fewer dimensions, permuted or masked) to another GArray

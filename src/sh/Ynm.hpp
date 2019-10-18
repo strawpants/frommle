@@ -20,28 +20,52 @@
 
 #include "geometry/OGRGuide.hpp"
 #include "sh/SHGuide.hpp"
-#include "core/GOperatorBase.hpp"
 #include "sh/Legendre_nm.hpp"
+#include "core/GOperatorBase.hpp"
 
 #ifndef SRC_SH_YNM_HPP_
 #define SRC_SH_YNM_HPP_
 namespace frommle{
     using namespace guides;
+    using namespace core;
+    using namespace geometry;
     namespace sh{
 
-template<class SH, class GEO>
+template<class T,class SHG, class GEO>
 class Ynm{};
 
 
 //template specializations   
 using OGRPGuide=OGRGuide<OGRPoint>;
-template<>
-class Ynm<SHtmnGuide,OGRPGuide>:public core::GOperator<double,GuidePack<SHtmnGuide>,GuidePack<OGRPGuide>> {
+template<class T,class SHG>
+class Ynm<T,SHG,OGRPGuide>:public GOperator<T, GuidePack<SHG>, GuidePack<OGRPGuide> > {
     public:
-        using GOpBase=core::GOperator<double,GuidePack<guides::SHtmnGuide>,GuidePack<OGRPGuide>>;
-        Ynm(const int nmax,std::shared_ptr<OGRPGuide> & OGRptr):GOpBase(GOpBase::outgp(nmax),GOpBase::ingp(OGRptr)){
-            
+
+        using GOpBase=GOperator<T,GuidePack<SHG>,GuidePack<OGRPGuide>>;
+        using GOpBase::ndim_o;
+        using GOpBase::ndim_i;
+        using GOpBase::gpout;
+        using GOpBase::gpin;
+
+        Ynm(const int nmax):GOpBase(SHG(nmax)){
+
         }
+
+        //implement forward operator (non extended version)
+        void operator()(const GArrayDyn<T,ndim_i> & gin, GArrayDyn<T,ndim_o> & gout){
+                auto shg=gpout_.as<SHG>(0).get();
+                auto geog=gin.gp().as<OGRPGuide>(0).get();
+                //loop over input points
+                for(auto & pnt:*geog ){
+                        LOGINFO << "x " << pnt.getX()<< " y " << pnt.getY() <<std::endl;
+
+                }
+
+
+
+
+        }
+
 //    using GOpBase::marin;
 //    using GOpBase::maroutv;
 //    void fwdOp(const marin & in,maroutv & out){

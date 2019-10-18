@@ -174,6 +174,9 @@ namespace frommle{
             register_dyngpack(){
                 p::class_<GuidePackDyn<n>,p::bases<GuidePackBase>>(std::string("GuidePack").append(std::to_string(n)).c_str())
                         .def("shape",&GuidePackDyn<n>::extent);
+                //alos register a shared_ptr convrsion
+
+                p::register_ptr_to_python< std::shared_ptr<GuidePackDyn<n>> >();
                 //recursively call the next version to register
                 register_dyngpack<n-1>();
             }
