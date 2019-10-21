@@ -65,7 +65,7 @@ namespace frommle {
             
             trig t=(idx%2==0)?trig::C : trig::S;
 
-            double ndbl=(sqrt(1.0+8*(idx/2))-1.0)/2.0;
+            double ndbl=(std::sqrt(1.0+8*(idx/2))-1.0)/2.0;
             n=(int)(ndbl);
             m=(int)((ndbl-n)*(n+1));
             return std::make_tuple(n,m,t);

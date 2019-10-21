@@ -25,11 +25,14 @@
 #include <boost/test/unit_test.hpp>
 #include "sh/Legendre_nm.hpp"
 #include "sh/SHGuide.hpp"
+#include "core/IndexGuide.hpp"
 #include "sh/Ynm.hpp"
 #include <math.h>
 #include <iomanip>
 #include <algorithm>
-
+#include "geometry/GuideMakerTools.hpp"
+using namespace frommle;
+using namespace frommle::guides;
 using namespace frommle::sh;
 
 
@@ -40,7 +43,7 @@ double P52(double theta) {
 
 
 BOOST_AUTO_TEST_CASE(SHguidetest){
-    int nmax=10;
+    int nmax=5;
     int n,m;
     SHGuideBase::trig t;
     SHtmnGuide shg(nmax);
@@ -49,9 +52,9 @@ BOOST_AUTO_TEST_CASE(SHguidetest){
     bool checkDegOrdTrigIndex;
     for(const auto & tpl:shg){
         std::tie(n,m,t)=tpl;
+        std::cout << ii<<" " << n<<" "<<m<<" "<<t<<std::endl;
         checkDegOrdTrigIndex = shg[ii++]==tpl;
         BOOST_TEST(checkDegOrdTrigIndex);
-        //std::cout << n<<" "<<m<<" "<<t<<std::endl;
     }
     //also check whether the iterator covered al of the coefficients
     BOOST_TEST(ii==shg.size());
@@ -140,8 +143,62 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
 }
 
 
-BOOST_AUTO_TEST_CASE(YNMtest){
-    
-    BOOST_TEST(1 ==1);
-    
+BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
+    int nmax=5;
+    Ynm<double,SHtmnGuide,OGRPGuide> ynmop(nmax);
+
+    std::vector<double> lon={-179.3,61.0,156.0};
+    std::vector<double> lat={-87.0,1.0,32.0};
+    auto geoguide=geometry::makePointGuide(lon,lat);
+    IndexGuide iguide(4);
+    auto outar_multi=ynmop(GA_ones_d(geoguide,iguide));
+
+    auto outar_single=ynmop(GA_ones_d(geoguide));
+    LOGINFO << std::string(outar_single.gp()[0]->hash())<< std::endl;
+    //sanity check n=5 m=2 solutions
+    int n=5;
+    int m=2;
+    SHGuideBase::trig t=SHGuideBase::trig::C;
+    double y52c=0.0;
+    double y52s=0.0;
+    for(auto &pnt:geoguide) {
+        auto p52val = P52(D2R * (90 - pnt->getY()));
+        y52c+= p52val * cos(m * D2R * pnt->getX());
+        y52s+=p52val * sin(m * D2R * pnt->getX());
+
+//        LOGINFO << n << " " << m <<" " << " " << 0 << " "<< y52c << std::endl;
+//        LOGINFO << n << " " << m <<" " << " " << 1 << " "<< y52s << std::endl;
+    }
+        auto idxc=typename SHtmnGuide::Element(n,m,SHGuideBase::trig::C);
+        auto idxs=typename SHtmnGuide::Element(n,m,SHGuideBase::trig::S);
+
+//        for(auto & idxi:iguide){
+//            LOGINFO << idxi << std::endl;
+//        }
+
+        BOOST_TEST(outar_single[idxc] == y52c);
+        BOOST_TEST(outar_single[idxs] == y52s);
+
+        //also check auxiliary columns of outar_multi
+
+
+//        LOGINFO << n << "" << m<<" "<< outar_single[idxc] << " " << outar_single[idxs];
+
+        auto shg=outar_single.gpp()->as<SHtmnGuide>(0);
+
+
+        int idx=0;
+//        for(auto & el:*shg){
+//            std::tie(n,m,t)=el;
+//            LOGINFO<<idx++<<" "<<n<<" "<<m<<" "<<t<<std::endl;
+//        }
+//        idx=0;
+//        for(auto & val:outar_single.mat()){
+//            LOGINFO << idx++ <<" " << val << std::endl;
+//        }
+
+
+    //    for(int i=0;i<outar.gp()[0])
+
+
 }

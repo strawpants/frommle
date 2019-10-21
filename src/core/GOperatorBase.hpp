@@ -23,7 +23,7 @@
 #include <tuple>
 #include "GArrayBase.hpp"
 #include "core/GPCookieCut.hpp"
-
+#include "core/IndexGuide.hpp"
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
 
@@ -71,15 +71,45 @@ namespace core {
 
 
         ///@brief takes an array with extended dimension as input and applies the forward operator
-        virtual void operator()(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout){
+        virtual void operator()(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)=0;
+//        {
+//
+//            THROWNOTIMPLEMENTED("Default forward operator with extended dimension is currently not implemented");
+//        }
 
-            THROWNOTIMPLEMENTED("Default forward operator with extended dimension is currently not implemented");
+        ///@brief takes an array with extended dimension as input and applies the forward operator
+        GArrayDyn<T,ndim_o+1> operator()(const GArrayDyn<T,ndim_i+1> & gin){
+            if (!gpo_){
+                THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
+            }
+//            auto gptmp=*(gpo_->append(gin.gp()[ndim_i]));
+//            LOGINFO << gptmp[0]->size() << " "<< gptmp[1]->size() <<std::endl;
+            GArrayDyn<T,ndim_o+1> gout(*(gpo_->append(gin.gp()[ndim_i])));
+            this->operator()(gin,gout);
+            return gout;
         }
 
         ///@brief takes an array as input and applies the forward operator
-        virtual void operator()(const GArrayDyn<T,ndim_i> & gin, GArrayDyn<T,ndim_o> & gout){
+        void operator()(const GArrayDyn<T,ndim_i> & gin, GArrayDyn<T,ndim_o> & gout){
+            //expand the dimension so the common virtual operator can be called (but refer to the same data)
+            guides::IndexGuide iguide(1);
+            auto gpi=std::dynamic_pointer_cast<guides::GuidePackDyn<ndim_i+1>>(gin.gp().append(iguide));
+            auto gpo=std::dynamic_pointer_cast<guides::GuidePackDyn<ndim_o+1>>(gout.gp().append(iguide));
+            auto gin_plus(gin.reshape(*gpi));
+            auto gout_plus(gout.reshape(*gpo));
+            this->operator()(gin_plus,gout_plus);
+        }
 
-            THROWNOTIMPLEMENTED("Default forward operator is currently not implemented");
+        ///@brief version which allocates a new matrix
+        GArrayDyn<T,ndim_o> operator()(const GArrayDyn<T,ndim_i> & gin) {
+            if (!gpo_){
+                THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
+            }
+
+            GArrayDyn<T,ndim_o> gout(*gpo_);
+            //forward call to virtual function so this function does not need to have this implemented
+            this->operator()(gin,gout);
+            return gout;
         }
 
         ///@brief explicitly provides the adjoint matrix of a linear operator
@@ -112,11 +142,12 @@ namespace core {
     template<class T,class outGP, class inGP>
 class GOperator : public GOperatorDyn<T, outGP::ndim, inGP::ndim > {
     public:
-        using outgp=outGP;
-        using ingp=inGP;
+        using gpout_t=outGP;
+        using gpin_t=inGP;
         using gopbase=GOperatorDyn<T,outGP::ndim,inGP::ndim>;
         using gopbase::ndim_o;
         using gopbase::ndim_i;
+        using gopbase::operator();
 
         GOperator() {}
 

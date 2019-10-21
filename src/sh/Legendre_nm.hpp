@@ -21,7 +21,7 @@
 
  */
 
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <assert.h>
 #include "sh/SHGuide.hpp"

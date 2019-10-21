@@ -22,6 +22,7 @@
 #include "core/IndexGuide.hpp"
 #include "core/TimeGuide.hpp"
 #include "sh/SHGuide.hpp"
+#include "geometry/OGRGuide.hpp"
 
 #ifndef FROMMLE_GUIDEREGISTRY_HPP
 #define FROMMLE_GUIDEREGISTRY_HPP
@@ -32,10 +33,11 @@ namespace frommle{
         struct GuideTlist{
             static const int nguides=sizeof...(T);
             using Gvar=boost::variant<std::shared_ptr<T>...>;
+//            using Elvar=boost::variant<typename T::Element...>;
         };
 
 
-        using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide>;
+        using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide,SHtmnGuide,OGRPointGuide,OGRPolyGuide,GuideBase>;
 
 
      //some useful visitors to be applied to the boost variant of the registered guides
@@ -56,6 +58,31 @@ namespace frommle{
             }
 
         };
+
+
+        template<class Element>
+    class gvar_idx:public boost::static_visitor<size_t>{
+    public:
+        gvar_idx(Element el):el_(el){}
+        size_t operator()(const std::shared_ptr<SHtmnGuide> & gvar)const{
+            return gvar->idx(el_);
+        }
+        template<class T>
+                size_t operator()(const T & gvar)const{
+                THROWNOTIMPLEMENTED(std::string("cannot get index by Element from this guide").append(gvar->name()));
+                return 0;
+        }
+        Element el_;
+    };
+//        template<class P>
+//    class gvar_asptr: public boost::static_visitor<std::shared_ptr<P>>{
+//        public:
+//            template<class T>
+//            std::shared_ptr<P> operator()(T & gvar)const{
+//                return std::static_pointer_cast<P>(gvar);
+//            }
+//
+//        };
     }
 
 

@@ -103,15 +103,16 @@ namespace frommle{
             //helper function to make C++ interface consistent
             inline size_t idx(const Element el)const{return idxfromEl(el);}
 
-            virtual size_t idx(const int n,const int m,const trig t=trig::C)const=0;
+            virtual size_t idx(const int n,const int m,const trig t)const=0;
             virtual Element operator[](const size_t idx)const=0;
 //            virtual Element & operator[](const size_t idx)=0;
 
             //nested class which acts as an iterator
-            class const_iterator:public Guideiterator<Element ,const_iterator>{
+            class const_iterator:public Guideiterator<Element>{
             public:
                 const_iterator():Guideiterator(Element(-1,-1,trig::C)){}
                 const_iterator(const SHGuideBase * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
+
                 const_iterator operator++(int){
                     const_iterator retval(*this);
                     ++(*this);
@@ -153,7 +154,7 @@ namespace frommle{
             SHtmnGuide()=default;
 //            SHtmnGuide(const int nmax);
             SHtmnGuide(const int nmax,const std::string name="SHtmnGuide");
-            size_t idx(const int n, const int m, const trig t=trig::C)const;
+            size_t idx(const int n, const int m, const trig t)const;
             Element operator[](const size_t idx)const;
 
 
@@ -170,7 +171,7 @@ namespace frommle{
             SHnmtGuide()=default;
 //            SHtmnGuide(const int nmax);
             SHnmtGuide(const int nmax,const std::string name="SHnmtGuide");
-            size_t idx(const int n, const int m, const trig t=trig::C)const;
+            size_t idx(const int n, const int m, const trig t)const;
             Element operator[](const size_t idx)const;
             inline static size_t i_from_nmt(const int n, const int m, const SHGuideBase::trig t){
                 return 2*((n*(n+1))/2+m)+t;

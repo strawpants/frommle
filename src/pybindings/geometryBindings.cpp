@@ -24,7 +24,7 @@
 #include <boost/python/return_by_value.hpp>
 #include "pybindings/coreBindings.hpp"
 #include <ogr_geometry.h>
-#include "geometry/fibonacciGrid.hpp"
+#include "geometry/GuideMakerTools.hpp"
 
 namespace p = boost::python;
 
@@ -114,7 +114,7 @@ PyObject* toShapely(const T & geom ){
 
 using namespace frommle::guides;
 using namespace frommle::core;
-
+using namespace frommle::geometry;
 using OGRPointGuide=OGRGuide<OGRPoint>;
 
 void (OGRPointGuide::*pb1)(const OGRPoint &)=&OGRPointGuide::push_back;

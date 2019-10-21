@@ -46,7 +46,7 @@ namespace frommle{
             using ElementContainer=std::vector<std::shared_ptr<Element>>;
             //structors
             OGRGuide(){}
-            OGRGuide(const std::string & name):GuideBase(typehash(name)){}
+            OGRGuide(const std::string & name):GuideBase(name,typehash(name)){}
             OGRGuide(const std::string & name, const typehash & hash):GuideBase(name,hash){}
             OGRGuide(const OGRGuide & in)=default;
 
@@ -64,6 +64,13 @@ namespace frommle{
             iterator end() { return geoms_.end(); }
             Element & operator[](const size_t idx){return *(geoms_.at(idx));}
             Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
+            size_t idx(const Element & geom)const{
+                size_t i=0;
+                for(auto & geo:geoms_){
+                    if(*geo == geom){return i;}
+                    ++i;
+                }
+            }
             //spatial queries
             //Rtree stuff (store the encompassing geo box of the OGR geometry in the rtree)
             //using point=bg::model::point<double,2,bg::cs::geographic<bg::degree>>;
@@ -115,7 +122,8 @@ namespace frommle{
 
         }
 
-
+        using OGRPointGuide=OGRGuide<OGRPoint>;
+        using OGRPolyGuide=OGRGuide<OGRPolygon>;
 
     }
 }

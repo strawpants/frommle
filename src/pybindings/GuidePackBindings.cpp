@@ -47,7 +47,7 @@ namespace frommle{
             struct GuidePackAppendOverride<GuideTlist<T,Types...>>: public virtual GauxMembers<GuideTlist<T,Types...>>, public GuidePackAppendOverride<Types...>{
             using next=GuidePackAppendOverride<Types...>;
             using next::append;
-            GuidePackPtr append(T & guide)override{
+            GuidePackPtr append(const T & guide)const override{
                return this->get_override("append")(guide);
             }
             };
@@ -58,7 +58,7 @@ namespace frommle{
                 public:
             using next=GuidePackAppendOverride<Types...>;
             using next::append;
-            GuidePackPtr append(T & guide)override{
+            GuidePackPtr append(const T & guide)const override{
                return this->get_override("append")(guide);
             }
         
@@ -66,7 +66,7 @@ namespace frommle{
 
         template<class T>
             struct GuidePackAppendOverride<T>: public virtual GauxMembers<T>{
-                GuidePackPtr append(T & guide)override{
+                GuidePackPtr append(const T & guide)const override{
                return this->get_override("append")(guide);
             }
         
@@ -134,7 +134,7 @@ namespace frommle{
             static boostpyGP & regapp(boostpyGP & gpin){
             using gapp=GauxMembers<GuideTlist<T,Types...>>;
             //function pointer to pure virtual function
-            GuidePackPtr (gapp::*appf)(T &)=&gapp::append;
+            GuidePackPtr (gapp::*appf)(const T &)const=&gapp::append;
             
             return RegisterMembers<Types...>::regapp(gpin.def("append",p::pure_virtual(appf)));
 
@@ -147,7 +147,7 @@ namespace frommle{
             static boostpyGP & regapp(boostpyGP & gpin){
             using gapp=GauxMembers<T,Types...>;
             //function pointer to pure virtual function
-            GuidePackPtr  (gapp::*appf)(T &)=&gapp::append;
+            GuidePackPtr  (gapp::*appf)(const T &)const=&gapp::append;
             
             return RegisterMembers<Types...>::regapp(gpin.def("append",p::pure_virtual(appf)));
 
@@ -161,7 +161,7 @@ namespace frommle{
 
             //function pointer to pure virtual function
             using gapp=GauxMembers<T>;
-            GuidePackPtr  (gapp::*appf)(T &)=&gapp::append;
+            GuidePackPtr  (gapp::*appf)(const T &)const=&gapp::append;
             
             return gpin.def("append",p::pure_virtual(appf));
 

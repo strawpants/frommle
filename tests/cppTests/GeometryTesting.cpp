@@ -28,7 +28,7 @@
 #include "io/OGRIOArchives.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
-#include "geometry/fibonacciGrid.hpp"
+#include "geometry/GuideMakerTools.hpp"
 #include "io/LineBuffer.hpp"
 #include "geometry/geomOperator.hpp"
 #include <ogr_geometry.h>

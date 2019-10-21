@@ -106,7 +106,7 @@ private:
 
 
     //!@brief templated abstract forward iterator (both usable as const and non-const version, set Element to e.g int const versus just int) class for use in Guides
-    template<class Element, class Derivediterator>
+    template<class Element>
     class Guideiterator{
     public:
         //iterator traits
@@ -115,6 +115,7 @@ private:
         using difference_type = std::ptrdiff_t;
         using pointer = Element*;
         using reference = Element&;
+//        explicit Guideiterator(Element el, Element elstop):elVal(el),elStop(elstop){}
         explicit Guideiterator(Element el):elVal(el){}
         virtual Guideiterator& operator++()=0;
         bool operator==(Guideiterator & other) const {return elVal == other.elVal;}
@@ -124,6 +125,7 @@ private:
         Guideiterator(){}
     protected:
         Element elVal={};
+//        Element elStop={};
     private:
     };
 

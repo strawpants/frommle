@@ -41,7 +41,7 @@ namespace frommle{
                 using dyngar=GArrayDyn<T,n>;
                 typename dyngar::arr & (dyngar::*matf)()=&dyngar::mat;
 
-                const typename dyngar::gp_tptr & (dyngar::*gpfc)()const=&dyngar::gp;
+                const typename dyngar::gp_tptr & (dyngar::*gpfc)()const=&dyngar::gpp;
 
                 p::class_<dyngar,p::bases<GArrayBase>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
             .def(p::init<const guides::GuidePackDyn<n> &>())

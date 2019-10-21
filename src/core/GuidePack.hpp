@@ -35,18 +35,20 @@ namespace frommle{
     namespace guides{
 
 
+
+
 ///@brief the GuidePackBase provides runtime access to an underlying (templated) Guidepack 
 class GuidePackBase: public virtual GauxPureVirt{
     public:
         GuidePackBase(){};
         ~GuidePackBase(){};
         virtual int nDim()const{return 0;}
-        //using Gvar=GuideRegistry::Gvar;
+        using Gvar=GuideRegistry::Gvar;
         using GauxPureVirt::append;
-        //using iterator=Gvar*;
-        //using const_iterator=const Gvar*;
-        using iterator=GuideBasePtr*;
-        using const_iterator=const GuideBasePtr*;
+        using iterator=Gvar*;
+        using const_iterator=const Gvar*;
+//        using iterator=GuideBasePtr*;
+//        using const_iterator=const GuideBasePtr*;
         virtual iterator begin()=0;
         virtual iterator end()=0;
         virtual const_iterator begin()const=0;
@@ -55,7 +57,7 @@ class GuidePackBase: public virtual GauxPureVirt{
         virtual size_t num_elements()const=0;
         //virtual Gvar & operator[](const int i)=0;
         
-        virtual GuideBasePtr & operator[](const int i)=0;
+        virtual GuideBasePtr operator[](const int i)=0;
         virtual const GuideBasePtr operator[](const int i)const=0;
     
     private:
@@ -70,34 +72,82 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
     public:
         GuidePackDyn():GauxVirtImpl<n>(this){
             //fill up the internal array with empty GuideBases
-            std::for_each(gpar_.begin(),gpar_.end(),[](GuideBasePtr & gb){
+//            std::for_each(gpar_.begin(),gpar_.end(),[](GuideBasePtr & gb){
+//                gb=std::make_shared<GuideBase>();
+//            });
+            std::for_each(gpar_.begin(),gpar_.end(),[](Gvar & gb){
                 gb=std::make_shared<GuideBase>();
             });
         }
-        template<class ... Guides>
-        GuidePackDyn(Guides && ... Args){
-            gpar_={{std::make_shared<Guides>(std::move(Args))...}};
+    template<class GP, typename std::enable_if< std::is_base_of<GuidePackDyn,GP>::value_type,int>::type =0 >
+    GuidePackDyn(GP && gpin):GauxVirtImpl<n>(this){
+        gpar_=std::move(gpin.gpar_);
+    }
+
+    template<class GP, typename std::enable_if< std::is_base_of<GuidePackDyn,GP>::value_type,int>::type =0 >
+    GuidePackDyn(const GP & gpin, int istart):GauxVirtImpl<n>(this){
+            //enforce that the input has enough guides to tap from
+            assert((GP::ndim-istart) >= n);
+        for(int i=0;i<n;++i){
+            gpar_[i]=gpin.gpar_[i+istart];
+        }
+    }
+
+    ///@brief admittedly, this is a pretty ackward contructor, but it is needed to apply SFINAE in order to distinguish whether we have GUides or a guidepack as arguments
+        template<class G1,class ... Guides,typename std::enable_if<!std::is_base_of<GuidePackDyn, G1>::value,int>::type =0>
+        explicit GuidePackDyn(G1 G1arg,Guides ... Args):GauxVirtImpl<n>(this){
+            gpar_={{std::make_shared<G1>(std::move(G1arg)),std::make_shared<Guides>(std::move(Args))...}};
         }
 
-        GuidePackDyn(const GuidePackDyn & in){
+//    ///@brief admittedly, this is a pretty ackward contructor, but it is needed to apply SFINAE in order to distinguish whether we have GUides or a guidepack as arguments
+//    template<class G1,class ... Guides, typename std::enable_if<!std::is_base_of<GuidePackDyn, G1>::value,int>::type =0 >
+//    explicit GuidePackDyn(typename std::remove_reference<const G1>::type & G1arg,typename std::remove_reference<const Guides>::type & ... Args):GauxVirtImpl<n>(this){
+//        gpar_={{std::make_shared<G1>(G1arg),std::make_shared<Guides>(Args)...}};
+//    }
+
+        GuidePackDyn(const GuidePackDyn & in):GauxVirtImpl<n>(this){
             gpar_=in.gpar_;
         }
+
+
         //using Gvar=GuideRegistry::Gvar;
         using GauxVirtImpl<n>::append;
+        //also allow appending a shared_ptr
+        std::shared_ptr<GuidePackDyn<n+1>> append(const GuideBasePtr & gin)const;
+
         int nDim()const{return n;}
         static const int ndim=n;
-        GuideBasePtr & operator[](const int i)override{return gpar_[i];} 
-        const  GuideBasePtr operator[](const int i)const override {return gpar_[i];}
-        
-        //extract a specific type of guide from the guidepack
-        //template<class T>
-        //inline const std::shared_ptr<T> as(const int i)const{return boost::get<std::shared_ptr<T>>(gpar_[i]);}
-        //template<class T>
-        //inline std::shared_ptr<T> as(const int i){return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+
+        //@brief return the index corresponding to a certain Guide Element
+        template<class Element>
+        size_t idx(int i,Element el){
+            return  boost::apply_visitor(guides::gvar_idx<Element>(el),gpar_[i]);
+        }
+//        GuideBasePtr & operator[](const int i)override{return gpar_[i];}
+//        const  GuideBasePtr operator[](const int i)const override {return gpar_[i];}
+
+        GuideBasePtr operator[](const int i)override{
+            return boost::apply_visitor(gvar_baseptr(),gpar_[i]);
+        }
+
+        const  GuideBasePtr operator[](const int i)const override {
+            return boost::apply_visitor(gvar_baseptr(),gpar_[i]);
+        }
+
+        //direct access to the underlying variants
+        Gvar & gv(const int i){return gpar_[i];}
+        const Gvar & gv(const int i)const{return gpar_[i];}
+
+//        extract a specific type of guide from the guidepack
         template<class T>
-        inline const std::shared_ptr<T> as(const int i)const{return std::static_pointer_cast<T>(gpar_[i]);}
+        inline const std::shared_ptr<T> as(const int i)const{return boost::get<std::shared_ptr<T>>(gpar_[i]);}
         template<class T>
-        inline std::shared_ptr<T> as(const int i){return std::static_pointer_cast<T>(gpar_[i]);}
+        inline std::shared_ptr<T> as(const int i){return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+
+//        template<class T>
+//        inline const std::shared_ptr<T> as(const int i)const{return std::static_pointer_cast<T>(gpar_[i]);}
+//        template<class T>
+//        inline std::shared_ptr<T> as(const int i){return std::static_pointer_cast<T>(gpar_[i]);}
 
         size_t num_elements()const override;
         std::array<size_t,n> extent()const;
@@ -107,8 +157,8 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         const_iterator begin()const override{ return gpar_.begin();}
         const_iterator end()const override{ return gpar_.end();}
     protected:
-        //std::array<Gvar,n> gpar_{};
-        std::array<GuideBasePtr,n> gpar_{{}};
+        std::array<Gvar,n> gpar_{};
+//        std::array<GuideBasePtr,n> gpar_{{}};
 
 };
 
@@ -127,12 +177,27 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         template<int n>
         std::array<size_t,n> GuidePackDyn<n>::extent()const{
             std::array<size_t,n> ext;
-            std::transform(gpar_.cbegin(),gpar_.cend(),ext.begin(),[](const GuideBasePtr & gb){
-                //return boost::apply_visitor(gvar_size(),gb);
-                return gb->size();
+            std::transform(gpar_.cbegin(),gpar_.cend(),ext.begin(),[](const Gvar & gb){
+                return boost::apply_visitor(gvar_size(),gb);
+//                return gb->size();
             });
             return ext;
         };
+
+
+        template<int n>
+        std::shared_ptr<GuidePackDyn<n+1>> GuidePackDyn<n>::append(const GuideBasePtr & gin)const{
+            auto gpout=std::make_shared<GuidePackDyn<n+1>>();
+            for(int i=0; i<n;++i){
+                gpout->gv(i)=this->gv(i);
+            }
+            gpout->gv(n)=gin;
+            //LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
+            return gpout;
+
+
+        }
+
 
 /*!brief
  * Wraps several guides into a tuple and provide access functions
@@ -158,24 +223,25 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             using gptr_t=typename std::shared_ptr<typename std::tuple_element<n,guides_t>::type>;
             
             GuidePack(){}
-            GuidePack(Guides&& ... Args):GPdyn(std::move(Args)...){
+            explicit GuidePack(Guides && ... Args):GPdyn(std::move(Args)...){
                 //extent_={Args.size()...};
 //                guides_ = std::make_tuple(std::forward<(std::make_shared<Guides>(std::forward<Guides>(Args)...)...);
                 //guides_ = std::make_tuple(std::make_shared<Guides>(std::move(Args))...);
 
             }
-            
+
+            explicit GuidePack(const Guides & ... Args):GPdyn(Args...){}
             //GuidePack(Guides & ... Args){
                 //extent_={Args.size()...};
                 //guides_ = std::make_tuple(std::make_shared<Guides>((Args))...);
 
             //}
             
-            GuidePack(std::shared_ptr<Guides> & ... Args){
-                extent_={Args->size()...};
-                guides_ = std::make_tuple(Args ...);
-
-            }
+//            GuidePack(std::shared_ptr<Guides> & ... Args){
+//                extent_={Args->size()...};
+//                guides_ = std::make_tuple(Args ...);
+//
+//            }
             //template<class PlusG>
             //using GPAppended=GuidePack<Guides...,PlusG>;
             ///@brief append additional Guide to the end of the Guidepack and return the new version
@@ -197,23 +263,23 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             //std::shared_ptr<GuidePack> append_impl(std::shared_ptr<PlusG> extraG)const{
                 //return std::make_shared<GuidePack>();
             //}
-            template<class Gp>
-            GuidePack & operator=(Gp & gpin){
-                assert(ndim == gpin.ndim);
-                assignGuides<0, Gp>(gpin);
-                return *this;
-            }
-
-
-            void setNames(const std::string & coordinatenames){
-                std::vector<std::string> splits;
-                boost::split(splits,coordinatenames,boost::is_any_of(" "));
-                for(size_t i=0;i<splits.size();++i){
-                    g(i)->setName(splits[i]);
-                }
-
-            }
-            size_t size()const{return std::accumulate(extent_.cbegin(),extent_.cend(),0);}
+//            template<class Gp>
+//            GuidePack & operator=(Gp & gpin){
+//                assert(ndim == gpin.ndim);
+//                assignGuides<0, Gp>(gpin);
+//                return *this;
+//            }
+//
+//
+//            void setNames(const std::string & coordinatenames){
+//                std::vector<std::string> splits;
+//                boost::split(splits,coordinatenames,boost::is_any_of(" "));
+//                for(size_t i=0;i<splits.size();++i){
+//                    g(i)->setName(splits[i]);
+//                }
+//
+//            }
+//            size_t size()const{return std::accumulate(extent_.cbegin(),extent_.cend(),0);}
 
             /*!brief
              * Get the nth guide of the array
@@ -223,14 +289,14 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             template<int n>
             gptr_t<n>  g() {
                 assert(n<=ndim);
-                return std::static_pointer_cast<g_t<n>>(gpar_[n]);
+                return boost::get<gptr_t<n>>(gpar_[n]);
+//                return std::static_pointer_cast<g_t<n>>(gpar_[n]);
             }
-            
+//
             template<int n>
             const gptr_t<n> g()const{
                 assert(n<=ndim);
-                return std::static_pointer_cast<g_t<n>>(gpar_[n]);
-//                return *boost::get<gptr_t<n>>(gpar_[n]);
+                return boost::get<gptr_t<n>>(gpar_[n]);
             }
 
             /*!brief
@@ -240,70 +306,70 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
              * @param i: dimension to retrieve
              * @return a GuideBase
              */
-            template<int n=0>
-            typename std::enable_if< n+1 != ndim,std::shared_ptr<const GuideBase>>::type  g(const int i)const{
-                if (i == n) {
-                    return g<n>();
-                }else{
-                    //call this function recursively
-                    return g<n+1>(i);
-                }
-            }
-            /*! brief the function below stops the recursion
-             *
-             * @tparam n
-             */
-            template<int n=0>
-            typename std::enable_if< n+1 == ndim,std::shared_ptr<const GuideBase>>::type  g(const int i)const{
-                assert(i+1==ndim);
-                return g<n>();
-            }
-
-            //non-const versions
-
-            template<int n=0>
-            typename std::enable_if< n+1 != ndim, std::shared_ptr<GuideBase>>::type  g(const int i){
-                if (i == n) {
-                    return g<n>();
-                }else{
-                    //call this function recursively
-                    return g<n+1>(i);
-                }
-            }
-            /*! brief the function below stops the recursion
-             *
-             * @tparam n
-             */
-           template<int n=0>
-            typename std::enable_if< n+1 == ndim,std::shared_ptr<GuideBase>>::type  g(const int i){
-                assert(i+1==ndim);
-                return g<n>();
-
-            }
-
-            template<int i>
-            struct maskpack {
-                    template<class Gother>
-                    using mask_g=typename std::conditional<std::is_same<Gother,typename g_t<i>::element_type>::value,MaskedGuide<Gother>,Gother>::type;
-                    using type=GuidePack< mask_g<Guides>...>;
-            };
-
-            ///@returns a guidepack which has one dimension masked
-            template<int i>
-            typename maskpack<i>::type mask(){
-                typename maskpack<i>::type maskp{};
-                //assign guides
-                maskp.guides_=guides_;
-                return maskp;
-            }
-        
-//            //returns a tuple of boost::index_ranges to be used for creating arrayviews
-//            using index_gen=arr::index_gen::gen::type<ndim,ndim>;
-//            std::tuple< > indices(){
-//                return get_indices<0>();
+//            template<int n=0>
+//            typename std::enable_if< n+1 != ndim,std::shared_ptr<const GuideBase>>::type  g(const int i)const{
+//                if (i == n) {
+//                    return g<n>();
+//                }else{
+//                    //call this function recursively
+//                    return g<n+1>(i);
+//                }
 //            }
-            //immplement virtual functions from GuidePackBase
-            int  nDim()const{return ndim;}
+//            /*! brief the function below stops the recursion
+//             *
+//             * @tparam n
+//             */
+//            template<int n=0>
+//            typename std::enable_if< n+1 == ndim,std::shared_ptr<const GuideBase>>::type  g(const int i)const{
+//                assert(i+1==ndim);
+//                return g<n>();
+//            }
+//
+//            //non-const versions
+//
+//            template<int n=0>
+//            typename std::enable_if< n+1 != ndim, std::shared_ptr<GuideBase>>::type  g(const int i){
+//                if (i == n) {
+//                    return g<n>();
+//                }else{
+//                    //call this function recursively
+//                    return g<n+1>(i);
+//                }
+//            }
+//            /*! brief the function below stops the recursion
+//             *
+//             * @tparam n
+//             */
+//           template<int n=0>
+//            typename std::enable_if< n+1 == ndim,std::shared_ptr<GuideBase>>::type  g(const int i){
+//                assert(i+1==ndim);
+//                return g<n>();
+//
+//            }
+//
+//            template<int i>
+//            struct maskpack {
+//                    template<class Gother>
+//                    using mask_g=typename std::conditional<std::is_same<Gother,typename g_t<i>::element_type>::value,MaskedGuide<Gother>,Gother>::type;
+//                    using type=GuidePack< mask_g<Guides>...>;
+//            };
+//
+//            ///@returns a guidepack which has one dimension masked
+//            template<int i>
+//            typename maskpack<i>::type mask(){
+//                typename maskpack<i>::type maskp{};
+//                //assign guides
+//                maskp.guides_=guides_;
+//                return maskp;
+//            }
+//
+////            //returns a tuple of boost::index_ranges to be used for creating arrayviews
+////            using index_gen=arr::index_gen::gen::type<ndim,ndim>;
+////            std::tuple< > indices(){
+////                return get_indices<0>();
+////            }
+//            //immplement virtual functions from GuidePackBase
+//            int  nDim()const{return ndim;}
             //std::shared_ptr<GuideBase> operator[](const int i){return g(i);}
             //constGuideBasePtr operator[](const int i)const {return g(i);}
             //GuidePackPtr append(GuideBase & in)const{
@@ -322,70 +388,70 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             //constexpr std::enable_if<std::is_same<g_t<n>,X>::value,
             
 
-            template<class ...Gs>
-            friend class GuidePack;
-
-            friend class io::serialize;
-            template<class Archive>
-            void load(Archive & Ar){
-                loadGuides<Archive,0>(Ar);
-            }
-
-            template<class Archive>
-            void save(Archive & Ar)const{
-                saveGuides<Archive,0>(Ar);            
-            
-            }
-            template<class Archive,int n>
-            typename std::enable_if< n+1 != ndim>::type saveGuides(Archive & Ar)const{
-                Ar << *(std::get<n>(guides_));
-                //also recursively save the remaining guides
-                saveGuides<Archive,n+1>(Ar);
-            }
-            
-            template<class Archive,int n>
-            typename std::enable_if< n+1 == ndim>::type saveGuides(Archive & Ar)const{
-                Ar << *(std::get<n>(guides_));
-            }
-
-            template<class Archive,int n>
-            typename std::enable_if< n+1 != ndim>::type loadGuides(Archive & Ar){
-                Ar >> *(std::get<n>(guides_));
-                //also recursively save the remaining guides
-                loadGuides<Archive,n+1>(Ar);
-            }
-
-            template<class Archive,int n>
-            typename std::enable_if< n+1 == ndim>::type loadGuides(Archive & Ar){
-                Ar >> *(std::get<n>(guides_));
-            }
-
-            template<class G,class Gin>
-                static typename std::enable_if<std::is_same< typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
-                    //we don't convert but just add an owner to the shared_ptr
-                    out=in;
-                }
-            
-            template<class G,class Gin>
-                static typename std::enable_if<!std::is_same<typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
-                    //we convert the value here but just add an owner to the shared_ptr
-                    //convert
-
-                    out=std::shared_ptr<typename G::element_type>(new typename G::element_type(*in));
-                }
-
-            template<int n,class Gpackother>
-            typename std::enable_if< n+1 != ndim >::type assignGuides(Gpackother &gpother){
-                    assign(g<n>(),gpother.template g<n>());
-                    //also recursively assign the other guides
-                assignGuides<n + 1, Gpackother>(gpother);
-            }
-
-            template<int n,class Gpackother>
-            typename std::enable_if< n+1 == ndim>::type assignGuides(Gpackother &gpother){
-                assign(g<n>(),gpother.template g<n>());
-
-            }
+//            template<class ...Gs>
+//            friend class GuidePack;
+//
+//            friend class io::serialize;
+//            template<class Archive>
+//            void load(Archive & Ar){
+//                loadGuides<Archive,0>(Ar);
+//            }
+//
+//            template<class Archive>
+//            void save(Archive & Ar)const{
+//                saveGuides<Archive,0>(Ar);
+//
+//            }
+//            template<class Archive,int n>
+//            typename std::enable_if< n+1 != ndim>::type saveGuides(Archive & Ar)const{
+//                Ar << *(std::get<n>(guides_));
+//                //also recursively save the remaining guides
+//                saveGuides<Archive,n+1>(Ar);
+//            }
+//
+//            template<class Archive,int n>
+//            typename std::enable_if< n+1 == ndim>::type saveGuides(Archive & Ar)const{
+//                Ar << *(std::get<n>(guides_));
+//            }
+//
+//            template<class Archive,int n>
+//            typename std::enable_if< n+1 != ndim>::type loadGuides(Archive & Ar){
+//                Ar >> *(std::get<n>(guides_));
+//                //also recursively save the remaining guides
+//                loadGuides<Archive,n+1>(Ar);
+//            }
+//
+//            template<class Archive,int n>
+//            typename std::enable_if< n+1 == ndim>::type loadGuides(Archive & Ar){
+//                Ar >> *(std::get<n>(guides_));
+//            }
+//
+//            template<class G,class Gin>
+//                static typename std::enable_if<std::is_same< typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
+//                    //we don't convert but just add an owner to the shared_ptr
+//                    out=in;
+//                }
+//
+//            template<class G,class Gin>
+//                static typename std::enable_if<!std::is_same<typename G::element_type,typename Gin::element_type>::value>::type assign(G & out, Gin & in){
+//                    //we convert the value here but just add an owner to the shared_ptr
+//                    //convert
+//
+//                    out=std::shared_ptr<typename G::element_type>(new typename G::element_type(*in));
+//                }
+//
+//            template<int n,class Gpackother>
+//            typename std::enable_if< n+1 != ndim >::type assignGuides(Gpackother &gpother){
+//                    assign(g<n>(),gpother.template g<n>());
+//                    //also recursively assign the other guides
+//                assignGuides<n + 1, Gpackother>(gpother);
+//            }
+//
+//            template<int n,class Gpackother>
+//            typename std::enable_if< n+1 == ndim>::type assignGuides(Gpackother &gpother){
+//                assign(g<n>(),gpother.template g<n>());
+//
+//            }
 
             
 //            template<int n>
@@ -401,8 +467,8 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
 //            };
             
 
-            guides_t guides_{};
-            std::array<size_t,ndim> extent_={0};
+//            guides_t guides_{};
+//            std::array<size_t,ndim> extent_={0};
         };
 
 

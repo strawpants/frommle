@@ -19,40 +19,24 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "geometry/fibonacciGrid.hpp"
-#include "core/Logging.hpp"
-#include "core/MacroMagic.hpp"
-#include <cmath>
+#include "geometry/OGRGuide.hpp"
+#ifndef FROMMLE_FIBONACCIGRID_HPP
+#define FROMMLE_FIBONACCIGRID_HPP
+
 namespace frommle{
 
-    namespace guides{
+    namespace geometry{
 
-        OGRGuide<OGRPoint> makeFibonacciGrid(const size_t npoints){
-            size_t np=npoints;
-            if (npoints%2 == 0){
-                LOGWARNING << "Adding an additional point to the Fibonacci grid";
-                np+=1;
-            }
+        guides::OGRGuide<OGRPoint> makeFibonacciGrid(const size_t npoints);
 
-            ptrdiff_t Nhalf=(np-1)/2;
-            const double PHI= (1+sqrt(5.0))/2.0;
+        ///@brief create a OGRPoint guide from two containers of longitude and latitude
+        template<class Container>
+        guides::OGRGuide<OGRPoint> makePointGuide(const Container & lon, const Container & lat);
 
-            OGRGuide<OGRPoint> fibgrid{"PointGuide",typehash("FibGuide").add(np)};
-            for(ptrdiff_t i=-Nhalf;i<Nhalf+1;++i){
-                double lat=asin((2.0*i)/(2*Nhalf+1))/D2R;
-                double lon=fmod(i,PHI)*(360/PHI);
-                if (lon < -180){
-                    lon+=360;
-                }else if (lon > 180){
-                    lon-=360;
-                }
-                fibgrid.push_back(OGRPoint(lon,lat));
 
-            }
-            return fibgrid;
-        }
 
 
     }
 }
 
+#endif //FROMMLE_FIBONACCIGRID_HPP

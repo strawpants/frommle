@@ -48,7 +48,7 @@ namespace frommle{
 			public:
 				using next=GauxMembers<Types...>;
 				using next::append;
-				virtual GuidePackPtr append(T& Guide)=0;
+				virtual GuidePackPtr append(const T& Guide)const=0;
 				
 		};
 		
@@ -58,24 +58,26 @@ namespace frommle{
 			public:
 				using next=GauxMembers<Types...>;
 				using next::append;
-				virtual GuidePackPtr append(T& Guide)=0;
+				virtual GuidePackPtr append(const T& Guide)const=0;
 		};
 
 		///@brief specialiation for the final type to be considered
 		template<class T>
 			class GauxMembers<T>{
 			public:
-			virtual GuidePackPtr append(T& Guide)=0;
+			virtual GuidePackPtr append(const T& Guide)const=0;
 		};
 
 		template<int n,class T>
 		struct GPHelpBase{ 
-			static GPackDynPtr<n+1> append(T& Guide,const GuidePackDyn<n> & gp){
+			static GPackDynPtr<n+1> append(const T& Guide,const GuidePackDyn<n> & gp){
 			auto gpout=std::make_shared<GuidePackDyn<n+1>>();
 			for(int i=0; i<n;++i){
-				(*gpout)[i]=gp[i];
+
+				gpout->gv(i)=gp.gv(i);
+//				LOGINFO << (*gpout)[i]->size() << std::endl;
 			}
-			(*gpout)[n]=std::shared_ptr<GuideBase>(new T(Guide));
+			gpout->gv(n)=std::shared_ptr<GuideBase>(new T(Guide));
 			//LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
 			return gpout;
 		}
@@ -83,7 +85,7 @@ namespace frommle{
 		
 		template<int n,class T>
 		struct GPHelp{
-			static GPackDynPtr<n+1> append(T & Guide, const GuidePackDyn<n> & gp){
+			static GPackDynPtr<n+1> append(const T & Guide, const GuidePackDyn<n> & gp){
 				THROWNOTIMPLEMENTED(std::string("Please specialize GPHelp<n,T> for n=")+std::to_string(n));					
 			};
 		};
@@ -118,7 +120,7 @@ namespace frommle{
 				using next=GauxMembers_impl<n, Types...>;
 				using next::append;
 				using next::gp_;	
-				virtual GuidePackPtr append(T& Guide)override{
+				virtual GuidePackPtr append(const T& Guide)const override{
 					return GPHelp<n,T>::append(Guide,*gp_);
 				}
 				
@@ -133,7 +135,7 @@ namespace frommle{
 				using next=GauxMembers_impl<n,Types...>;
 				using next::append;
 				using next::gp_;	
-				virtual GuidePackPtr append(T& Guide)override{
+				virtual GuidePackPtr append(const T& Guide)const override{
 					return GPHelp<n,T>::append(Guide,*gp_);
 				}
 		};
@@ -144,7 +146,7 @@ namespace frommle{
 			public:
 			GauxMembers_impl()=default;
 			GauxMembers_impl(const GuidePackDyn<n> * gpin):gp_(gpin){}
-			virtual GuidePackPtr append(T& Guide)override {
+			virtual GuidePackPtr append(const T& Guide)const override {
 					return GPHelp<n,T>::append(Guide,*gp_);
 			}
 			protected:

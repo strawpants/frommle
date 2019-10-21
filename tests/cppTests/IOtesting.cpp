@@ -31,7 +31,7 @@
 #include "geometry/OGRGuide.hpp"
 #include <boost/filesystem.hpp>
 #include "io/LineBuffer.hpp"
-#include "geometry/fibonacciGrid.hpp"
+#include "geometry/GuideMakerTools.hpp"
 #include "core/GArrayBase.hpp"
 #include "io/NetCDFIO.hpp"
 #include "core/IndexGuide.hpp"
