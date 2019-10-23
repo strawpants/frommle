@@ -80,9 +80,11 @@ class Ynm<T,SHG,OGRPGuide>:public GOperator<T, GuidePack<SHG>, GuidePack<OGRPGui
                 size_t pidx=0;
 
                 //denotes all elements in a dimension
-                boost::multi_array_types::index_range allinrange;
-                typename GArrayDyn<T,ndim_o+1>::arr::index_gen indices_o;
-                typename GArrayDyn<T,ndim_i+1>::arr::index_gen indices_i;
+                auto allinrange=gout.mrange();
+                auto indices_o=gout.mindices();
+                auto indices_i=gin.mindices();
+
+                //typename GArrayDyn<T,ndim_i+1>::arr::index_gen indices_i;
 
                 //loop over input points
                 for(auto & pnt:geog ){

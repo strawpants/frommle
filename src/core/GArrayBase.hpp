@@ -46,7 +46,7 @@ namespace frommle {
 
         template<class Element>
         subtype operator[](Element el) {
-            return subtype(parent_, sar_[parent_.gpp()->idx(Parent::ndim - n, el)]);
+            return subtype(parent_, sar_[parent_->gpp()->idx(Parent::ndim - n -1, el)]);
         };
 
         arr &mat() { return sar_; }
@@ -54,7 +54,7 @@ namespace frommle {
         const arr &mat() const { return sar_; }
 
         private:
-        Parent *parent_ = nullptr;
+        const Parent *parent_ = nullptr;
         arr sar_{};
     };
 
@@ -62,7 +62,7 @@ namespace frommle {
     template<class T, class Parent>
     class GSubArray<T, 1, Parent> {
     public:
-    using arr=typename Parent::arr::template sub_array<1>;
+    using arr=typename Parent::arr::template subarray<1>::type;
 
     GSubArray(const Parent *par, arr ar) : parent_(par), sar_(ar) {
 
@@ -70,7 +70,7 @@ namespace frommle {
 
     template<class Element>
     T &operator[](Element el) {
-        return sar_[parent_.gpp()->idx(Parent::ndim-1, el)];
+        return sar_[parent_->gpp()->idx(Parent::ndim-1, el)];
     };
 
     inline arr &mat() { return sar_; }
@@ -78,7 +78,7 @@ namespace frommle {
     inline const arr &mat() const { return sar_; }
 
     private:
-    Parent *parent_ = nullptr;
+    const Parent *parent_ = nullptr;
     arr sar_{};
 };
 
@@ -115,9 +115,13 @@ public:
     //ar_(data_.get(),gp_->extent()){}
 
     ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
-    template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn < n>, GP>::value, int> ::type = 0>
-
+    template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
     GArrayDyn(GP guidepack) : gp_(std::make_shared<GP>(std::move(guidepack))),
+                              data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
+                              ar_(data_.get(), gp_->extent()) {}
+   
+    //specialized constructor which casts a generic GuidePackPtr to an appropritate GuidePackDyn
+    GArrayDyn(const guides::GuidePackPtr & guidepack) : gp_(std::dynamic_pointer_cast<guides::GuidePackDyn<n>>(guidepack)),
                               data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
                               ar_(data_.get(), gp_->extent()) {}
 
@@ -140,6 +144,14 @@ public:
     using GArrayBase::name;
     using GArrayBase::setName;
     using arr=boost::multi_array_ref<T, ndim>;
+    static typename arr::index_gen mindices(){
+        return typename arr::index_gen();
+     }
+    //perfect forwarding to the boost index_range
+    template<typename ... I>
+    static typename boost::multi_array_types::index_range mrange( I ... Args){
+        return boost::multi_array_types::index_range(std::forward(Args)...);
+    }
 
     using eigm=typename Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>, Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
 
@@ -186,7 +198,7 @@ public:
         using subarr=GSubArray<T,n-1,GArrayDyn>;
            template<class Element,int nd=n,typename std::enable_if< nd != 1, int>::type =0>
            subarr operator[](Element el){
-               return subarr(*this,ar_[gp_->idx(0,el)]);
+               return subarr(this,ar_[gp_->idx(0,el)]);
            }
 
 //            template<class Element>
@@ -390,20 +402,20 @@ void save(Archive &Ar) const;
 };
 
 
-template<class ... Guides>
-GArray<double, guides::GuidePack < Guides...>>
-GA_ones_d(Guides
-... gpin) {
-GArray<double, guides::GuidePack < Guides...>>
+        template<class ... Guides>
+        GArray<double, guides::GuidePack<Guides...>>
+        GA_ones_d(Guides
+                  ... gpin) {
+            GArray<double, guides::GuidePack<Guides...>>
 
-gout (std::move(gpin)
+                    gout(std::move(gpin)
 
-...);
-gout = 1.0;
-return
-gout;
+                                 ...);
+            gout = 1.0;
+            return
+                    gout;
 
-}
+        }
 
 
 

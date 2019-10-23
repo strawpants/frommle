@@ -26,6 +26,7 @@
 #include <iterator>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <memory>
+#include <ostream>
 namespace frommle {
 namespace guides {
     template<class G>
@@ -57,10 +58,18 @@ public:
     }
     operator std::string (){return hash_;}
     bool operator == (const typehash &other)const{return hash_==other.hash_;}
-    std::string hash_{};
-private:
 
+    std::ostream& write(std::ostream& os)const{
+        return os << hash_;
+    }
+private:
+    std::string hash_{};
 };
+
+////free function to allow streaming the typehas to a stream
+std::ostream &operator<<(std::ostream &os, typehash const &m);
+
+
 
 
 
@@ -76,7 +85,7 @@ private:
         GuideBase(const std::string & name,const typehash &type):type_(type),name_(name){}
         virtual ~GuideBase() {
         }
-       
+        using Element=std::string;
         //implict conversion to a maskedversion
         template<class G>
         explicit   operator MaskedGuide<G>();
@@ -94,6 +103,7 @@ private:
         void setName(const std::string & name){
             name_=name;
         }
+        size_t idx(const Element & el )const{return 0;}
         virtual bool isMasked()const{return false;};
         virtual bool isPermuted()const{return false;};
         static constexpr int ndim=1;

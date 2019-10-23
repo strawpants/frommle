@@ -18,6 +18,9 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #include "core/GuidePack.hpp"
+
+///free function to allow streaming the typehas to a stream
+
 namespace frommle{
 
 	namespace guides{
@@ -29,6 +32,12 @@ namespace frommle{
 	template class GuidePackDyn<3>;
 	template class GuidePackDyn<4>;
 	template class GuidePackDyn<5>;
+
+
+		std::ostream &operator<<(std::ostream &os, frommle::guides::typehash const &m) {
+			return m.write(os);
+		}
+
 	}
 }
 

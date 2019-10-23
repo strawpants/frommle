@@ -144,17 +144,36 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
 
 
 BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
-    int nmax=5;
+    int nmax=13;
     Ynm<double,SHtmnGuide,OGRPGuide> ynmop(nmax);
 
     std::vector<double> lon={-179.3,61.0,156.0};
     std::vector<double> lat={-87.0,1.0,32.0};
     auto geoguide=geometry::makePointGuide(lon,lat);
-    IndexGuide iguide(4);
-    auto outar_multi=ynmop(GA_ones_d(geoguide,iguide));
-
+    int naux=4;
+    
+    IndexGuide iguide(naux);
+    
+    //apply operator for single column input
     auto outar_single=ynmop(GA_ones_d(geoguide));
-    LOGINFO << std::string(outar_single.gp()[0]->hash())<< std::endl;
+    
+    
+    //to compute the result for input with multiple columns first construct an array with ones
+    auto onesar=GA_ones_d(geoguide,iguide);
+
+    //modify the array with ones so that the columns have distinct (but predictable) values 
+    //boost marray types used for slicing
+    auto allrows=onesar.mrange();
+    auto indices=onesar.mindices(); 
+    for(int i = 0; i< naux;++i){
+        //create a subview of the underlying column
+        auto colview=onesar.mat()[ indices[allrows][i]];
+        std::fill(colview.begin(),colview.end(),i+1);
+    }
+
+    //pply the forward operator
+    auto outar_multi=ynmop(onesar);
+
     //sanity check n=5 m=2 solutions
     int n=5;
     int m=2;
@@ -172,22 +191,29 @@ BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
         auto idxc=typename SHtmnGuide::Element(n,m,SHGuideBase::trig::C);
         auto idxs=typename SHtmnGuide::Element(n,m,SHGuideBase::trig::S);
 
-//        for(auto & idxi:iguide){
-//            LOGINFO << idxi << std::endl;
-//        }
+        //for(auto const & gd:outar_multi.gp()){
+            //LOGINFO << gd->hash() << std::endl;
+        //}
+        //auto ig1=onesar.gp().as<IndexGuide>(1);        
+        //auto ig2=outar_multi.gp().as<IndexGuide>(1);        
 
         BOOST_TEST(outar_single[idxc] == y52c);
         BOOST_TEST(outar_single[idxs] == y52s);
+
+        //alos test whether all the columns spanned by Indexguide  yield the appropriate result
+        for(auto & idxi:*(outar_multi.gp().as<IndexGuide>(1))){
+            //LOGINFO << idxi << " ";
+            //LOGINFO << outar_multi[idxc][idxi] << std::endl;
+            BOOST_TEST(outar_multi[idxc][idxi] == (idxi+1)*y52c);
+            BOOST_TEST(outar_multi[idxs][idxi] == (idxi+1)*y52s);
+        }
+
 
         //also check auxiliary columns of outar_multi
 
 
 //        LOGINFO << n << "" << m<<" "<< outar_single[idxc] << " " << outar_single[idxs];
 
-        auto shg=outar_single.gpp()->as<SHtmnGuide>(0);
-
-
-        int idx=0;
 //        for(auto & el:*shg){
 //            std::tie(n,m,t)=el;
 //            LOGINFO<<idx++<<" "<<n<<" "<<m<<" "<<t<<std::endl;

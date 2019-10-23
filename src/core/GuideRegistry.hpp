@@ -60,19 +60,34 @@ namespace frommle{
         };
 
 
+
         template<class Element>
     class gvar_idx:public boost::static_visitor<size_t>{
     public:
         gvar_idx(Element el):el_(el){}
-        size_t operator()(const std::shared_ptr<SHtmnGuide> & gvar)const{
-            return gvar->idx(el_);
-        }
+//        size_t operator()(const std::shared_ptr<SHtmnGuide> & gvar)const{
+//            return gvar->idx(el_);
+//        }
+
         template<class T>
                 size_t operator()(const T & gvar)const{
-                THROWNOTIMPLEMENTED(std::string("cannot get index by Element from this guide").append(gvar->name()));
-                return 0;
+                //the correct function will be selected based on whether Element is a member of T
+                return idx<T,Element>(gvar);
         }
+
         Element el_;
+
+        template<class G,class El,typename std::enable_if<std::is_same<El,typename G::element_type::Element>::value,int>::type =0>
+        size_t idx(const G &gvar)const{
+            return gvar->idx(el_);
+        }
+
+        template<class G,class El,typename std::enable_if<!std::is_same<El,typename G::element_type::Element>::value,int>::type =0>
+        size_t idx(const G &gvar)const{
+            THROWNOTIMPLEMENTED(std::string("cannot get index by Element from this guide").append(gvar->name()));
+            return 0;
+        }
+
     };
 //        template<class P>
 //    class gvar_asptr: public boost::static_visitor<std::shared_ptr<P>>{
@@ -83,6 +98,34 @@ namespace frommle{
 //            }
 //
 //        };
+
+        //!@brief forward iterator which wraps around  a std:array of guide variants
+        class GVIterator{
+        public:
+            //iterator traits
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = GuideBasePtr;
+            using difference_type = std::ptrdiff_t;
+            using pointer = GuideBasePtr;
+            using reference = GuideBase&;
+            explicit GVIterator(const GuideRegistry::Gvar * el ):el_(el){}
+            GVIterator & operator++(){
+                ++el_;
+            }
+            GVIterator operator++(int){
+                GVIterator retval(*this);
+                ++(*this);
+                return retval;
+            }
+
+            bool operator==(GVIterator & other) const {return el_ == other.el_;}
+            bool operator!=(GVIterator & other) const {return !(*this == other);}
+            GuideBasePtr operator*()const {return boost::apply_visitor(gvar_baseptr(),*el_);}
+        protected:
+            const GuideRegistry::Gvar* el_={};
+//        Element elStop={};
+        private:
+        };
     }
 
 

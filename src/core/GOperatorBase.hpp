@@ -84,7 +84,7 @@ namespace core {
             }
 //            auto gptmp=*(gpo_->append(gin.gp()[ndim_i]));
 //            LOGINFO << gptmp[0]->size() << " "<< gptmp[1]->size() <<std::endl;
-            GArrayDyn<T,ndim_o+1> gout(*(gpo_->append(gin.gp()[ndim_i])));
+            GArrayDyn<T,ndim_o+1> gout(gpo_->append(gin.gpp()->gv(ndim_i)));
             this->operator()(gin,gout);
             return gout;
         }
