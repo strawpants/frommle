@@ -35,6 +35,7 @@
 #include "core/IndexGuide.hpp"
 
 using namespace frommle::geometry;
+using namespace frommle::guides;
 using namespace frommle;
 namespace utf=boost::unit_test;
 namespace tt = boost::test_tools;
@@ -177,29 +178,29 @@ BOOST_AUTO_TEST_CASE(OGR2BoostGeometry, *utf::tolerance(1e-4)){
 }
 
 ///Test masking operations of geometries within other geometries
-BOOST_AUTO_TEST_CASE(MaskGeometry){
-    using polyguide=OGRGuide<OGRPolygon>;
-    auto polymask=std::make_shared<polyguide>("poly");
+//BOOST_AUTO_TEST_CASE(MaskGeometry){
+    //using polyguide=OGRGuide<OGRPolygon>;
+    //auto polymask=std::make_shared<polyguide>("poly");
 
-    //open file with test wkt polygons
-    io::LineBuffer lbuf("data/testpolygonswkt.txt");
+    ////open file with test wkt polygons
+    //io::LineBuffer lbuf("data/testpolygonswkt.txt");
 
-    for(auto & ln:lbuf){
-        polymask->push_back(ln.str());
+    //for(auto & ln:lbuf){
+        //polymask->push_back(ln.str());
 
-    }
+    //}
 
-    //create a Fibonaccigrid with assigned values which is going to be masked
-    using pointguide=OGRGuide<OGRPoint>;
-    auto fibarr=core::make_garray<int>(makeFibonacciGrid(10000),core::IndexGuide(1));
-    fibarr=1;
+    ////create a Fibonaccigrid with assigned values which is going to be masked
+    //using pointguide=OGRGuide<OGRPoint>;
+    //auto fibarr=core::make_garray<int>(makeFibonacciGrid(10000),core::IndexGuide(1));
+    //fibarr=1;
 
-    withinOperator<OGRPolygon,pointguide> MaskOp(polymask);
+    //withinOperator<OGRPolygon,pointguide> MaskOp(polymask);
 
-    auto fibmask=MaskOp(fibarr);
-    BOOST_TEST(fibmask.g<0>()->size()==1000);
-    //save to file for checking in Qgis
+    //auto fibmask=MaskOp(fibarr);
+    //BOOST_TEST(fibmask.g<0>()->size()==1000);
+    ////save to file for checking in Qgis
 
-}
+//}
 
 

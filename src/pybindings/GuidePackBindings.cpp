@@ -24,9 +24,7 @@
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
 #include "core/GuidePack.hpp"
-
-namespace p = boost::python;
-
+#include "pybindings/numpyConverting.hpp"
 
 namespace frommle{
     namespace guides{
@@ -40,6 +38,32 @@ namespace frommle{
             }
         };
         
+
+        class gvar_to_ndarray: public boost::static_visitor<np::ndarray>{
+        public:
+            template<class T>
+            np::ndarray operator()(T & gvar)const{
+                using Element=typename T::element_type::Element;
+                np::dtype dtype=py::np_dtype<Element>::get();            
+                //create an numpy array
+                p::tuple shape(gvar->size()); 
+                np::ndarray py_array = np::empty(shape, dtype);
+                std::copy(gvar->begin(),gvar->end(),reinterpret_cast<Element*>(py_array.get_data())); 
+                return py_array;
+            }
+
+
+        };
+
+        //struct gvar_to_ndarray {
+            //static PyObject *convert(GuideRegistry::Gvar const  & tin) {
+                //auto ndarr=boost::apply_visitor(gvar_baseptr(),tin).get();
+                //return p::incref(p::object(guideptr).ptr());
+
+            //}
+        //};
+
+
         template<class ...T>
             struct GuidePackAppendOverride;
         
@@ -76,37 +100,42 @@ namespace frommle{
 
         struct GuidePackWrapper : public GuidePackBase, public GPWrapOverride, p::wrapper<GuidePackBase> {
         public:
-
-
-            size_t num_elements()const override{
-                if (p::override numel = this->get_override("num_elements")){
-                    return numel(); 
-                }
-                return this->GuidePackBase::num_elements();
+            GuidePackBase::const_iterator begin()const{
+                 
+                this->get_override("begin");
             }
-            size_t default_numelements()const{return this->GuidePackBase::num_elements();}
+            
+            GuidePackBase::const_iterator end()const{
+                 
+                this->get_override("end");
+            }
+            
+            size_t num_elements()const override{
+                return this->get_override("num_elements")();
+            }
             
             int nDim()const{
-                if (p::override nDimf = this->get_override("nDim")){
-                    return nDimf(); 
-                }
-                return this->GuidePackBase::nDim();
+                return this->get_override("nDim")();
             }
-            int default_nDim()const{return this->GuidePackBase::nDim();}
             
             const GuideBasePtr operator[](const int i)const override
             {
-                if (p::override fdispatch = this->get_override("operator[](const int)const")){
-                    return fdispatch(i); // *note*
-                }
-                return this->GuidePackBase::operator[](i);
+                return  this->get_override("operator[](const int)const")(i);
             
             }
-
-            const GuideBasePtr default_getguide(const int i)const{
-               return this->GuidePackBase::operator[](i);
+            
+            Gvar & gv(const int i)override{
+                return  this->get_override("gv")(i);
             }
-        
+            const Gvar & gv(const int i)const override{
+                return  this->get_override("gv")(i);
+            }
+
+            //return a numpynarray from iterating ove the elements 
+            np::ndarray coords(int i){
+                return boost::apply_visitor(gvar_to_ndarray(),gv(i));
+
+            }
             //const GuideRegistry::Gvar & operator[](const int i)const override
             //{
                 //if (p::override fdispatch = this->get_override("operator[](const int)const")){
@@ -193,8 +222,6 @@ namespace frommle{
 
 
 
-#define REGISTERDYNGP(N) p::class_<GuidePackDyn<N>,p::bases<GuidePackBase>>("GuidePack" #N)\
-                        .def("shape",&GuidePackDyn<N>::extent);
 
         void registerGuidePack(){
             p::to_python_converter<GuideRegistry::Gvar, gvar_to_pGuide> ();
@@ -206,11 +233,11 @@ namespace frommle{
             
             RegisterMembers<GuideRegistry>::regapp(
                     boostpyGP("GuidePackBase",p::no_init)
-                    .def("ndim",&GuidePackBase::nDim,&GuidePackWrapper::default_nDim)
+                    .def("ndim",p::pure_virtual(&GuidePackBase::nDim))
                     .def("__getitem__",p::pure_virtual(cget))
-                    .def("__iter__",p::iterator<const GuidePackBase>())
+                    .def("__iter__",p::range(&GuidePackBase::begin,&GuidePackBase::end))
                     .def("num_elements",p::pure_virtual(&GuidePackBase::num_elements))
-                    //.def("shape",&GuidePackWrapper::getshape)
+                    .def("coords",&GuidePackWrapper::coords)
                     );
             p::register_ptr_to_python< std::shared_ptr<GuidePackBase> >();
 

@@ -9,8 +9,8 @@ LIST(APPEND COREOBJS core/UserSettings.cpp)
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
 LIST(APPEND COREOBJS core/TreeNode.cpp)
 
-LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp sh/Ynm.hpp)
-LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/SHGuide.cpp)
+LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/Legendre.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp sh/Ynm.hpp)
+LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/Legendre.cpp sh/SHGuide.cpp)
 
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp geometry/OGR2boost.hpp geometry/OGRiteratorBase.hpp geometry/GuideMakerTools.hpp geometry/geomOperator.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GuideMakerTools.cpp geometry/OGRGuide.cpp)
@@ -28,11 +28,12 @@ LIST(APPEND EARTHOBJS earthmodels/EarthConstants.cpp)
 
 if (PYTHON)
     #add python wrapper routines
-    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/datetimeconversion.hpp pybindings/tupleconversion.hpp pybindings/tupleconversion.cpp pybindings/earthBindings.cpp)
+    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/datetimeconversion.hpp pybindings/tupleconversion.hpp pybindings/tupleconversion.cpp pybindings/earthBindings.cpp pybindings/numpyConverting.hpp pybindings/numpyConverting.cpp)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/geometryBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/GuidePackBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/GArrayBindings.cpp )
+    list(APPEND CXXPYWRAPS pybindings/GOperatorBindings.cpp )
     add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )
 endif()
 

@@ -58,10 +58,83 @@ namespace frommle{
             ftype costheta_=2; //impossible value to initiate values upon first call to set
         };
 
+
+        
+
+
+
 //explicitly initialize types for double and (long double) precision
         using Legendre_nm_d=Legendre_nm<double>;
         using Legendre_nm_ld=Legendre_nm<long double>;
 //        using Legendre_nm_dd=Legendre_nm<boost::multiprecision::float128>;
+        ///@brief a class which computes surface spherical harmonics while cahcing numerically expensive data
+        
+        template<class T>
+        class Ynm_cache{
+            public:
+                using trig=SHGuideBase::trig;
+                using nmt=SHGuideBase::Element;
+                using nm=SHnmHalfGuide::Element;
+                Ynm_cache(int nmax):nmax_(nmax),sincosmlon(std::array<int,2>{nmax+1,2}),Pnm(nmax){
+                
+                }
+
+            inline T operator[](const nmt & el){
+               int n,m;
+               trig t;
+               std::tie(n,m,t)=el;
+               //auto nmtmp= nm(n,m); 
+               return Pnm[nm(n,m)]*sincosmlon[m][t]; 
+            }
+            
+            //convenience function to compute costheta from lat
+            Ynm_cache & setlat(const T & lat){
+                return this->setx(sin(D2R*lat));
+            }
+
+            Ynm_cache & setx(const T & costheta){
+               
+                if (costheta == costheta_){
+                    //quick return when nothing needs to be done
+                    return *this;
+               }
+                costheta_=costheta;
+                Pnm.set(costheta);
+                return *this;
+
+            }
+
+            Ynm_cache & setlon(const T & lon){
+               
+                if (lon ==  lon_){
+                    //quick return when nothing needs to be done
+                    return *this;
+               }
+                lon_=lon;
+                double mlon=0;
+                for(int m=0;m<=nmax_;++m){
+                    //although I didn't test it I suspect calling cosine and sin on the same variable may be optimized  to calling a dedicated sincos function
+                    mlon=m*D2R*lon_;
+                    sincosmlon[m][0]=cos(mlon);
+                    sincosmlon[m][1]=sin(mlon);
+                }
+
+                return *this;
+
+            }
+
+
+            private:
+                int nmax_=0;
+                T costheta_=DBL_MAX; //note impossible value on purpose so that first call to setx will correctly initialize 
+                T lon_=DBL_MAX;
+                boost::multi_array<T,2> sincosmlon{};
+                Legendre_nm<T> Pnm{};
+
+        };
+
+    using Ynm_cache_d=Ynm_cache<double>;
+    using Ynm_cache_ld=Ynm_cache<long double>;
 
     }
 

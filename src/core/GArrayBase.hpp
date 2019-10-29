@@ -231,7 +231,6 @@ GArrayDyn<T, GP::ndim> GArrayDyn<T, n>::reshape(const GP &gpin) const {
     gaout.gp() = gpin;
     //assign data pointer
     gaout.data_ = data_;
-    auto ext = gaout.gp().extent();
     //create a renewed multi_array_ref (ugly hack with placement new)
     using arrnew=typename GArrayDyn<T, GP::ndim>::arr;
     gaout.ar_.~arrnew();
@@ -401,6 +400,74 @@ void save(Archive &Ar) const;
 
 };
 
+        template<class T>
+        struct GAconstruct{
+            
+            template<int n>
+            static GArrayDyn<T,n> ones(guides::GuidePackDyn<n> gpin){
+                return fromGuidePack<n>::fill(1,gpin);
+            }
+
+            template<class ... Guides>
+            static GArray<T,guides::GuidePack<Guides...>> ones(Guides ... guides){
+                return fromGuides<Guides...>::fill(1,std::forward<Guides>(guides)...);
+            }
+            
+            template<int n>
+            static GArrayDyn<T,n> zeros(guides::GuidePackDyn<n> gpin){
+                return fromGuidePack<n>::fill(0,gpin);
+            }
+
+            template<class ... Guides>
+            static GArray<T,guides::GuidePack<Guides...>> zeros(Guides ... guides){
+                return fromGuides<Guides...>::fill(0,std::forward<Guides>(guides)...);
+            }
+
+
+            template<int n>
+            static GArrayDyn<T,n*2> eye(guides::GuidePackDyn<n> gpin){
+                auto gout=fromGuidePack<n*2>::fill(0,*gpin.append(gpin));
+                //fill diagonal using eigen
+                gout.eig().diagonal().array()=static_cast<T>(1);
+                return gout;
+            }
+
+
+            template<class ... Guides>
+            struct fromGuides{
+
+            static GArray<T, guides::GuidePack<Guides...>> fill(const T & fillvalue, Guides ... guides){
+
+                GArray<T, guides::GuidePack<Guides...>> gout(std::move(guides)...);
+                 gout = fillvalue;
+            //LOGINFO << "matrix value" << gout.mat()[0][0] << std::endl;
+                return gout;
+
+            }
+        
+            };
+
+
+            template<int n>
+            struct fromGuidePack{
+
+            static GArrayDyn<T,n> fill(const T & fillvalue, guides::GuidePackDyn<n> gpin){
+
+                GArrayDyn<T, n> gout(std::move(gpin));
+                 gout = fillvalue;
+            //LOGINFO << "matrix value" << gout.mat()[0][0] << std::endl;
+                return gout;
+
+            }
+        
+            
+            };
+
+        };
+
+
+
+
 
         template<class ... Guides>
         GArray<double, guides::GuidePack<Guides...>>
@@ -416,6 +483,8 @@ void save(Archive &Ar) const;
                     gout;
 
         }
+
+
 
 
 

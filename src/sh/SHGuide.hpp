@@ -81,6 +81,36 @@ namespace frommle{
                return idx(std::get<0>(el),std::get<1>(el)); 
             }
             Element operator[](const size_t idx)const{return nm_from_i(idx,nmax_);}
+            
+            //nested class which acts as an iterator
+            class const_iterator:public Guideiterator<Element>{
+            public:
+                const_iterator():Guideiterator(Element(-1,-1)){}
+                const_iterator(const SHnmHalfGuide * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
+
+                const_iterator operator++(int){
+                    const_iterator retval(*this);
+                    ++(*this);
+                    return retval;
+                }
+                const_iterator & operator++(){
+                    ++idx_;
+                    if (idx_==sz_){
+                        //stops iteration
+                        elVal=Element(-1,-1);
+                    }else {
+                        elVal = gptr_->operator[](idx_);
+                    }
+                    return *this;
+                }
+
+            private:
+                const SHnmHalfGuide* gptr_=nullptr;
+                size_t sz_=0;
+                size_t idx_=0;
+            };
+            const_iterator begin()const{return const_iterator(this);}
+            const_iterator end()const{return const_iterator();}
             private:
                 int nmax_=-1;
         };
@@ -178,6 +208,12 @@ namespace frommle{
             }
 
         };
+
+
+        //declare some stream operators
+
+		std::ostream &operator<<(std::ostream &os, SHGuideBase::Element const &el);
+
 
     }
 }

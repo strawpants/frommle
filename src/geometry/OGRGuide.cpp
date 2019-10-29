@@ -24,7 +24,7 @@ namespace frommle{
     namespace guides{
 
         template<class T>
-        void OGRGuide<T>::push_back(Element &&geometry) {
+        void OGRGuide<T>::push_back(T &&geometry) {
             geoms_.push_back(std::make_shared<T>(std::move(geometry)));
             ++size_;
         }
@@ -69,7 +69,7 @@ namespace frommle{
         }
 
         template<class T>
-        void OGRGuide<T>::push_back(const Element &geometry) {
+        void OGRGuide<T>::push_back(const T &geometry) {
             geoms_.push_back(std::make_shared<T>(geometry));
             ++size_;
         }

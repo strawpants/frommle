@@ -37,7 +37,7 @@ namespace frommle{
         };
 
 
-        using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide,SHtmnGuide,OGRPointGuide,OGRPolyGuide,GuideBase>;
+        using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide,SHtmnGuide,SHnmtGuide,OGRPointGuide,OGRPolyGuide,GuideBase>;
 
 
      //some useful visitors to be applied to the boost variant of the registered guides
@@ -107,7 +107,7 @@ namespace frommle{
             using value_type = GuideBasePtr;
             using difference_type = std::ptrdiff_t;
             using pointer = GuideBasePtr;
-            using reference = GuideBase&;
+            using reference = const GuideBasePtr&;
             explicit GVIterator(const GuideRegistry::Gvar * el ):el_(el){}
             GVIterator & operator++(){
                 ++el_;

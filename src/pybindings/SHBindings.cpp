@@ -9,10 +9,10 @@ namespace np = boost::python::numpy;
 
 #include "sh/SHGuide.hpp"
 #include "sh/Legendre_nm.hpp"
-#include "../sh/SHGuide.hpp"
-#include "../core/GuideBase.hpp"
-#include "coreBindings.hpp"
-#include "tupleconversion.hpp"
+#include "sh/SHGuide.hpp"
+#include "core/GuideBase.hpp"
+#include "pybindings/coreBindings.hpp"
+#include "pybindings/tupleconversion.hpp"
 #include <boost/python/copy_non_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
 

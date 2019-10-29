@@ -119,7 +119,7 @@ using OGRPointGuide=OGRGuide<OGRPoint>;
 
 void (OGRPointGuide::*pb1)(const OGRPoint &)=&OGRPointGuide::push_back;
 void (OGRPointGuide::*pb2)(const std::string &)=&OGRPointGuide::push_back;
-OGRPoint & (OGRPointGuide::*iget)(const size_t)const=&OGRPointGuide::operator[];
+const std::shared_ptr<OGRPoint> & (OGRPointGuide::*iget)(const size_t)const=&OGRPointGuide::operator[];
 
 void pyexport_geometry()
 {

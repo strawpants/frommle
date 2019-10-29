@@ -22,8 +22,6 @@
 #include <cassert>
 #include <tuple>
 #include "GArrayBase.hpp"
-#include "core/GPCookieCut.hpp"
-#include "core/IndexGuide.hpp"
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
 
@@ -61,6 +59,11 @@ namespace core {
     public:
         static const int ndim_o=no;
         static const int ndim_i=ni;
+        using gin_t=GArrayDyn<T,ni>;
+        using ginplus_t=GArrayDyn<T,ni+1>;
+
+        using gout_t=GArrayDyn<T,no>;
+        using goutplus_t=GArrayDyn<T,no+1>;
         virtual bool isLinear()const{return false;};
         GOperatorDyn(){}
 
@@ -70,8 +73,17 @@ namespace core {
         }
 
 
+        virtual void fwdOp(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)=0;
+
+        
+        virtual std::shared_ptr<GOperatorDyn> inv()const{
+            
+            THROWNOTIMPLEMENTED("Inverse operation is not implemented for this Operator");
+        
+        }
+        
         ///@brief takes an array with extended dimension as input and applies the forward operator
-        virtual void operator()(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)=0;
+        inline void operator()(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout){fwdOp(gin,gout);}
 //        {
 //
 //            THROWNOTIMPLEMENTED("Default forward operator with extended dimension is currently not implemented");
@@ -119,18 +131,25 @@ namespace core {
                 THROWMETHODEXCEPTION("Cannot compute linear adjoint from a non-linear operator use adjoint_linearized");
             }
 
-            //create a unit diagonalized array by
-//            auto gunit;///=GA_ones<T,ndim_i>(gpin);
-
-            ///apply the forward operator to the unit diagonal array
-            THROWNOTIMPLEMENTED("adjoint operator is curretnly not implemented");
+            //create a identity matrix
+            GArrayDyn<T,ndim_i+1> gunit=GAconstruct<T>::eye(gpin);
+            //call the forward operator with the identity matrix
+            fwdOp(gunit,gout);
+        }
+        
+        ///@brief explicitly provides the adjoint matrix of a linear operator
+        GArrayDyn<T,ndim_o+ndim_i> adjoint(const guides::GuidePackDyn<ndim_i> & gpin){
+            //create new GArray and forward call
+            
+            if (!gpo_){
+                THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
+            }
+            auto tmpgpo=gpo_->append(gpin);
+            GArrayDyn<T,ndim_o+ndim_i> gout(*tmpgpo);
+            adjoint(gpin,gout);
+            return gout;
         }
 
-        ///@brief provides the adjoint matrix linearized wrt input g0
-        void adjoint_linearized(const GArrayDyn<T,ndim_i> & g0, GArrayDyn<T,ndim_o+ndim_i> & gout ){
-
-            THROWNOTIMPLEMENTED("linearized adjoint operator is currently not implemented");
-        }
 
 
     protected:
@@ -156,86 +175,6 @@ class GOperator : public GOperatorDyn<T, outGP::ndim, inGP::ndim > {
         }
     protected:
         using gopbase::gpo_;
-
-//        using rmerge_t=typename guides::GPCookieCut<outGP>::template with<inGP>::rmerge_t;
-//        using adjoint_t=GArray<T,rmerge_t>;
-//
-//        template<class addG>
-//        using goapp_t=typename guides::GPCookieCut<outGP>::template gapp_t<addG>;
-////
-//        template<class addG>
-//        using giapp_t=typename guides::GPCookieCut<inGP>::template gapp_t<addG>;
-//
-//        template<class addG>
-//                using garout=GArray<T,goapp_t<addG>>;
-//
-//
-//        template<class addG>
-//            using garin=GArray<T,giapp_t<addG>>;
-//
-//        template<class addG>
-//                garout<addG> operator()(const garin<addG> & gin){
-//                    //copy relevant input guides to gpin_
-////                    auto frst=gin.gp().begin();
-////                    std::copy(frst,frst+indim-1,gpi_.begin());
-////
-////                    //allocate a new array
-////
-////                    auto gout=garout<addG>(guides::GPstrip<outGP>::gapp(gpo_,gin.gp()[indim-2]));
-//
-//                }
-//           ///@brief compute the adjoint of the operator
-//           virtual adjoint_t adjoint(){
-//
-//           }
-//
-////        out=core::GArray<T,typename guides::GPappend<addG,inGP>::right>;
-//
-//        ///@brief virtual function which return the adjoint (possibly linearized wrt g0)
-//        //virtual core::Garray<T,outGP,inGP> adjoint(const core::Garray<T,inGP> & g0)=0;
-//
-//
-//
-////        template<class addG>
-////        garout<addG> apply(garin<addG> & inGar){
-////            //check for proper guide matching
-////            // possibly resort?
-////            // //...
-////
-////            //extract the guidepack from the input
-////            //gpi_=inGar.g
-////            //allocate garray for output
-////            garout<addG> gout(gpo_.append(inGar.template g<garin<addG>::ndim>()));
-////
-////            //call forward operator for matrices
-////            fwdOp(inGar.mat(),gout.mat());
-////
-////            ////get the size of the auxiliary dimension
-////            //auto sz=inGar.template g<inGP::ndim>().size();
-////            //using range=boost::multi_array_types::index_range;
-////            //typename garin<addG>::index_gen indin;
-////            //typename garout<addG>::index_gen indout;
-////            //for(size_t i=0;i<sz;++i){
-////                //fwdOp(inGar[indin[range()][i]],gout[indout[range()][i]]);
-////            //}
-////            return gout;
-////
-////        }
-//
-//
-//
-//        using maroutv=typename boost::multi_array_ref<T,ndim_o+1>::template array_view<ndim_o>;
-//        using marinv=typename boost::multi_array_ref<T,ndim_i+1>::template array_view<ndim_i>;
-//
-//        using marout=boost::multi_array_ref<T,ndim_o+1>;
-//        using marin=boost::multi_array_ref<T,ndim_i+1>;
-//        //the actual forward operator to be implemented int he derived classes
-//        virtual void fwdOp(const marin & in, marout & out)=0;
-//
-//    protected:
-//        outGP gpo_{};
-//        inGP gpi_{};
-
 
     };
 

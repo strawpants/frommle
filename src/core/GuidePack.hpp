@@ -42,7 +42,7 @@ class GuidePackBase: public virtual GauxPureVirt{
     public:
         GuidePackBase(){};
         ~GuidePackBase(){};
-        virtual int nDim()const{return 0;}
+        virtual int nDim()const=0;
         using Gvar=GuideRegistry::Gvar;
         using GauxPureVirt::append;
 //        using iterator=Gvar*;
@@ -62,6 +62,8 @@ class GuidePackBase: public virtual GauxPureVirt{
         virtual GuideBasePtr operator[](const int i)=0;
         virtual const GuideBasePtr operator[](const int i)const=0;
     
+        virtual Gvar & gv(const int i)=0;
+        virtual const Gvar & gv(const int i)const=0;
     private:
 
 };
@@ -115,9 +117,13 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         //using Gvar=GuideRegistry::Gvar;
         using GauxVirtImpl<n>::append;
         //also allow appending a shared_ptr
-        std::shared_ptr<GuidePackDyn<n+1>> append(const GuideBasePtr & gin)const;
+        //std::shared_ptr<GuidePackDyn<n+1>> append(const GuideBasePtr & gin)const;
 
-        int nDim()const{return n;}
+        //and allow appending an entire  guidepack
+        template<int nadd>
+        std::shared_ptr<GuidePackDyn<n+nadd>> append(const GuidePackDyn<nadd> & gpin)const;
+        
+        int nDim()const override {return n;}
         static const int ndim=n;
 
         //@brief return the index corresponding to a certain Guide Element
@@ -137,8 +143,8 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         }
 
         //direct access to the underlying boost variants
-        Gvar & gv(const int i){return gpar_[i];}
-        const Gvar & gv(const int i)const{return gpar_[i];}
+        Gvar & gv(const int i)override{return gpar_[i];}
+        const Gvar & gv(const int i)const override{return gpar_[i];}
 
 //        extract a specific type of guide from the guidepack
         template<class T>
@@ -201,6 +207,23 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
 
         //}
 
+        template<int n>
+        template<int nadd>
+        std::shared_ptr<GuidePackDyn<n+nadd>> GuidePackDyn<n>::append(const GuidePackDyn<nadd> & gpin)const{
+            auto gpout=std::make_shared<GuidePackDyn<n+nadd>>();
+            for(int i=0; i<n;++i){
+                gpout->gv(i)=this->gv(i);
+            }
+
+            //append others guides
+            //
+            for(int i=0; i<nadd;++i){
+                gpout->gv(i)=gpin.gv(i);
+            }
+            //LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
+            return gpout;
+
+        }
 
 /*!brief
  * Wraps several guides into a tuple and provide access functions

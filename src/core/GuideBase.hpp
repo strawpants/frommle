@@ -27,6 +27,8 @@
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <memory>
 #include <ostream>
+#include <cmath>
+#include "core/Logging.hpp"
 namespace frommle {
 namespace guides {
     template<class G>
@@ -57,6 +59,7 @@ public:
         return typehash(hash_+","+std::to_string(id));
     }
     operator std::string (){return hash_;}
+    const std::string & name()const{return hash_;}
     bool operator == (const typehash &other)const{return hash_==other.hash_;}
 
     std::ostream& write(std::ostream& os)const{
@@ -106,12 +109,41 @@ std::ostream &operator<<(std::ostream &os, typehash const &m);
         size_t idx(const Element & el )const{return 0;}
         virtual bool isMasked()const{return false;};
         virtual bool isPermuted()const{return false;};
-        static constexpr int ndim=1;
+        //static constexpr int ndim=1;
+        virtual std::vector<Element> descriptor()const{
+            //default implementation jsut makes a description based ont he typehash
+            //allocate space in the vector
+            char fmt[12];
+            char el[50];
+            sprintf(fmt,"\%s_idx\%0%dd",floor(std::log10(size_)));
+            LOGINFO << fmt << std::endl;
+            std::vector<Element> desc(size_);
+            for(size_t i=0;i<size_;++i){
+                sprintf(el,fmt,type_.name().c_str(),i);
+                desc[i]=el;  
+            }
+            return desc;
+        }
+        using const_iterator=std::vector<Element>::const_iterator;
+        const_iterator begin()const {
+            //although the function is marekd const we do allow the cache variable to be set dynamically 
+            const_cast<GuideBase*>(this)->initdesc();
+            return descripcache_.begin();}
+        const_iterator end()const{
+            //although the function is marekd const we do allow the cache variable to be set dynamically 
+            const_cast<GuideBase*>(this)->initdesc();
+            return descripcache_.end();}
     private:
+        void initdesc(){
+            if(descripcache_.size() ==0 ){
+                descripcache_=descriptor();
+            }
+        }
     protected:
         typehash type_{"FROMMLE"};
-        std::string name_="Guide";
         size_t size_ = 0;
+        std::string name_="Guide";
+        std::vector<Element> descripcache_{}; 
     };
 
 

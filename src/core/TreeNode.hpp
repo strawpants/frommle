@@ -164,11 +164,11 @@ namespace frommle{
                 }
             }
 
-            virtual const TreeNodeRef operator[](const std::string & name)const {throwMethExcept();};
-            virtual const TreeNodeRef operator[](const size_t & idx)const {throwMethExcept();};
+            virtual const TreeNodeRef operator[](const std::string & name)const {throwMethExcept();return TreeNodeRef();};
+            virtual const TreeNodeRef operator[](const size_t & idx)const {throwMethExcept();return TreeNodeRef();};
 
-            virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();}
-            virtual TreeNodeRef operator[](const size_t & idx){throwMethExcept();};
+            virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();return TreeNodeRef();}
+            virtual TreeNodeRef operator[](const size_t & idx){throwMethExcept();return TreeNodeRef();};
 
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const=0;
 //            virtual const TreeNodeRef & ref()const=0;

@@ -1,5 +1,5 @@
 /*! \file
- \brief some explicitly instantiated templated functions
+ \brief 
  \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
@@ -17,24 +17,23 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "core/GuidePack.hpp"
 
-///free function to allow streaming the typehas to a stream
+#include "pybindings/numpyConverting.hpp"
 
 namespace frommle{
 
-	namespace guides{
-	//class GuidePackBase;
-	 //explicitly instantiate a few dynamic guidepacks
-	template class GuidePackDyn<0>;
-	template class GuidePackDyn<1>;
-	template class GuidePackDyn<2>;
-	template class GuidePackDyn<3>;
-	template class GuidePackDyn<4>;
-	template class GuidePackDyn<5>;
+    namespace py{
+
+        
+    void register_numpy_converters(){
+        
+        //register vector to ndarray converter at runtime
+        p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
+
+        register_mar<double,6>();
+        register_mar<size_t,6>();
 
 
-
-	}
+    }        
+    }
 }
-

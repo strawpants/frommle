@@ -91,7 +91,7 @@ namespace frommle {
             assert(ilon!=-1 and ilat !=-1);
 
             ++ilon;
-            if (ilon >= gridPtr->nlon_){
+            if (ilon >= (unsigned int) gridPtr->nlon_){
                 ilon=0;
                 ++ilat;
 

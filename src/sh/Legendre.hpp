@@ -1,5 +1,5 @@
 /*! \file
- \brief some explicitly instantiated templated functions
+ \brief 
  \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
@@ -17,24 +17,34 @@
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "core/GuidePack.hpp"
 
-///free function to allow streaming the typehas to a stream
+#include<vector>
+#include "cassert"
+#ifndef SRC_SH_LEGENDRE_HPP_
+#define SRC_SH_LEGENDRE_HPP_
 
 namespace frommle{
-
-	namespace guides{
-	//class GuidePackBase;
-	 //explicitly instantiate a few dynamic guidepacks
-	template class GuidePackDyn<0>;
-	template class GuidePackDyn<1>;
-	template class GuidePackDyn<2>;
-	template class GuidePackDyn<3>;
-	template class GuidePackDyn<4>;
-	template class GuidePackDyn<5>;
+namespace sh{
 
 
+    ///@brief a class which computes and caches a unnormalized Legendre polynomial
+template<class ftype>
+    class Legendre{
+        public:
+            
+            Legendre(int nmax):nmax_(nmax),pn_(nmax+1){}
+            Legendre & set(const ftype costheta);
+            inline const ftype & operator[](size_t n)const{assert(n <= nmax_);return pn_[n];} 
+            const std::vector<ftype> & get(){return pn_;}
+        private:
+            int nmax_=-1;
+            std::vector<ftype> pn_{}; 
+    };
 
-	}
+
 }
 
+}
+
+
+#endif 

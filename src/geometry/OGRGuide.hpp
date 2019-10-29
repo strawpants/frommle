@@ -42,8 +42,8 @@ namespace frommle{
         template<class T>
         class OGRGuide:public GuideBase{
         public:
-            using Element=T;
-            using ElementContainer=std::vector<std::shared_ptr<Element>>;
+            using Element=std::shared_ptr<T>;
+            using ElementContainer=std::vector<Element>;
             //structors
             OGRGuide(){}
             OGRGuide(const std::string & name):GuideBase(name,typehash(name)){}
@@ -51,8 +51,8 @@ namespace frommle{
             OGRGuide(const OGRGuide & in)=default;
 
             ///@brief push_back family
-            void push_back(Element &&geometry);
-            void push_back(const Element &geometry);
+            void push_back(T &&geometry);
+            void push_back(const T &geometry);
             //@brief push back a new geometry from a well-known test representation
             void push_back(const std::string & WKT);
             using const_iterator=typename ElementContainer::const_iterator;
@@ -62,9 +62,9 @@ namespace frommle{
 
             iterator begin() { return geoms_.begin(); }
             iterator end() { return geoms_.end(); }
-            Element & operator[](const size_t idx){return *(geoms_.at(idx));}
-            Element & operator[](const size_t idx)const{return *(geoms_.at(idx));}
-            size_t idx(const Element & geom)const{
+            Element & operator[](const size_t idx){return geoms_.at(idx);}
+            const Element & operator[](const size_t idx)const{return geoms_.at(idx);}
+            size_t idx(const T & geom)const{
                 size_t i=0;
                 for(auto & geo:geoms_){
                     if(*geo == geom){return i;}
@@ -84,14 +84,14 @@ namespace frommle{
             //operator core::MaskedGuide<OGRGuide>(){
             //return core::MaskedGuide<OGRGuide>(static_cast<const OGRGuide&>(*this));
             //}
-            using GuideBase::operator MaskedGuide<OGRGuide>;
+            //using GuideBase::operator MaskedGuide<OGRGuide>;
         private:
             friend class io::serialize;
             template<class Archive>
             void load(Archive & Ar);
             template<class Archive>
             void save(Archive & Ar)const;
-            std::vector <std::shared_ptr<Element>> geoms_={};
+            std::vector <Element> geoms_={};
             std::shared_ptr<rtree> rtreeIndex{};
             void buildRtree();
             OGRSpatialReference SpatialRef_=*OGRSpatialReference::GetWGS84SRS();

@@ -42,6 +42,7 @@ namespace frommle{
 
     namespace core{
         void registerGArrays();
+        void registerGOperators();
 
     }
 }

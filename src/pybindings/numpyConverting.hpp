@@ -22,9 +22,12 @@
 #include <boost/python/numpy.hpp>
 #include <boost/multi_array.hpp>
 #include "pybindings/tupleconversion.hpp"
+#include "core/GuideRegistry.hpp"
+#include "pybindings/datetimeconversion.hpp"
+
 namespace p = boost::python;
 namespace np = boost::python::numpy;
-
+using namespace frommle;
 #ifndef FROMMLE_NUMPYCONVERTERS_HPP
 #define FROMMLE_NUMPYCONVERTERS_HPP
 
@@ -41,9 +44,14 @@ namespace frommle{
         }
 
         };
-
         
+        //template<>
+        //struct np_dtype<guides::gregdate>{
+            //static np::dtype get(){
+                //return np::dtype(guides::gregdate());
+        //}
 
+        //};
 
         template<class T>
         struct vec_to_ndarray{
@@ -109,27 +117,19 @@ namespace frommle{
 
 
 
-    template<class G>
-    np::ndarray guide_to_ndarray(const G & gd){
-        using Element=typename G::Element;
-        np::dtype dtype=np_dtype<Element>::get();            
-        //create an numpy array
-        p::tuple shape(gd.size()); 
-        np::ndarray py_array = np::empty(shape, dtype);
-        std::copy(gd.begin(),gd.end(),reinterpret_cast<Element*>(py_array.get_data())); 
-        return py_array;
-    }
-
-    void register_numpy_converters(){
-        
-        //register vector to ndarray converter at runtime
-        p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
-
-        register_mar<double,6>();
-        register_mar<size_t,6>();
+    //template<class G>
+    //np::ndarray guide_to_ndarray(const G & gd){
+        //using Element=typename G::Element;
+        //np::dtype dtype=np_dtype<Element>::get();            
+        ////create an numpy array
+        //p::tuple shape(gd.size()); 
+        //np::ndarray py_array = np::empty(shape, dtype);
+        //std::copy(gd.begin(),gd.end(),reinterpret_cast<Element*>(py_array.get_data())); 
+        //return py_array;
+    //}
 
 
-    }        
+    void register_numpy_converters();
 
     }
 

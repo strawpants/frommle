@@ -24,10 +24,11 @@
 #define BOOST_TEST_MODULE SHtesting
 #include <boost/test/unit_test.hpp>
 #include "sh/Legendre_nm.hpp"
+#include "sh/Legendre.hpp"
 #include "sh/SHGuide.hpp"
 #include "core/IndexGuide.hpp"
 #include "sh/Ynm.hpp"
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 #include <algorithm>
 #include "geometry/GuideMakerTools.hpp"
@@ -41,6 +42,11 @@ double P52(double theta) {
     return sc * (2 * cos(theta) + cos(3 * theta) - 3 * cos(5 * theta));
 }
 
+
+//@brief test function generated with sagemath
+double P7(double x){
+    return 429/16.0*std::pow(x,7) - 693/16.0*std::pow(x,5) + 315/16.0*std::pow(x,3)- 35/16.0*x;
+}
 
 BOOST_AUTO_TEST_CASE(SHguidetest){
     int nmax=5;
@@ -63,10 +69,23 @@ BOOST_AUTO_TEST_CASE(SHguidetest){
 
 }
 
+BOOST_AUTO_TEST_CASE(LegendrePoly,*boost::unit_test::tolerance(1e-11)){
+    int nmax=50000;
+    Legendre<double> Pn(nmax);
+    int nsamples=1000;
+    for(int i=0;i<nsamples;++i){
+        double x=-1+(2.0*i)/nsamples;
+        Pn.set(x);
+        //LOGINFO << (5*std::pow(x,3)-3*x)/2<< " "<<Pn.get()[3] <<std::endl;
+        BOOST_TEST(P7(x) == Pn[7]);
+    }
+    
+
+}
 
 BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
 {
-    const double d2r=std::atan(1.0)*4/180;
+    //const double d2r=std::atan(1.0)*4/180;
     Legendre_nm_d Pnm(500);
     double theta;
     int nsteps=180/0.25;
@@ -74,7 +93,7 @@ BOOST_AUTO_TEST_CASE(assocLegendre,*boost::unit_test::tolerance(1e-11))
 
     BOOST_TEST_MESSAGE("Testing associated Legendre polynomials against analytical P52 solution");
     for(int i=0;i<=nsteps+1;i++){
-        theta=dt*i*d2r;
+        theta=dt*i*D2R;
         Pnm.set(cos(theta));
         auto indx=SHnmHalfGuide::Element(5,2);
         BOOST_TEST(Pnm[indx]==P52(theta));
@@ -144,8 +163,8 @@ BOOST_AUTO_TEST_CASE(stabilityAssocLegendre)
 
 
 BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
-    int nmax=13;
-    Ynm<double,SHtmnGuide,OGRPGuide> ynmop(nmax);
+    int nmax=1000;
+    Ynm<double,SHnmtGuide,OGRPGuide> ynmop(nmax);
 
     std::vector<double> lon={-179.3,61.0,156.0};
     std::vector<double> lat={-87.0,1.0,32.0};
@@ -159,7 +178,8 @@ BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
     
     
     //to compute the result for input with multiple columns first construct an array with ones
-    auto onesar=GA_ones_d(geoguide,iguide);
+    //auto onesar=GA_ones_d(geoguide,iguide);
+    auto onesar=GAconstruct<double>::zeros(geoguide,iguide);
 
     //modify the array with ones so that the columns have distinct (but predictable) values 
     //boost marray types used for slicing
@@ -177,7 +197,6 @@ BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
     //sanity check n=5 m=2 solutions
     int n=5;
     int m=2;
-    SHGuideBase::trig t=SHGuideBase::trig::C;
     double y52c=0.0;
     double y52s=0.0;
     for(auto &pnt:geoguide) {
@@ -188,8 +207,8 @@ BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
 //        LOGINFO << n << " " << m <<" " << " " << 0 << " "<< y52c << std::endl;
 //        LOGINFO << n << " " << m <<" " << " " << 1 << " "<< y52s << std::endl;
     }
-        auto idxc=typename SHtmnGuide::Element(n,m,SHGuideBase::trig::C);
-        auto idxs=typename SHtmnGuide::Element(n,m,SHGuideBase::trig::S);
+        auto idxc=typename SHGuideBase::Element(n,m,SHGuideBase::trig::C);
+        auto idxs=typename SHGuideBase::Element(n,m,SHGuideBase::trig::S);
 
         //for(auto const & gd:outar_multi.gp()){
             //LOGINFO << gd->hash() << std::endl;

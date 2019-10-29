@@ -34,6 +34,28 @@ namespace p = boost::python;
 namespace frommle{
     namespace core{
 
+        ///@biref converts a Guided array to an xarray DataArray
+        template<class T, int n>
+        struct garr_to_xarDataArray{
+            static PyObject *convert(GArrayDyn<T,n> const  & garin) {
+                //create a list of dimension names
+                p::list dims;
+                for(int i=0;i<n;++i){
+                    dims.append(garin.gpp()->name());
+                }
+//create a dictionary with coordinates and types
+                p::dict coords;
+
+                p::dict attr;
+
+
+                //construct a xarray DataArray
+                
+                //return p::incref(p::object(xarptr).ptr());
+
+            }
+        };
+
         template<class T, int n>
         struct register_dyngar{
             static void reg(const std::string & basename){

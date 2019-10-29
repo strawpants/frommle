@@ -72,6 +72,12 @@ namespace frommle {
         }
 
         
+		std::ostream &operator<<(std::ostream &os, SHGuideBase::Element const &el){
+            int n,m;
+            SHGuideBase::trig t;
+            std::tie(n,m,t)=el;
+            return os << n <<" " << m<< " " << t;
+        }
     }
 }
 

@@ -44,7 +44,7 @@ void pyexport_core(){
             .add_property("name",&GuideBase::name,&GuideBase::setName)
             .def("size",&GuideBase::size)
             .def("hash",&GuideBase::hash)
-            .add_static_property("ndim",p::make_getter(&GuideBase::ndim))
+            //.add_static_property("ndim",p::make_getter(&GuideBase::ndim))
             .def("__str__",&GuideBase::printhash);
 //            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
 
@@ -78,17 +78,14 @@ void pyexport_core(){
     //register GArrays
     registerGArrays();
 
-
+    
+    registerGOperators();
     //GuidePackPtr (*mkgp1) (GuideBase &) =&makeGuidePack;
     //p::def("makeGuidePack",mkgp1);
     ////BOOST_PYTHON_FUNCTION_OVERLOADS(makegp_overloads, &makeGuidePack, 1, 2);
     //GuidePackPtr (*mkgp2) (GuideBase &,GuideBase &) =&makeGuidePack;
     //p::def("makeGuidePack",mkgp2);
     
-    ///Register the operator base as defined in frommle
-    p::class_<GOperatorBase>("GOperatorBase").def(p::init<p::optional<std::string>>())
-            .add_property("name",&GOperatorBase::name,&GOperatorBase::setName);
-            //.add_static_property("ndim",p::make_getter(&GOperatorBase::ndim))
 
     //export setting logging levels for C++
     p::def("setcppInfoLevel",&Logging::setInfoLevel);

@@ -19,6 +19,11 @@
 from frommle.core import makeGArray_float64,makeGArray_uint64,makeGuidePack
 import numpy as np
 
+
+def xarray_wrap(garrayin):
+    pass
+
+
 def makeGArray(*guides,**kwargs):
     if "dtype" in kwargs:
          dt=kwargs["dtype"]
