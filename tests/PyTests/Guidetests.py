@@ -27,11 +27,8 @@
 #     print(n,m,t)
 
 
-from datetime import datetime
-from frommle.core import printdt
+from frommle.core import IndexGuides,makeGuidePack
+gp=makeGuidePack(IndexGuide(3))
 
-
-tmp=datetime.now()
-
-printdt(tmp)
-
+coords=gp.coords(0)
+print(coords)

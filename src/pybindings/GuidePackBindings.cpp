@@ -44,10 +44,12 @@ namespace frommle{
             template<class T>
             np::ndarray operator()(T & gvar)const{
                 using Element=typename T::element_type::Element;
-                np::dtype dtype=py::np_dtype<Element>::get();            
+                np::dtype dtype=np::dtype(p::object(Element()));            
                 //create an numpy array
                 p::tuple shape(gvar->size()); 
                 np::ndarray py_array = np::empty(shape, dtype);
+                //std::transform(gvar->begin(),gvar->end(),reinterpret_cast<Element*>(py_array.get_data()),[](const Element & elin){
+                       //return p::object(elin);});
                 std::copy(gvar->begin(),gvar->end(),reinterpret_cast<Element*>(py_array.get_data())); 
                 return py_array;
             }
@@ -132,8 +134,10 @@ namespace frommle{
             }
 
             //return a numpynarray from iterating ove the elements 
-            np::ndarray coords(int i){
-                return boost::apply_visitor(gvar_to_ndarray(),gv(i));
+            template<int n>
+            static np::ndarray coords(const GuidePackDyn<n> &gpin, int i){
+                //return np::array(p::make_tuple(0,1,2));
+                return boost::apply_visitor(gvar_to_ndarray(),gpin.gv(i));
 
             }
             //const GuideRegistry::Gvar & operator[](const int i)const override
@@ -202,7 +206,8 @@ namespace frommle{
         struct register_dyngpack{
             register_dyngpack(){
                 p::class_<GuidePackDyn<n>,p::bases<GuidePackBase>>(std::string("GuidePack").append(std::to_string(n)).c_str())
-                        .def("shape",&GuidePackDyn<n>::extent);
+                        .def("shape",&GuidePackDyn<n>::extent)
+                        .def("coords",&GuidePackWrapper::coords<n>);
                 //alos register a shared_ptr convrsion
 
                 p::register_ptr_to_python< std::shared_ptr<GuidePackDyn<n>> >();
@@ -237,7 +242,6 @@ namespace frommle{
                     .def("__getitem__",p::pure_virtual(cget))
                     .def("__iter__",p::range(&GuidePackBase::begin,&GuidePackBase::end))
                     .def("num_elements",p::pure_virtual(&GuidePackBase::num_elements))
-                    .def("coords",&GuidePackWrapper::coords)
                     );
             p::register_ptr_to_python< std::shared_ptr<GuidePackBase> >();
 

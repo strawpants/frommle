@@ -1,6 +1,6 @@
 /*! \file
  \brief 
- \copyright Roelof Rietbroek 2018
+ \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -18,27 +18,16 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef FROMMLE_COREBINDINGS_HPP
-#define FROMMLE_COREBINDINGS_HPP
+
 namespace frommle{
-    namespace guides {
+namespace guides{
+   template<class Element>
+       class ElementConverter{
 
-        void register_GuideBase();
-        void register_coreGuides();
-        //implementation cna be found in GuidePackBindings.cpp
-        void registerGuidePack();
-    }
+       };
 
-    namespace core{
-        void registerGArrays();
-        void registerGOperators();
-
-    }
-
-    namespace py{
-        void register_datetime();
-
-    }
 }
 
-#endif 
+}
+
+

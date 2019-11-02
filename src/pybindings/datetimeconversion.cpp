@@ -128,10 +128,7 @@ namespace frommle {
                 data->convertible = memory_chunk;
             }
         };
-
-/* @brief register datetime conversions from and to python
- *
- */
+        
         void register_datetime() {
             PyDateTime_IMPORT;
             p::to_python_converter<gregdate, bgregdate_to_pdatetime>();
@@ -140,7 +137,6 @@ namespace frommle {
             p::to_python_converter<ptime, bptime_to_pdatetime>();
             pdatetime_to_bptime();
         }
-
     }
 }
 

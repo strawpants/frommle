@@ -23,7 +23,6 @@
 #include <boost/multi_array.hpp>
 #include "pybindings/tupleconversion.hpp"
 #include "core/GuideRegistry.hpp"
-#include "pybindings/datetimeconversion.hpp"
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
