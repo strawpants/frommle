@@ -27,7 +27,7 @@
 #     print(n,m,t)
 
 
-from frommle.core import IndexGuides,makeGuidePack
+from frommle.core import IndexGuide,makeGuidePack
 gp=makeGuidePack(IndexGuide(3))
 
 coords=gp.coords(0)

@@ -30,7 +30,7 @@ add_definitions(-DFRVERSION="${FROMMLEVERSION}" -DBOOST_LOG_DYN_LINK -DBOOST_TES
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++11 ")
 #set(CMAKE_CXX_FLAGS_DEBUG "-pg  -g -O3") #to use when the gprof profiler is used for performance testing
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Winline -ansi -pedantic -Wextra -Weffc++ -Wno-long-long -std=c++11 ")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -std=c++11 ")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11 ")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11")
 
 #add make info
@@ -70,6 +70,8 @@ if (PYTHON)
    execute_process(COMMAND ${PYTHON} -c "from distutils.sysconfig import get_python_inc; print(get_python_inc(),end='')" OUTPUT_VARIABLE PYTHON_INCLUDE_DIR )
     #also store the include path in the cache
     set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} CACHE PATH "Include path for python headers")
+    #get the  python version without decimal point
+
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -79,6 +81,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 #try finding an optimizedBLAS library
 #find_package(OPTBLAS REQUIRED)
 
+#In order to be compatible with boost 1.66 versus later version we don't want to search for a boost cmake config file
+set( Boost_NO_BOOST_CMAKE ON)
 #We need the boost library for various things (e.g. timing and dates)
 find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time log program_options filesystem iostreams ${WITH_BOOST_MPI} )
 
