@@ -71,13 +71,19 @@ namespace frommle {
             return std::make_tuple(n,m,t);
         }
 
-        
-		std::ostream &operator<<(std::ostream &os, SHGuideBase::Element const &el){
+        std::ostream &operator<<(std::ostream &os, SHGuideBase::Element const &el){
             int n,m;
             SHGuideBase::trig t;
             std::tie(n,m,t)=el;
             return os << n <<" " << m<< " " << t;
         }
+                
+        std::ostream &operator<<(std::ostream &os, SHnmHalfGuide::Element const &el){
+            int n,m;
+            std::tie(n,m)=el;
+            return os << n <<" " << m;
+        }
+        
     }
 }
 

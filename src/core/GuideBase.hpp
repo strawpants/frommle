@@ -115,8 +115,8 @@ std::ostream &operator<<(std::ostream &os, typehash const &m);
             //allocate space in the vector
             char fmt[12];
             char el[50];
-            sprintf(fmt,"\%s_idx\%0%dd",floor(std::log10(size_)));
-            LOGINFO << fmt << std::endl;
+            sprintf(fmt,"%%s_idx%%0%dd",static_cast<int>(std::log10(size_))+1);
+            //LOGINFO << fmt << std::endl;
             std::vector<Element> desc(size_);
             for(size_t i=0;i<size_;++i){
                 sprintf(el,fmt,type_.name().c_str(),i);

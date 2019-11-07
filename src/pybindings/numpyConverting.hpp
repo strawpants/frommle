@@ -39,18 +39,55 @@ namespace frommle{
         template<class T>
         struct np_dtype{
             static np::dtype get(){
-                return np::dtype::get_builtin<T>();
-        }
+                auto numpy=p::import("numpy");
+                return p::extract<np::dtype>(numpy.attr("dtype")("object"));
+            }
+            static  constexpr bool isobject(){return true;}
 
         };
-        
-        //template<>
-        //struct np_dtype<guides::gregdate>{
-            //static np::dtype get(){
-                //return np::dtype(guides::gregdate());
-        //}
 
-        //};
+
+        template<>
+        struct np_dtype<long long unsigned int>{
+            static np::dtype get(){
+                return np::dtype::get_builtin<long long unsigned >();
+            }
+            static constexpr bool isobject(){return false;}
+        };
+
+        template<>
+        struct np_dtype< long unsigned int>{
+            static np::dtype get(){
+                return np::dtype::get_builtin<long unsigned int>();
+            }
+            static constexpr bool isobject(){return false;}
+        };
+
+        template<>
+        struct np_dtype<long long int>{
+            static np::dtype get(){
+                return np::dtype::get_builtin<long long int>();
+            }
+            static constexpr bool isobject(){return false;}
+        };
+
+        template<>
+        struct np_dtype< long int>{
+            static np::dtype get(){
+                return np::dtype::get_builtin<long int>();
+            }
+            static constexpr bool isobject(){return false;}
+        };
+
+
+        template<>
+        struct np_dtype<double>{
+            static np::dtype get(){
+                return np::dtype::get_builtin<double>();
+            }
+            static constexpr bool isobject(){return false;}
+        };
+
 
         template<class T>
         struct vec_to_ndarray{

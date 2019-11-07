@@ -77,19 +77,22 @@ namespace frommle{
 				gpout->gv(i)=gp.gv(i);
 //				LOGINFO << (*gpout)[i]->size() << std::endl;
 			}
-			gpout->gv(n)=std::shared_ptr<GuideBase>(new T(Guide));
+//			using Gvar=GuideRegistry::Gvar;
+//			auto newgv=std::make_shared<T>(Guide);
+			gpout->gv(n)=std::make_shared<T>(Guide);
 			//LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
 			return gpout;
 		}
 		};
-		
+
+		///@brief to prevent the compiler to go into an infinite loop we need a partial specialized class which stops a t a certain dimension
 		template<int n,class T>
 		struct GPHelp{
 			static GPackDynPtr<n+1> append(const T & Guide, const GuidePackDyn<n> & gp){
-				THROWNOTIMPLEMENTED(std::string("Please specialize GPHelp<n,T> for n=")+std::to_string(n));					
+				THROWNOTIMPLEMENTED(std::string("In GuideAppender.hpp, please specialize GPHelp<n,T> for n>")+std::to_string(n));
 			};
 		};
-		
+
 		template<class T>
 		struct GPHelp<0,T>:public GPHelpBase<0,T>{
 			using GPHelpBase<0,T>::append;
@@ -106,6 +109,22 @@ namespace frommle{
 			using GPHelpBase<2,T>::append;
 		};
 
+
+		template<class T>
+		struct GPHelp<3,T>:public GPHelpBase<3,T>{
+			using GPHelpBase<3,T>::append;
+		};
+
+
+		template<class T>
+		struct GPHelp<4,T>:public GPHelpBase<4,T>{
+			using GPHelpBase<4,T>::append;
+		};
+
+		template<class T>
+		struct GPHelp<5,T>:public GPHelpBase<5,T>{
+			using GPHelpBase<5,T>::append;
+		};
 
 		//general template forwward  delaration
 		template<int n ,class ... T>

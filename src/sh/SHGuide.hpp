@@ -210,13 +210,14 @@ namespace frommle{
         };
 
 
-        //declare some stream operators
-
 		std::ostream &operator<<(std::ostream &os, SHGuideBase::Element const &el);
 
+		std::ostream &operator<<(std::ostream &os, SHnmHalfGuide::Element const &el);
 
     }
 }
+
+        //declare some stream operators
 
 
 #endif //FROMMLE_SHDIMENSION_HPP

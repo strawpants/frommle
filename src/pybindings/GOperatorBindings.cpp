@@ -38,23 +38,13 @@ namespace frommle{
         public:
         
         void fwdOp(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)    {
-        if(auto fwdop=this->get_override("fwdOp")){
-            fwdop(gin,gout);
-        }else{
-           //call the overload from python
-           default_fwdop(gin,gout);
-        }
+        auto fwdop=this->get_override("__call__");
+            //auto self=p::object(p::ptr(this)); 
+            //call the python __call__ method of this class
+            gout=p::call<GArrayDyn<T,ndim_o+1>>(fwdop.ptr(),gin); 
+        
     }
        
-        void default_fwdop(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)    {
-        
-            //when we land we should have a python defined forward operator
-            
-            //get a python object of the current object
-            auto self=p::object(p::ptr(this)); 
-            //call the python __call__ method of this class
-            gout=p::extract<GArrayDyn<T,ndim_o+1>>(self.attr("__call__")(gin)); 
-        }
 
 
 
@@ -82,9 +72,6 @@ namespace frommle{
         register_Goperator<double,1,1>::reg("GOperator"); 
     
     }
-
-
-
 
 
     }

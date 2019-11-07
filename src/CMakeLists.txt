@@ -1,7 +1,7 @@
 LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp
         io/ArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp )
 
-LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp)
+LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp)
 
 LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp core/GPCookieCut.hpp)
 LIST(APPEND COREOBJS core/UserSettings.cpp)
@@ -33,6 +33,7 @@ if (PYTHON)
     list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/tupleconversion.hpp pybindings/tupleconversion.cpp pybindings/earthBindings.cpp pybindings/numpyConverting.hpp pybindings/numpyConverting.cpp)
     list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/geometryBindings.cpp )
+    list(APPEND CXXPYWRAPS pybindings/ElementBindings.hpp )
     list(APPEND CXXPYWRAPS pybindings/GuidePackBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/GArrayBindings.cpp )
     list(APPEND CXXPYWRAPS pybindings/GOperatorBindings.cpp )

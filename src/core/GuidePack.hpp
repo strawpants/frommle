@@ -537,14 +537,14 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
     ////GuidePackPtr makeGuidePack(GuideBase & in,GuideBase & in2);
     
 
-    template<class addG, class ... T>
-    struct GPappend;
+    //template<class addG, class ... T>
+    //struct GPappend;
 
-    template<class addG, class ... Guides>
-    struct GPappend<addG,GuidePack<Guides...>>{
-        using right=GuidePack<Guides...,addG>;
-        using left=GuidePack<addG, Guides...>;
-    };
+    //template<class addG, class ... Guides>
+    //struct GPappend<addG,GuidePack<Guides...>>{
+        //using right=GuidePack<Guides...,addG>;
+        //using left=GuidePack<addG, Guides...>;
+    //};
 
 
     }

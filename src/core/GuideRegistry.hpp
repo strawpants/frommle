@@ -37,7 +37,7 @@ namespace frommle{
         };
 
 
-        using GuideRegistry=GuideTlist<IndexGuide,DateGuide,SHnmHalfGuide,SHtmnGuide,SHnmtGuide,OGRPointGuide,OGRPolyGuide,GuideBase>;
+        using GuideRegistry=GuideTlist<GuideBase,IndexGuide,DateGuide,SHnmHalfGuide,SHtmnGuide,SHnmtGuide,OGRPointGuide,OGRPolyGuide>;
 
 
      //some useful visitors to be applied to the boost variant of the registered guides

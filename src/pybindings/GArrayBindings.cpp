@@ -27,7 +27,7 @@
 #include <boost/python/copy_non_const_reference.hpp>
 #include <boost/python/return_internal_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
-
+#include "pybindings/GuidePackBindings.hpp"
 namespace p = boost::python;
 
 
@@ -40,18 +40,20 @@ namespace frommle{
             static PyObject *convert(GArrayDyn<T,n> const  & garin) {
                 //create a list of dimension names
                 p::list dims;
-                for(int i=0;i<n;++i){
-                    dims.append(garin.gpp()->name());
-                }
-//create a dictionary with coordinates and types
                 p::dict coords;
+                for(int i=0;i<n;++i){
+                    std::string name=garin.gp()[i]->name();
+                    dims.append(name);
+                    coords[name]=guides::getcoords<n>(garin.gp(),i);
+                }
+                //also pack the entire C++guidepack as an attribute
+                p::dict attrs;
+                attrs["GuidePack"]=garin.gp();
 
-                p::dict attr;
-
-
-                //construct a xarray DataArray
-                
-                //return p::incref(p::object(xarptr).ptr());
+                //construct an xarray-> DataArray
+                auto xar=p::import("xarray");
+                auto DataArray=xar.attr("DataArray")(garin.mat(),coords,dims,garin.name(),attrs);
+                return p::incref(p::object(DataArray).ptr());
 
             }
         };
@@ -68,7 +70,8 @@ namespace frommle{
                 p::class_<dyngar,p::bases<GArrayBase>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
             .def(p::init<const guides::GuidePackDyn<n> &>())
             .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>())
-            .def("mat",matf,p::return_value_policy<p::copy_non_const_reference>());
+            .def("mat",matf,p::return_value_policy<p::copy_non_const_reference>())
+            .def("DataArray",&garr_to_xarDataArray<T,n>::convert);
             
             //also register a shared_ptr
             p::register_ptr_to_python< std::shared_ptr<GArrayDyn<T,n>>>();
@@ -93,12 +96,12 @@ namespace frommle{
 
 
         void registerGArrays(){
-
+            
             p::class_<GArrayBase,boost::noncopyable>("GArrayBase").def("name",&GArrayBase::name);
 
             //register dynamic versions
-            register_dyngar<double,5>::reg("GArray_float64");
-            register_dyngar<size_t,5>::reg("GArray_uint64");
+            register_dyngar<double,6>::reg("GArray_float64");
+            register_dyngar<size_t,6>::reg("GArray_uint64");
 
         }
 

@@ -51,7 +51,7 @@ namespace frommle{
     .def("__getitem__",igetpt,p::return_value_policy<p::copy_const_reference>())
     .def("__iter__",p::iterator<const PTimeGuide>());
 
-
+    p::def("monthlyRange",&monthlyRange);
         }
 
     }

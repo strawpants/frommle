@@ -97,9 +97,15 @@ namespace frommle {
             }
             return tg;
         }
+        
 
+    
 	using DateGuide=TimeGuide<gregdate>;
 	using PTimeGuide=TimeGuide<ptime>;
+    
+        //
+        DateGuide monthlyRange(const int yearstart, const int monthstart,const int yearend,const int monthend);
+        
     }
 
 }
