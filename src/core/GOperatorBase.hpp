@@ -124,11 +124,11 @@ namespace core {
             return gout;
         }
 
-        ///@brief explicitly provides the adjoint matrix of a linear operator
-        void adjoint(const guides::GuidePackDyn<ndim_i> & gpin, GArrayDyn<T,ndim_o+ndim_i> & gout){
+        ///@brief explicitly provides the Jacobian matrix of the linear operator
+        void jacobian(const guides::GuidePackDyn<ndim_i> &gpin, GArrayDyn<T, ndim_o + ndim_i> &gout){
             //just call the forward operator with an input of ones
             if (!isLinear()){
-                THROWMETHODEXCEPTION("Cannot compute linear adjoint from a non-linear operator use adjoint_linearized");
+                THROWMETHODEXCEPTION("Cannot compute linear jacobian from a non-linear operator without reference values");
             }
 
             //create a identity matrix
@@ -137,8 +137,8 @@ namespace core {
             fwdOp(gunit,gout);
         }
         
-        ///@brief explicitly provides the adjoint matrix of a linear operator
-        GArrayDyn<T,ndim_o+ndim_i> adjoint(const guides::GuidePackDyn<ndim_i> & gpin){
+        ///@brief explicitly provides the jacobian matrix of a linear operator
+        GArrayDyn<T,ndim_o+ndim_i> jacobian(const guides::GuidePackDyn<ndim_i> & gpin){
             //create new GArray and forward call
             
             if (!gpo_){
@@ -146,7 +146,7 @@ namespace core {
             }
             auto tmpgpo=gpo_->append(gpin);
             GArrayDyn<T,ndim_o+ndim_i> gout(*tmpgpo);
-            adjoint(gpin,gout);
+            jacobian(gpin, gout);
             return gout;
         }
 

@@ -56,10 +56,10 @@ namespace frommle{
             static void reg(const std::string & basename){
                 
 
-                GArrayDyn<T,2>  (Gop::*adjointf)(const guides::GuidePackDyn<1> & )=&Gop::adjoint;
+                GArrayDyn<T,2>  (Gop::*adjointf)(const guides::GuidePackDyn<1> & )=&Gop::jacobian;
 
                 p::class_<GOperatorWrapper<T,no,ni>,p::bases<GOperatorBase>,boost::noncopyable>(std::string(basename).append(std::to_string(no)).append("d_to_").append(std::to_string(ni)).append("d").c_str())
-                    .def("adjoint",adjointf);
+                    .def("jacobian",adjointf);
             }
     
     };
