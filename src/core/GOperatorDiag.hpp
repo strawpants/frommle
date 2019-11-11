@@ -1,4 +1,4 @@
-/*! \file DiagGOperator.hpp
+/*! \file GOperatorDiag.hpp
  \brief 
  \copyright Roelof Rietbroek 2019
  \license
@@ -22,7 +22,8 @@
  */
 
 
-#include "core/GOperatorbase.hpp"
+#include "core/GOperatorBase.hpp"
+#include "core/GArrayDiag.hpp"
 
 #ifndef FROMMLE_DIAGGOPERATOR_HPP
 #define FROMMLE_DIAGGOPERATOR_HPP
@@ -32,13 +33,31 @@ namespace frommle{
 
         ///@brief Holds a diagonal matrix to be used as linear operator
         template<class T>
-        class DiagGOperator:public GOperatorDyn<T,1,1>{
+        class GOperatorDiag:public GOperatorDyn<T,1,1>{
         public:
             using GOp=GOperatorDyn<T,1,1>;
-            DiagGOperator(const GArrayDyn<T,1> diagmat):GOp(diagmat.gpp()){
+            using GOp::gpo_;
+            using garr=GArrayDiagDyn<T>;
+            using eigd=typename garr::eigd;
+            GOperatorDiag(){}
+            GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(gpo),diag_(gpo_->append(gpo_->gv(0))){
 
             }
+            GOperatorDiag(guides::GuidePackDyn<1> gpo, eigd diag ):GOp(gpo),diag_(diag){}
 
+            virtual void fwdOp(const GArrayDyn<T,2> & gin, GArrayDyn<T,2> & gout) {
+                    gout.eig()=diag_.eig()*gout.eig();
+            }
+
+            garr & diag(){return diag_;}
+            const garr & diag()const{return diag_;}
+
+            eigd & eig(){return diag_.eig();}
+            const eigd & eig()const{return diag_.eig();}
+//            GOperatorDiag inverse()const{return GOperatorDiag(*gpo_,eig_.inverse());}
+        private:
+            //holds the diagonal data
+            garr diag_{};
 
         };
 
@@ -46,6 +65,5 @@ namespace frommle{
     }
 
 }
-        ]
 
 #endif //FROMMLE_DIAGGOPERATOR_HPP

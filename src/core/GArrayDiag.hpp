@@ -29,24 +29,39 @@
 namespace frommle{
     namespace core{
         template<class T>
-        class GArrayDiagonalDyn{
+        class GArrayDiagDyn{
         public:
             using gp_t=guides::GuidePackDyn<2>;
             using gp_tptr=std::shared_ptr<guides::GuidePackDyn <2>>;
 
-            using eigm=typename Eigen::DiagonalMatrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+            using eigd=typename Eigen::DiagonalMatrix<T,Eigen::Dynamic,Eigen::Dynamic>;
+            using arr=boost::multi_array_ref<T, 1>;
+            GArrayDiagDyn() : gp_(std::make_shared<gp_t>()), eig_(){}
 
-            GArrayDiagonalDyn():diag_(),gp_(){
-            }
-            GArrayDiagonalDyn(gp_t &&guidepack):gp_(std::make_shared<GP>(std::move(guidepack))),
-                diagdata_(std::shared_ptr<T[]>(new T[gp_->at(0)->size()])){
-                if (gp_->at(0).size() ~= gp_->at(1).size()){
+            template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<2>, GP>::value, int> ::type = 0>
+            GArrayDiagDyn(GP guidepack):gp_(std::make_shared<GP>(std::move(guidepack))),
+                eig_(gp_->at(0)->size()){
+                if (gp_->at(0)->size() != gp_->at(1)->size()){
                     THROWINPUTEXCEPTION("Dimensions should be equal when creating a diagonal matrix");
                 }
             }
+            eigd & eig(){return eig_;}
+            const eigd & eig()const{return eig_;}
+
+            arr mat(){return arr(eig_.data(),gp_->extent());}
+
+            const gp_t &gp() const { return *gp_; }
+
+            gp_t &gp() { return *gp_; }
+
+            const gp_tptr &gpp() const { return gp_; }
+
+            gp_tptr &gpp() { return gp_; }
+
+
         private:
             gp_tptr gp_{};
-            std::shared_ptr<T[]> diagdata_{};
+            eigd eig_{};
 
         };
 

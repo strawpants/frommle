@@ -142,10 +142,10 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             return boost::apply_visitor(gvar_baseptr(),gpar_[i]);
         }
 
-        //aliases for cleaning code when using pointers
-        GuideBasePtr at()(const int i){return this->operator[](i);}
+        //aliases for cleaner code when using pointers
+        inline GuideBasePtr at(const int i){return this->operator[](i);}
 
-        const GuideBasePtr at()const(const int i){return this->operator[](i);}
+        inline const GuideBasePtr at(const int i)const{return this->operator[](i);}
 
 
         //direct access to the underlying boost variants

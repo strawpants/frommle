@@ -158,25 +158,25 @@ namespace core {
     };
 
 
-    template<class T,class outGP, class inGP>
-class GOperator : public GOperatorDyn<T, outGP::ndim, inGP::ndim > {
-    public:
-        using gpout_t=outGP;
-        using gpin_t=inGP;
-        using gopbase=GOperatorDyn<T,outGP::ndim,inGP::ndim>;
-        using gopbase::ndim_o;
-        using gopbase::ndim_i;
-        using gopbase::operator();
-
-        GOperator() {}
-
-        GOperator(outGP &&gpout):gopbase(std::move(gpout)) {
-
-        }
-    protected:
-        using gopbase::gpo_;
-
-    };
+//    template<class T,class outGP, class inGP>
+//class GOperator : public GOperatorDyn<T, outGP::ndim, inGP::ndim > {
+//    public:
+//        using gpout_t=outGP;
+//        using gpin_t=inGP;
+//        using gopbase=GOperatorDyn<T,outGP::ndim,inGP::ndim>;
+//        using gopbase::ndim_o;
+//        using gopbase::ndim_i;
+//        using gopbase::operator();
+//
+//        GOperator() {}
+//
+//        GOperator(outGP &&gpout):gopbase(std::move(gpout)) {
+//
+//        }
+//    protected:
+//        using gopbase::gpo_;
+//
+//    };
 
 
 }

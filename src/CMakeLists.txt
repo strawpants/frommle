@@ -6,7 +6,7 @@ LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hp
 LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp)
 
 LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp )
-LIST(APPEND COREOBJS core/UserSettings.cpp core/GArrayDiagonal.hpp)
+LIST(APPEND COREOBJS core/UserSettings.cpp core/GArrayDiag.hpp)
 
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
 LIST(APPEND COREOBJS core/TreeNode.cpp)

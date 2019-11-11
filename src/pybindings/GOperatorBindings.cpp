@@ -26,6 +26,7 @@
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
 #include "core/GOperatorBase.hpp"
+#include "core/GOperatorDiag.hpp"
 
 namespace p = boost::python;
 
@@ -63,14 +64,21 @@ namespace frommle{
             }
     
     };
+    template<class T>
+struct register_GoperatorDiag{
+    static void reg(const std::string & basename){
+        p::class_<GOperatorDiag<T>,p::bases<GOperatorDyn<T,1,1>>>(basename.c_str());
+    }
+};
 
     void registerGOperators(){
     ///Register the operator base class 
     p::class_<GOperatorBase>("GOperatorBase").def(p::init<p::optional<std::string>>())
             .add_property("name",&GOperatorBase::name,&GOperatorBase::setName);
     
-        register_Goperator<double,1,1>::reg("GOperator"); 
-    
+        register_Goperator<double,1,1>::reg("GOperator_float64");
+
+        register_GoperatorDiag<double>::reg("GOperatorDiag_float64");
     }
 
 
