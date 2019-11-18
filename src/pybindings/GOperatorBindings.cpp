@@ -64,6 +64,7 @@ namespace frommle{
             }
     
     };
+ 
     template<class T>
 struct register_GoperatorDiag{
     static void reg(const std::string & basename){

@@ -64,6 +64,9 @@ namespace core {
 
         using gout_t=GArrayDyn<T,no>;
         using goutplus_t=GArrayDyn<T,no+1>;
+        using gpo_t=guides::GuidePackDyn<ndim_o>;
+        using gpo_ptr_t=std::shared_ptr<gpo_t>;
+
         virtual bool isLinear()const{return false;};
         GOperatorDyn(){}
 
@@ -153,30 +156,30 @@ namespace core {
 
 
     protected:
-        std::shared_ptr<guides::GuidePackDyn<ndim_o>> gpo_{};
+        gpo_ptr_t gpo_{};
 
     };
 
+///@brief a non-polymorphic version which has the guides set during compile time
+    template<class T,class outGP, class inGP>
+class GOperator : public GOperatorDyn<T, outGP::ndim, inGP::ndim > {
+    public:
+        using gpout_t=outGP;
+        using gpin_t=inGP;
+        using gopbase=GOperatorDyn<T,outGP::ndim,inGP::ndim>;
+        using gopbase::ndim_o;
+        using gopbase::ndim_i;
+        using gopbase::operator();
 
-//    template<class T,class outGP, class inGP>
-//class GOperator : public GOperatorDyn<T, outGP::ndim, inGP::ndim > {
-//    public:
-//        using gpout_t=outGP;
-//        using gpin_t=inGP;
-//        using gopbase=GOperatorDyn<T,outGP::ndim,inGP::ndim>;
-//        using gopbase::ndim_o;
-//        using gopbase::ndim_i;
-//        using gopbase::operator();
-//
-//        GOperator() {}
-//
-//        GOperator(outGP &&gpout):gopbase(std::move(gpout)) {
-//
-//        }
-//    protected:
-//        using gopbase::gpo_;
-//
-//    };
+        GOperator() {}
+
+        GOperator(outGP &&gpout):gopbase(std::move(gpout)) {
+
+        }
+    protected:
+        using gopbase::gpo_;
+
+    };
 
 
 }

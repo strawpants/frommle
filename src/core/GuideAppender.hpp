@@ -169,7 +169,7 @@ namespace frommle{
 					return GPHelp<n,T>::append(Guide,*gp_);
 			}
 			//also add the possibility to directly append a guidevariant
-			GuidePackPtr append(GuideRegistry::Gvar gv )const{
+			std::shared_ptr<GuidePackDyn<n+1>> append(GuideRegistry::Gvar gv )const{
 				auto gpout=std::make_shared<GuidePackDyn<n+1>>();
 				for(int i=0; i<n;++i){
 

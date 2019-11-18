@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <algorithm>
 #include "geometry/GuideMakerTools.hpp"
+#include "sh/SHisoOperator.hpp"
 using namespace frommle;
 using namespace frommle::guides;
 using namespace frommle::sh;
@@ -244,6 +245,35 @@ BOOST_AUTO_TEST_CASE(YNMtest,*boost::unit_test::tolerance(1e-11)){
 
 
     //    for(int i=0;i<outar.gp()[0])
+
+
+}
+
+
+///@brief test the isotropic kernels in the spherical harmonic domain
+BOOST_AUTO_TEST_CASE(shisokernel){
+    int nmax=20;
+        guides::SHtmnGuide shgd(nmax);
+
+        guides::IndexGuide igd(5);
+        auto onesar=GAconstruct<double>::ones(shgd,igd);
+
+        //create a kernel which just has the degrees as scale factors
+        std::vector<double> kernel(nmax+1);
+        std::iota(kernel.begin(),kernel.end(),0.0);
+
+        //create an isostropic diagonal operator
+        sh::SHisoOperator<double> shkernel(kernel);
+
+        auto shout=shkernel(onesar);
+
+
+        for(auto & idxi:*(shout.gp().as<IndexGuide>(1))){
+            LOGINFO << idxi << " ";
+            LOGINFO << shout[0][idxi] << std::endl;
+//            BOOST_TEST(shout[0][idxi] == (idxi+1)*y52c);
+        }
+
 
 
 }

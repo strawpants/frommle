@@ -37,28 +37,43 @@ namespace frommle{
         public:
             using GOp=GOperatorDyn<T,1,1>;
             using GOp::gpo_;
-            using garr=GArrayDiagDyn<T>;
-            using eigd=typename garr::eigd;
+            using typename GOp::gpo_t;
+            using eigd=typename Eigen::DiagonalMatrix<T,Eigen::Dynamic,Eigen::Dynamic>;
+//            using garr=GArrayDiagDyn<T>;
+//            using eigd=typename garr::eigd;
             GOperatorDiag(){}
-            GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(gpo),diag_(gpo_->append(gpo_->gv(0))){
+            GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(std::move(gpo)),diag_(gpo_->at(0)->size()){
 
             }
-            GOperatorDiag(guides::GuidePackDyn<1> gpo, eigd diag ):GOp(gpo),diag_(diag){}
+//            GOperatorDiag(guides::GuidePackDyn<1> gpo, eigd diag ):GOp(gpo),diag_(diag){}
+
+//            virtual
+
+//            ///@brief takes an array with extended dimension as input and applies the forward operator
+//            GArrayDyn<T,2> operator()(const GArrayDyn<T,2> & gin){
+//
+//                //output will have the same gudies as the input
+//                GArrayDyn<T,2> gout(gin.gp());
+//                fwdOp(gin,gout);
+//                return gout;
+//            }
 
             virtual void fwdOp(const GArrayDyn<T,2> & gin, GArrayDyn<T,2> & gout) {
-                    gout.eig()=diag_.eig()*gout.eig();
+                    //let the eigen library do the math
+                    gout.eig()=diag_*gout.eig();
             }
 
-            garr & diag(){return diag_;}
-            const garr & diag()const{return diag_;}
 
-            eigd & eig(){return diag_.eig();}
-            const eigd & eig()const{return diag_.eig();}
+
+
+//            garr & diag(){return diag_;}
+//            const garr & diag()const{return diag_;}
+
+            eigd & eig(){return diag_;}
+            const eigd & eig()const{return diag_;}
 //            GOperatorDiag inverse()const{return GOperatorDiag(*gpo_,eig_.inverse());}
-        private:
-            //holds the diagonal data
-            garr diag_{};
-
+        protected:
+            eigd diag_{};
         };
 
 

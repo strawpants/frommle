@@ -49,9 +49,9 @@ namespace frommle{
         }
     };
 
-
-        class gvar_baseptr: public boost::static_visitor<GuideBasePtr>{
+    class gvar_baseptr: public boost::static_visitor<GuideBasePtr>{
         public:
+
             template<class T>
             GuideBasePtr operator()(T & gvar)const{
                 return std::static_pointer_cast<GuideBase>(gvar);

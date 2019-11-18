@@ -15,22 +15,22 @@
 
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
 
-from frommle.core import GOperator1d_to_1d
+from frommle.core import GOperatorDiag_float64
 import numpy as np
 from frommle.sh import SHtmnGuide
 import copy
 import scipy.sparse as sps
 from frommle.sh.shxarray import newshxarray
 
-class shIsoOperator(GOperator1d_to_1d):
-    """Converts a spherical harmonic dataset into another using an isotropic kernel"""
+class shIsoOperator(GOperatorDiag_float64):
+    """Operator which convolves a spherical harmonic dataset with an isotropic kernel"""
     kernel=None
     def __init__(self, kernel):
         """Initialize the operator with a list of degree dependent factors"""
         self.kernel=kernel
 
     def __call__(self,shxin):
-        """Apply kernel to input Guided array"""
+        """Apply kernel to input Guided array or xarray"""
         #expand the degree wise coefficients to a diagonal matrix with the same sorting as the input
         diag=sps.diags([self.kernel[n] for n,m,tr in shxin["SHGuide"].values])
         

@@ -11,7 +11,9 @@ LIST(APPEND COREOBJS core/UserSettings.cpp core/GArrayDiag.hpp)
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
 LIST(APPEND COREOBJS core/TreeNode.cpp)
 
-LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/Legendre.hpp sh/SHanalysis.hpp sh/SHfunctions.hpp sh/Ynm.hpp)
+LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/Legendre.hpp
+        sh/SHanalysis.hpp sh/SHfunctions.hpp sh/Ynm.hpp
+        sh/SHisoOperator.hpp)
 LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/Legendre.cpp sh/SHGuide.cpp)
 
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp geometry/OGR2boost.hpp geometry/OGRiteratorBase.hpp geometry/GuideMakerTools.hpp geometry/geomOperator.hpp)

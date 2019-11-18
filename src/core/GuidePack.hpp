@@ -88,7 +88,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         gpar_=std::move(gpin.gpar_);
     }
 
-    template<class GP, typename std::enable_if< std::is_base_of<GuidePackDyn,GP>::value_type,int>::type =0 >
+    template<class GP,typename std::enable_if< std::is_base_of<GuidePackDyn,GP>::value_type,int>::type =0 >
     GuidePackDyn(const GP & gpin, int istart):GauxVirtImpl<n>(this){
             //enforce that the input has enough guides to tap from
             assert((GP::ndim-istart) >= n);
@@ -103,11 +103,6 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             gpar_={{std::make_shared<G1>(std::move(G1arg)),std::make_shared<Guides>(std::move(Args))...}};
         }
 
-//    ///@brief admittedly, this is a pretty ackward contructor, but it is needed to apply SFINAE in order to distinguish whether we have GUides or a guidepack as arguments
-//    template<class G1,class ... Guides, typename std::enable_if<!std::is_base_of<GuidePackDyn, G1>::value,int>::type =0 >
-//    explicit GuidePackDyn(typename std::remove_reference<const G1>::type & G1arg,typename std::remove_reference<const Guides>::type & ... Args):GauxVirtImpl<n>(this){
-//        gpar_={{std::make_shared<G1>(G1arg),std::make_shared<Guides>(Args)...}};
-//    }
 
         GuidePackDyn(const GuidePackDyn & in):GauxVirtImpl<n>(this){
             gpar_=in.gpar_;
@@ -122,7 +117,11 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         //and allow appending an entire  guidepack
         template<int nadd>
         std::shared_ptr<GuidePackDyn<n+nadd>> append(const GuidePackDyn<nadd> & gpin)const;
-        
+
+
+        ///@brief strip guides from the guidepack
+        std::shared_ptr<GuidePackDyn<n-1>> strip(bool right=true)const;
+
         int nDim()const override {return n;}
         static const int ndim=n;
 
@@ -154,9 +153,9 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
 
 //        extract a specific type of guide from the guidepack
         template<class T>
-        inline const std::shared_ptr<T> as(const int i)const{return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+        inline const std::shared_ptr<T> as(const int i)const{return std::static_pointer_cast<T>(boost::apply_visitor(gvar_baseptr(),gpar_[i]));}
         template<class T>
-        inline std::shared_ptr<T> as(const int i){return boost::get<std::shared_ptr<T>>(gpar_[i]);}
+        inline std::shared_ptr<T> as(const int i){return std::static_pointer_cast<T>(boost::apply_visitor(gvar_baseptr(),gpar_[i]));}
 
 //        template<class T>
 //        inline const std::shared_ptr<T> as(const int i)const{return std::static_pointer_cast<T>(gpar_[i]);}
@@ -229,6 +228,20 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             //LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
             return gpout;
 
+        }
+
+        template<int n>
+        std::shared_ptr<GuidePackDyn<n-1>> GuidePackDyn<n>::strip(bool right)const{
+
+            auto gpout=std::make_shared<GuidePackDyn<n-1>>();
+            int istart=right?0:1;
+            int iend=right?n-1:n;
+            for(int i=istart; i<iend;++i){
+                gpout->gv(i)=this->gv(i);
+            }
+
+        //LOGWARNING << "assign guide" <<(*gpout)[0]->name()<<std::endl;
+            return gpout;
         }
 
 /*!brief
