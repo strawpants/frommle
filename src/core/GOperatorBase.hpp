@@ -75,6 +75,7 @@ namespace core {
 
         }
 
+        GOperatorDyn(gpo_ptr_t gpo):gpo_(gpo){}
 
         virtual void fwdOp(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)=0;
 
@@ -154,6 +155,13 @@ namespace core {
         }
 
 
+    const gpo_t &gp() const { return *gpo_; }
+
+    gpo_t &gp() { return *gpo_; }
+
+    const gpo_ptr_t &gpp() const { return gpo_; }
+
+    gpo_ptr_t &gpp() { return gpo_; }
 
     protected:
         gpo_ptr_t gpo_{};

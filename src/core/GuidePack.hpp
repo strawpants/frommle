@@ -120,15 +120,22 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
 
 
         ///@brief strip guides from the guidepack
-        std::shared_ptr<GuidePackDyn<n-1>> strip(bool right=true)const;
+        template<int m=n>
+       typename std::enable_if< m != 0,std::shared_ptr<GuidePackDyn<n-1>>>::type strip(bool right=true)const;
 
         int nDim()const override {return n;}
         static const int ndim=n;
 
         //@brief return the index corresponding to a certain Guide Element
         template<class Element>
-        size_t idx(int i,Element el){
+        size_t idx(int i,const Element & el)const{
             return  boost::apply_visitor(guides::gvar_idx<Element>(el),gpar_[i]);
+        }
+
+
+        template<int i,class Element>
+        size_t idx(const Element & el)const{
+            return  boost::apply_visitor(guides::gvar_idx<Element>(el),std::get<i>(gpar_));
         }
 //        GuideBasePtr & operator[](const int i)override{return gpar_[i];}
 //        const  GuideBasePtr operator[](const int i)const override {return gpar_[i];}
@@ -231,7 +238,8 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         }
 
         template<int n>
-        std::shared_ptr<GuidePackDyn<n-1>> GuidePackDyn<n>::strip(bool right)const{
+        template<int m>
+        typename std::enable_if< m != 0,std::shared_ptr<GuidePackDyn<n-1>>>::type GuidePackDyn<n>::strip(bool right)const{
 
             auto gpout=std::make_shared<GuidePackDyn<n-1>>();
             int istart=right?0:1;
@@ -266,7 +274,7 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
             
             template<int n>
             using gptr_t=typename std::shared_ptr<typename std::tuple_element<n,guides_t>::type>;
-            
+
             GuidePack(){}
             explicit GuidePack(Guides && ... Args):GPdyn(std::move(Args)...){
                 //extent_={Args.size()...};
@@ -344,6 +352,10 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
                 return boost::get<gptr_t<n>>(gpar_[n]);
             }
 
+            template<int i>
+            size_t idx(const typename g_t<i>::Element & el)const{
+                return  g<i>()->idx(el);
+            }
             /*!brief
              * Polymorphic version of the g() function
              * Recursively calls itself until the correct dimension is founc

@@ -102,6 +102,10 @@ std::ostream &operator<<(std::ostream &os, typehash const &m);
             return type_ == in.type_;
         }
 
+        bool operator!=(const GuideBase &in) const {
+            return not this->operator==(in);
+        }
+
         std::string name()const{return name_;}
         void setName(const std::string & name){
             name_=name;

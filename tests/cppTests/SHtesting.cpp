@@ -255,23 +255,31 @@ BOOST_AUTO_TEST_CASE(shisokernel){
     int nmax=20;
         guides::SHtmnGuide shgd(nmax);
 
-        guides::IndexGuide igd(5);
+        guides::IndexGuide igd(7);
         auto onesar=GAconstruct<double>::ones(shgd,igd);
 
         //create a kernel which just has the degrees as scale factors
         std::vector<double> kernel(nmax+1);
-        std::iota(kernel.begin(),kernel.end(),0.0);
+        std::iota(kernel.begin(),kernel.end(),1.0);
 
         //create an isostropic diagonal operator
-        sh::SHisoOperator<double> shkernel(kernel);
+        sh::SHisoOperator<double> shkernel(kernel,shgd);
 
         auto shout=shkernel(onesar);
+    
+        //also create the inverse operator in combination with the original operator (should return thee input again)
+        
+        auto shoutrecover=shkernel(shkernel.inverse())(onesar);
 
+        for (auto &idxi:*(shout.gp().as<IndexGuide>(1))) {
+            for(auto &nmt: shgd) {
+                int n,m;
+                guides::SHGuideBase::trig t;
+                std::tie(n,m,t)=nmt;
+                BOOST_TEST(shout[nmt][idxi] == n+1 );
+                BOOST_TEST(shoutrecover[nmt][idxi] == 1.0);
 
-        for(auto & idxi:*(shout.gp().as<IndexGuide>(1))){
-            LOGINFO << idxi << " ";
-            LOGINFO << shout[0][idxi] << std::endl;
-//            BOOST_TEST(shout[0][idxi] == (idxi+1)*y52c);
+            }
         }
 
 

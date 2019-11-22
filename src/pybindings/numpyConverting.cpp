@@ -27,8 +27,8 @@ namespace frommle{
         
     void register_numpy_converters(){
         
-        //register vector to ndarray converter at runtime
-        p::to_python_converter< std::vector<double> , vec_to_ndarray <double>> ();
+        //register vector <-> ndarray converters
+        register_vector<double>();
 
         register_mar<double,6>();
         register_mar<size_t,6>();

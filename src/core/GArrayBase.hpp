@@ -45,8 +45,8 @@ namespace frommle {
         }
 
         template<class Element>
-        subtype operator[](Element el) {
-            return subtype(parent_, sar_[parent_->gpp()->idx(Parent::ndim - n -1, el)]);
+        subtype operator[](const Element & el) {
+            return subtype(parent_, sar_[parent_->gpp()->template idx<Parent::ndim - n -1>(el)]);
         };
 
         arr &mat() { return sar_; }
@@ -69,8 +69,8 @@ namespace frommle {
     }
 
     template<class Element>
-    T &operator[](Element el) {
-        return sar_[parent_->gpp()->idx(Parent::ndim-1, el)];
+    T &operator[](const Element & el) {
+        return sar_[parent_->gpp()->template idx<Parent::ndim-1>(el)];
     };
 
     inline arr &mat() { return sar_; }
@@ -153,8 +153,9 @@ public:
         return boost::multi_array_types::index_range(std::forward(Args)...);
     }
 
-    using eigm=typename Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>, Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
+    using eigm=typename Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>, Eigen::Aligned, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
 
+    using const_eigm=typename Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>, Eigen::Aligned, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
 
     inline arr &mat() { return ar_; }
 
@@ -171,8 +172,14 @@ public:
     //Extract eigen matrix (but only for 2D arrays)
     template<int dim = ndim>
     typename std::enable_if<dim == 2, eigm>::type eig() {
-        auto marrStrd = Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>(ar_.strides()[0], ar_.strides()[1]);
+        auto marrStrd = Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>(ar_.strides()[1], ar_.strides()[0]);
         return eigm(ar_.data(), ar_.shape()[0], ar_.shape()[1], marrStrd);
+    }
+
+    template<int dim = ndim>
+    typename std::enable_if<dim == 2, const_eigm>::type eig()const {
+        auto marrStrd = Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>(ar_.strides()[1], ar_.strides()[0]);
+        return const_eigm(ar_.data(), ar_.shape()[0], ar_.shape()[1], marrStrd);
     }
 
     GArrayDyn &operator=(const T scalar) {
@@ -189,7 +196,7 @@ public:
 //            }
 
     template<class Element, int nd = n, typename std::enable_if<nd == 1, int>::type = 0>
-    T &operator[](Element el) {
+    T &operator[](const Element & el) {
 //               LOGINFO << boost::apply_visitor(guides::gvar_idx<Element>(el),gp_->gv(0)) << std::endl;
         return ar_[gp_->idx(0, el)];
 
@@ -197,7 +204,7 @@ public:
 
         using subarr=GSubArray<T,n-1,GArrayDyn>;
            template<class Element,int nd=n,typename std::enable_if< nd != 1, int>::type =0>
-           subarr operator[](Element el){
+           subarr operator[](const Element & el){
                return subarr(this,ar_[gp_->idx(0,el)]);
            }
 
@@ -285,7 +292,7 @@ using GAdyn::operator=;
 //note this shadows
 inline const GPack &gp() const { return *(std::static_pointer_cast<GPack>(GAdyn::gpp())); }
 
-inline const std::shared_ptr<GPack> &gpp() const { return std::static_pointer_cast<GPack>(GAdyn::gpp()); }
+inline const std::shared_ptr<GPack> gpp() const { return std::static_pointer_cast<GPack>(GAdyn::gpp()); }
 ///allows the extraction of the guide types during compile time
 template<int n>
 using g_t=typename GPack::template g_t<n>;
@@ -329,14 +336,25 @@ GArray(Guides
 GAdyn(GPack(std::move(guides)...)
 ) {
 }
+            template<int nd = ndim, typename std::enable_if<nd == 1, int>::type = 0>
+            T &operator[](const typename g_t<0>::Element & el) {
+                return ar_[g<0>()->idx(el)];
+
+            }
+//
+            using subarr=GSubArray<T,ndim-1,GArray>;
+            template<int nd=ndim,typename std::enable_if< nd != 1, int>::type =0>
+            subarr operator[](const typename g_t<0>::Element & el){
+                return subarr(this,ar_[g<0>()->idx(el)]);
+            }
 
 //            GArray(const Guides &... guides) : GAdyn(GPack(guides...)) {}
 //indexing
-template<int i = 0>
-typename std::enable_if<i + 1 == ndim, T>::type &operator[](const typename g_t<i>::Element &indx) {
-    assert(1 == ndim);
-    return ar_[g<0>()->idx(indx)];
-}
+//template<int i = 0>
+//typename std::enable_if<i + 1 == ndim, T>::type &operator[](const typename g_t<i>::Element &indx) {
+//    assert(1 == ndim);
+//    return ar_[g<0>()->idx(indx)];
+//}
 //
 //            // return a subview of the current GArray (i.e. strip a dimension)
 //            using subGArray=typename arr::template array_view<ndim-1>::type;

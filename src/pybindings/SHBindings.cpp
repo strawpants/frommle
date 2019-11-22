@@ -3,6 +3,7 @@
 #include <boost/python/numpy.hpp>
 #include "pybindings/coreBindings.hpp"
 #include "core/GuideBase.hpp"
+#include "sh/SHisoOperator.hpp"
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
@@ -52,6 +53,18 @@ using namespace frommle::guides;
 using namespace frommle::sh;
 using namespace frommle;
 
+template<class T>
+struct register_shisooperator{
+    register_shisooperator(std::string basename){
+        p::class_<SHisoOperator<T>,p::bases<core::GOperatorDiag<T>>>(basename.c_str())
+                .def(p::init<int>())
+                .def(p::init<std::vector<T>>());
+
+
+    }
+};
+
+
 void pyexport_sh()
 {
 
@@ -98,5 +111,10 @@ void pyexport_sh()
     p::class_<Legendre_nm<double>,p::bases<core::GArrayDyn<double,1>>>("Legendre_nm",p::init<int>())
             .def("set",&sh::Legendre_nm_d::set,p::return_value_policy<p::copy_non_const_reference>());
 //            .def("indxnm", &sh::Legendre_nm_d::indxnm);
+
+    //register SHisoperator
+    register_shisooperator<double>("shisoperator_float64");
+
+
 
 }

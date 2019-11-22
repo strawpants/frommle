@@ -1,5 +1,5 @@
 /*! \file GOperatorDiag.hpp
- \brief 
+ \brief
  \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
@@ -38,12 +38,27 @@ namespace frommle{
             using GOp=GOperatorDyn<T,1,1>;
             using GOp::gpo_;
             using typename GOp::gpo_t;
+            using GOp::operator();
             using eigd=typename Eigen::DiagonalMatrix<T,Eigen::Dynamic,Eigen::Dynamic>;
 //            using garr=GArrayDiagDyn<T>;
 //            using eigd=typename garr::eigd;
             GOperatorDiag(){}
             GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(std::move(gpo)),diag_(gpo_->at(0)->size()){
 
+            }
+
+            GOperatorDiag( std::shared_ptr<guides::GuidePackDyn<1>> gpo, eigd diag ):GOp(gpo),diag_(diag){}
+
+            GOperatorDiag inverse()const{
+                return GOperatorDiag(gpo_,diag_.inverse());
+                
+            }
+
+            ///@brief returns a new diagonal operator which chains the input throughanother diagonal operator before applying the operator itself
+            GOperatorDiag operator()(const GOperatorDiag & pipethrough)const{
+                   eigd outdiag(gpo_->at(0)->size());
+                   outdiag.diagonal().array()=diag_.diagonal().array()*pipethrough.diag_.diagonal().array();
+                   return GOperatorDiag(pipethrough.gpp(),outdiag); 
             }
 //            GOperatorDiag(guides::GuidePackDyn<1> gpo, eigd diag ):GOp(gpo),diag_(diag){}
 
@@ -59,8 +74,30 @@ namespace frommle{
 //            }
 
             virtual void fwdOp(const GArrayDyn<T,2> & gin, GArrayDyn<T,2> & gout) {
-                    //let the eigen library do the math
-                    gout.eig()=diag_*gout.eig();
+
+                    //some sanity checks
+                    if (diag_.diagonal().size() != gin.gp()[0]->size()){
+                        THROWINPUTEXCEPTION("Stored diagonal size does not agree with input");
+                    }
+
+                    if (*(gout.gp()[0]) != *(gin.gp()[0])){
+                        THROWINPUTEXCEPTION("Input and output dimension size does not agree");
+                    }
+                    //let the eigen library do the math (multiple desne matrix with diagonal matrix)
+                    gout.eig()=diag_*gin.eig();
+                    
+                    //Eigen::DiagonalMatrix<double,-1> dia(3);
+                    //dia.diagonal()[0]=1;
+                    //dia.diagonal()[1]=2;
+                    //dia.diagonal()[2]=3;
+                    
+                    
+                    //Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> mat(3,2);
+                    //mat.fill(1.0);
+
+                    //LOGINFO << dia.diagonal();
+                    //LOGINFO << mat ;
+                    //LOGINFO << dia*mat;
             }
 
 
