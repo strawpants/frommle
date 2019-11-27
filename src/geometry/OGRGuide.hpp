@@ -86,11 +86,16 @@ namespace frommle{
             //}
             //using GuideBase::operator MaskedGuide<OGRGuide>;
         private:
-            friend class io::serialize;
-            template<class Archive>
-            void load(Archive & Ar);
-            template<class Archive>
-            void save(Archive & Ar)const;
+            friend io::Group;
+//            friend class io::serialize;
+//            template<class Archive>
+//            void load(Archive & Ar);
+//            template<class Archive>
+//            void save(Archive & Ar)const;
+
+            void load(io::Group & Ar);
+            void save(io::Group & Ar)const;
+
             std::vector <Element> geoms_={};
             std::shared_ptr<rtree> rtreeIndex{};
             void buildRtree();
@@ -98,8 +103,7 @@ namespace frommle{
         };
 
         template<class T>
-        template<class Archive>
-        void OGRGuide<T>::save(Archive &Ar)const {
+        void OGRGuide<T>::save(io::Group &Ar)const {
 //            //create a new variable holding the geometry
             Ar["geom"]=io::Variable<T>();
             auto geovar= dynamic_cast<io::Variable<T>*>(Ar["geom"].get());
@@ -111,8 +115,7 @@ namespace frommle{
         }
 
         template<class T>
-        template<class Archive>
-        void OGRGuide<T>::load(Archive &Ar){
+        void OGRGuide<T>::load(io::Group &Ar){
 
 //            //retrieve the variable which holds geometry info
             auto &geovar=Ar.template getVariable<T>("geom");

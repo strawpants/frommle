@@ -1,4 +1,4 @@
-/*! \file
+/*! \file LoggerBindings.cpp
  \brief 
  \copyright Roelof Rietbroek 2019
  \license
@@ -16,23 +16,31 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+ Created by Roelof Rietbroek,  2019
+
  */
-#include "pybindings/tupleconversion.hpp"
+#include "core/Logging.hpp"
+#include <boost/python.hpp>
+
+namespace p = boost::python;
 
 namespace frommle{
+    namespace core {
 
-    namespace py{
+        void register_logger() {
 
-       void register_tuple_converters(){
+//export setting logging levels for C++
+        p::def("logInfo",&Logging::setInfoLevel);
+        p::def("logDebug",&Logging::setDebugLevel);
+        p::def("logWarning",&Logging::setWarningLevel);
+        p::def("logError",&Logging::setErrorLevel);
 
-            //register specific std:tuple to/from python tuple converters
-            register_tuple<std::tuple<int,int>>(); 
-            
-            //register stdarray to python tuple conversion
-            register_stdarray<size_t,6>();
-            
-
+//upon import we set the default logging level  for the library to errors only
+        Logging::setErrorLevel();
         }
 
     }
 }
+
+

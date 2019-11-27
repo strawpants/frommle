@@ -30,12 +30,16 @@ namespace frommle{
     }
 
     namespace core{
+        void registerFrommle();
         void registerGArrays();
         void registerGOperators();
+        void register_logger();
 
     }
 
     namespace py{
+        void register_numpy_converters();
+        void register_tuple_converters();
         void register_datetime();
 
     }

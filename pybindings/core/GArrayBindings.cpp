@@ -27,7 +27,7 @@
 #include <boost/python/copy_non_const_reference.hpp>
 #include <boost/python/return_internal_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
-#include "pybindings/GuidePackBindings.hpp"
+#include "GuidePackBindings.hpp"
 namespace p = boost::python;
 
 
@@ -67,7 +67,7 @@ namespace frommle{
 
                 const typename dyngar::gp_tptr & (dyngar::*gpfc)()const=&dyngar::gpp;
 
-                p::class_<dyngar,p::bases<GArrayBase>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
+                p::class_<dyngar,p::bases<Frommle>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
             .def(p::init<const guides::GuidePackDyn<n> &>())
             .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>())
             .def("mat",matf,p::return_value_policy<p::copy_non_const_reference>())
@@ -97,7 +97,6 @@ namespace frommle{
 
         void registerGArrays(){
             
-            p::class_<GArrayBase,boost::noncopyable>("GArrayBase").def("name",&GArrayBase::name);
 
             //register dynamic versions
             register_dyngar<double,6>::reg("GArray_float64");

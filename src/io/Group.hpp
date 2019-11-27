@@ -21,11 +21,8 @@
 #include <memory>
 #include <cassert>
 #include "core/TreeNode.hpp"
-#include <boost/serialization/split_free.hpp>
+//#include <boost/serialization/split_free.hpp>
 #include "core/VisitorTools.hpp"
-//#include <core/GuidePack.hpp>
-
-//#include <boost/variant.hpp>
 #include "core/Hyperslab.hpp"
 
 #ifndef FROMMLE_GROUPBASE_HPP
@@ -64,13 +61,26 @@ namespace frommle{
 
             //serialization goodies (objects can be read/written to groups by implementing a serialization function
             template<class Y>
-            Group & operator >> (Y & out){ serialize::load(*this,out); return *this;}
+            Group & operator >> (Y & out){
+                out.load(*this);
+//                serialize::load(*this,out);
+                return *this;
+            }
 
             template<class Y>
-            Group & operator << (Y & out){ serialize::save(*this,out); return *this;}
+            Group & operator << (Y & out){
+                out.save(*this);
+//                serialize::save(*this,out);
+
+                return *this;
+            }
 
             template<class Y>
-            Group & operator << (Y && out){ serialize::save(*this,out); return *this;}
+            Group & operator << (Y && out){
+                out.save(*this);
+                //serialize::save(*this,out);
+                return *this;
+            }
 
 //            template<class Y>
 //            Group & operator << (Y & in){boost::serialization::serialize(*this,in,file_version()); return *this;}
@@ -111,6 +121,22 @@ namespace frommle{
                     ogrgrp->setAmode();
                     openForReading=ogrgrp->readable();
                     openForWriting=ogrgrp->writable();
+                }else if (getAttributeCount("mode") != 0) {
+                    auto mode = getAttribute<std::string>("mode");
+                    if( mode == "r"){
+                        openForReading=true;
+                        openForWriting=false;
+                    }else if (mode == "w"){
+                        openForReading=false;
+                        openForWriting=true;
+
+                    }else if (mode == "rw"){
+                        openForReading=true;
+                        openForWriting=true;
+
+                    }else{
+                        throw core::InputException("cannot understand the access mode of this Group");
+                    }
                 }
 
             }
@@ -123,17 +149,26 @@ namespace frommle{
         };
 
 
+    class VariableDyn:public core::TreeNodeItem{
+    public:
+        VariableDyn():TreeNodeItem(){}
+        VariableDyn(std::string name):TreeNodeItem(name){}
+        VariableDyn(std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
+        VariableDyn(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
+
+    };
+
 //        using valueVariant=boost::variant<double,int,long long int,std::string,OGRGeometry*>;
     template<class T>
-    class Variable:public core::TreeNodeItem{
+    class Variable:public VariableDyn{
     public:
         using single=T;
         using singlePtr=std::shared_ptr<single>;
         virtual int ndim(){return 1;}
-        Variable(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
-        Variable():TreeNodeItem(){}
-        Variable(const std::string & name):TreeNodeItem(name){}
-        Variable(const std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
+        Variable(core::TreeNodeRef && in):VariableDyn(std::move(in)){}
+        Variable():VariableDyn(){}
+        Variable(std::string name):VariableDyn(name){}
+        Variable(std::string name, core::Attribs && attr):VariableDyn(name,std::move(attr)){}
         void setValue(const single & val,const ptrdiff_t idx) {
             //here we construct a shared_ptr but don't dealloacate the actual value after calling by using an alias constructor
             setValue(singlePtr(singlePtr(), const_cast<single*>(&val)),idx);
@@ -227,38 +262,6 @@ namespace frommle{
 
             }
         };
-
-        //template<template<class> class Vd,class F, class ...Ts>
-        //struct tryVarCasts {
-            //core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
-                //auto tmp=dynamic_cast<Variable<F> *>(in.get());
-                //if(tmp){
-                   ////yeah, success let's proceed by returning a converted type
-                    //return core::TreeNodeRef(Vd<F>(std::move(in)));
-                //} else{
-                    ////no success try the next type
-                    //return tryVarCasts<Vd,Ts...>()(std::move(in));
-                //}
-
-            //}
-        //};
-
-        //template<template<class> class Vd,class F>
-        //struct tryVarCasts<Vd,F> {
-            //core::TreeNodeRef operator()(core::TreeNodeRef &&in) {
-                //auto tmp=dynamic_cast<Variable<F> *>(in.get());
-                //if (tmp){
-                    ////yeah, success let's proceed by returning a converted type
-                    //return core::TreeNodeRef(Vd<F>(std::move(in)));
-                //}else{
-                    ////no success  and nothing left to try
-                    //THROWINPUTEXCEPTION("No more casting possibilities for Variable");
-                //}
-
-            //}
-        //};
-
-    //some container types which are often written and read to/from archives
 
 
 

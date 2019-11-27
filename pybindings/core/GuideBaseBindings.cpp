@@ -41,8 +41,8 @@ namespace frommle{
          .def("add",&typehash::add);
 
     //GuideBase
-    p::class_<GuideBase>("GuideBase")
-            .add_property("name",&GuideBase::name,&GuideBase::setName)
+    p::class_<GuideBase,p::bases<Frommle>>("GuideBase")
+//            .add_property("name",&GuideBase::name, &GuideBase::name)
             .def("size",&GuideBase::size)
             .def("hash",&GuideBase::hash)
             //.add_static_property("ndim",p::make_getter(&GuideBase::ndim))

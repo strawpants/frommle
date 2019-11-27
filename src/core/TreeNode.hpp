@@ -26,6 +26,7 @@
 #include "core/Exceptions.hpp"
 #include <cassert>
 #include <functional>
+#include "core/frommle.hpp"
 #ifndef FROMMLE_TREENODE_HPP
 #define FROMMLE_TREENODE_HPP
 
@@ -108,18 +109,17 @@ namespace frommle{
 
             explicit operator bool()const;
             //forward some calls to underlying ptr
-            const std::string & getName()const;
+            std::string  name()const;
         private:
             std::shared_ptr<TreeNodeBase> ptr_{};
         };
 
-        class TreeNodeBase{
+        class TreeNodeBase:public Frommle{
         public:
             TreeNodeBase(){}
             ~TreeNodeBase(){}
-            TreeNodeBase(const std::string & name):name_(name){}
-            TreeNodeBase(const std::string && name):name_(std::move(name)){}
-            TreeNodeBase(const std::string name, Attribs && attr):name_(name),attrib_(std::move(attr)){}
+            TreeNodeBase(std::string name):Frommle(name){}
+            TreeNodeBase(std::string name, Attribs && attr):Frommle(name),attrib_(std::move(attr)){}
             TreeNodeBase(TreeNodeRef && in);
             TreeNodeBase(const TreeNodeBase & in)=default;
 
@@ -129,8 +129,8 @@ namespace frommle{
 //                parent_=in.parent_;
 //            }
 
-            const std::string & getName()const{return name_;}
-            void setName(const std::string name){name_=name;}
+//            const std::string &name()const{return name_;}
+//            void setName(const std::string name){name_=name;}
             virtual bool isCollection()const{return false;};//dynamically determines whether this is a collection or whether it holds a single value
 
             template<class Value>
@@ -154,7 +154,7 @@ namespace frommle{
                 return boost::any_cast<Value>(attrib_[name]);
             }
 
-            ///@brief special treatment of std::string attribute retrieval
+            ///@brief special treatment of std::string attribute retrieval (accepts both char * and string )
             template<class Value>
             typename std::enable_if<std::is_same<Value,std::string>::value,Value>::type getAttribute(const std::string &name){
                 try{
@@ -197,7 +197,7 @@ namespace frommle{
             void throwMethExcept()const;
             ///@brief possibly overload this function to perform actions after assigning a new parent
             virtual void parentHook(){};
-            std::string name_="";
+//            std::string name_="";
             Attribs attrib_{};
             TreeNodeCollection *parent_=nullptr;
         };
@@ -268,9 +268,9 @@ namespace frommle{
         TreeNodeRef &TreeNodeRef::operator=(T &&in) {
 
             if(ptr_) {
-                std::string iname = ptr_->getName();
+                std::string iname = ptr_->name();
                 if (iname.empty()){
-                    iname=in.getName();
+                    iname=in.name();
                 }
 
                 auto currentParent = ptr_->getParent();
@@ -365,7 +365,7 @@ namespace frommle{
 
         template<class T>
         TreeNodeRef & TreeNodeCollection::upsertChild(const size_t idx,T && in){
-            std::string name=in.getName();
+            std::string name=in.name();
             if (idx >= collection_.size()) {
                     //first resize the continer to accomodate the placement at idx}
                     collection_.resize(idx+1);
@@ -377,30 +377,6 @@ namespace frommle{
 
         }
 
-//        template<class T>
-//        TreeNodeRef & TreeNodeRef::upsertChild(const size_t idx, T &&in) {
-//            if(!ptr_->isCollection()) {
-//                throw MethodException("Can only upsert a child in a TreeNodecollection");
-//
-//            }
-//            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(idx,std::move(in));
-//            //also set the parent of the child
-////            ref.parent_=ptr_;
-////            return ref;
-//        }
-
-//        template<class T>
-//        TreeNodeRef & TreeNodeRef::upsertChild(const std::string name, T &&in) {
-//
-//            if(!ptr_->isCollection()) {
-//                throw MethodException("Can only upsert a child in a TreeNodecollection");
-//
-//            }
-//            return static_cast<TreeNodeCollection*>(ptr_.get())->upsertChild(name,std::move(in));
-////            ref.setParent(ptr_);
-////            return ref;
-//
-//        }
 
         template<class T, class It>
         class iteratorWrap: public It{

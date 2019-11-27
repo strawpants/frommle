@@ -71,7 +71,7 @@ namespace frommle {
             }
 
 
-            std::string iname = ptr_->getName();
+            std::string iname = ptr_->name();
             auto currentParent = ptr_->getParent();
 
             if (currentParent) {
@@ -94,7 +94,7 @@ namespace frommle {
                 ptr_=std::move(in.ptr_);
                 return *this;
             }
-            std::string iname=ptr_->getName();
+            std::string iname= ptr_->name();
             auto currentParent=ptr_->getParent();
 
             if(currentParent) {
@@ -116,7 +116,7 @@ namespace frommle {
             return *this;
         }
 
-        const std::string &TreeNodeRef::getName() const {return ptr_->getName();}
+        std::string TreeNodeRef::name() const {return ptr_->name();}
 
         TreeNodeRef::TreeNodeRef(const std::string &name) {
             ptr_=std::make_shared<TreeNodeItem>(name);
@@ -180,7 +180,7 @@ namespace frommle {
         ptrdiff_t TreeNodeCollection::findidx(const std::string name) const {
             for (ptrdiff_t i = 0; i < collection_.size(); ++i) {
                 if (collection_[i]) {
-                    if (collection_[i]->getName() == name) {
+                    if (collection_[i]->name() == name) {
                         return i;
                     }
                 }
@@ -216,7 +216,7 @@ namespace frommle {
         }
 
         TreeNodeRef &TreeNodeCollection::upsertChild(const size_t idx, TreeNodeRef &&in) {
-            std::string name=in.getName();
+            std::string name=in.name();
             if (idx >= collection_.size()) {
                 //first resize the container to accomodate the placement at idx}
                 collection_.resize(idx+1);
@@ -229,8 +229,7 @@ namespace frommle {
         }
 
 
-        TreeNodeBase::TreeNodeBase(TreeNodeRef &&in) {
-            name_ = in->name_;
+        TreeNodeBase::TreeNodeBase(TreeNodeRef &&in):Frommle(in.name()) {
             attrib_ = in->attrib_;
             parent_ = in->parent_;
         }

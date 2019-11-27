@@ -49,10 +49,10 @@ namespace frommle{
             if(writable() and ! readable()){
                 //create a new file
                 omode=NC_CLOBBER|NC_NETCDF4;
-               NetCDFCheckerror(nc_create(getName().c_str(), omode, &id_));
+               NetCDFCheckerror(nc_create(name().c_str(), omode, &id_));
 
             }else {
-                NetCDFCheckerror(nc_open(getName().c_str(), omode, &id_));
+                NetCDFCheckerror(nc_open(name().c_str(), omode, &id_));
             }
 
             if(writable()){
@@ -166,13 +166,13 @@ namespace frommle{
 
             if (readable() and ncparent_->id() != -1){
             //load group id from archive
-                NetCDFCheckerror(nc_inq_grp_ncid (ncparent_->id(),getName().c_str(),&id_));
+                NetCDFCheckerror(nc_inq_grp_ncid (ncparent_->id(), name().c_str(),&id_));
 
             }
 
             if(writable()){
                 //createGroup
-                NetCDFCheckerror(nc_def_grp	(ncparent_->id(), getName().c_str(),&id_));
+                NetCDFCheckerror(nc_def_grp	(ncparent_->id(), name().c_str(),&id_));
                 CFConventions::SetGroupAttr(*this);
             }
 

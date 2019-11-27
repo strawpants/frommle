@@ -29,6 +29,7 @@
 #include <ostream>
 #include <cmath>
 #include "core/Logging.hpp"
+#include "core/frommle.hpp"
 namespace frommle {
 namespace guides {
     template<class G>
@@ -76,16 +77,16 @@ std::ostream &operator<<(std::ostream &os, typehash const &m);
 
 
 
-    class GuideBase {
+class GuideBase:public core::Frommle {
     public:
 
-        GuideBase() {};
+        GuideBase():Frommle("GuideBase") {};
 
-        GuideBase(const typehash &type, const size_t &sz) : type_(type), size_(sz) {}
-        GuideBase(const std::string & name, const typehash &type, const size_t &sz) : type_(type), size_(sz),name_(name) {}
+        GuideBase(const typehash &type, const size_t &sz) :Frommle("GuideBase"), type_(type), size_(sz) {}
+        GuideBase(const std::string & name, const typehash &type, const size_t &sz) : Frommle(name),type_(type), size_(sz){}
 
         GuideBase(const typehash &type) : type_(type) {}
-        GuideBase(const std::string & name,const typehash &type):type_(type),name_(name){}
+        GuideBase(const std::string & name,const typehash &type):Frommle(name),type_(type){}
         virtual ~GuideBase() {
         }
         using Element=std::string;
@@ -106,10 +107,10 @@ std::ostream &operator<<(std::ostream &os, typehash const &m);
             return not this->operator==(in);
         }
 
-        std::string name()const{return name_;}
-        void setName(const std::string & name){
-            name_=name;
-        }
+//        std::string name()const{return name_;}
+//        void setName(const std::string &name){
+//            name_=name;
+//        }
         size_t idx(const Element & el )const{return 0;}
         virtual bool isMasked()const{return false;};
         virtual bool isPermuted()const{return false;};
@@ -146,7 +147,7 @@ std::ostream &operator<<(std::ostream &os, typehash const &m);
     protected:
         typehash type_{"FROMMLE"};
         size_t size_ = 0;
-        std::string name_="Guide";
+//        std::string name_="Guide";
         std::vector<Element> descripcache_{}; 
     };
 

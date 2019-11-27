@@ -1,4 +1,4 @@
-/*! \file
+/*! \file GuidePackBindings.hpp
  \brief 
  \copyright Roelof Rietbroek 2019
  \license
@@ -16,24 +16,25 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+ Created by Roelof Rietbroek,  2019
+
  */
 
-#include "pybindings/numpyConverting.hpp"
+#include "core/GuidePack.hpp"
+#include "numpyConverting.hpp"
+
+#ifndef FROMMLE_GUIDEPACKBINDINGS_HPP
+#define FROMMLE_GUIDEPACKBINDINGS_HPP
 
 namespace frommle{
+    namespace guides{
 
-    namespace py{
+        //return a numpynarray from iterating ove the elements
+        template<int n>
+        np::ndarray getcoords(const GuidePackDyn<n> &gpin, int i);
 
-        
-    void register_numpy_converters(){
-        
-        //register vector <-> ndarray converters
-        register_vector<double>();
-
-        register_mar<double,6>();
-        register_mar<size_t,6>();
-
-
-    }        
     }
 }
+
+#endif //FROMMLE_GUIDEPACKBINDINGS_HPP

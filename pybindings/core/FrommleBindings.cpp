@@ -1,0 +1,88 @@
+/*! \file FrommleBindings.cpp
+ \brief 
+ \copyright Roelof Rietbroek 2019
+ \license
+ This file is part of Frommle.
+ frommle is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later version.
+
+ Frommle is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with Frommle; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+ Created by Roelof Rietbroek,  2019
+
+ */
+#include <boost/python.hpp>
+#include <boost/core/noncopyable.hpp>
+#include "core/frommle.hpp"
+#include "io/Group.hpp"
+
+
+namespace p = boost::python;
+namespace frommle {
+//    namespace io{
+//        class Group;
+//    }
+
+    namespace core {
+
+    class FrommleWrapper:public Frommle,public p::wrapper<Frommle>{
+    public:
+               void save(io::Group & grp)const{
+            if(auto saveop=this->get_override("save")){
+                saveop(grp);
+
+            }else{
+                Frommle::save(grp);
+
+            }
+
+        }
+
+        void save_default(io::Group & grp)const{
+            Frommle::save(grp);
+
+        }
+
+
+        void load(io::Group & grp){
+            if(auto loadop=this->get_override("load")){
+                loadop(grp);
+
+            }else{
+                Frommle::load(grp);
+
+            }
+
+        }
+
+        void load_default(io::Group & grp){
+            Frommle::load(grp);
+
+        }
+
+
+    };
+
+
+        void registerFrommle() {
+            p::class_<FrommleWrapper,boost::noncopyable>("Frommle").def("name", &Frommle::name)
+                    .add_property("name", &Frommle::name, &Frommle::setName)
+                    .def("save",&Frommle::save,&FrommleWrapper::save_default)
+                    .def("load",&Frommle::load,&FrommleWrapper::load_default);
+//            p::class_<Frommle>("Frommle").def("name", &Frommle::name)
+//                    .add_property("name", &Frommle::name, &Frommle::setName);
+
+        }
+
+
+    }
+}

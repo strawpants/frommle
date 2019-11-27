@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
-#include "pybindings/coreBindings.hpp"
+#include "../core/coreBindings.hpp"
 #include "core/GuideBase.hpp"
 #include "sh/SHisoOperator.hpp"
 
@@ -12,8 +12,8 @@ namespace np = boost::python::numpy;
 #include "sh/Legendre_nm.hpp"
 #include "sh/SHGuide.hpp"
 #include "core/GuideBase.hpp"
-#include "pybindings/coreBindings.hpp"
-#include "pybindings/tupleconversion.hpp"
+#include "../core/coreBindings.hpp"
+#include "../core/tupleconversion.hpp"
 #include <boost/python/copy_non_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
 

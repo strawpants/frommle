@@ -1,6 +1,6 @@
-/*! \file
- \brief Holds the base for the Dimension class
- \copyright Roelof Rietbroek 2018
+/*! \file IOBindings.hpp
+ \brief 
+ \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -16,42 +16,21 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+ Created by Roelof Rietbroek,  2019
+
  */
-
-#ifndef SRC_IO_ARCHIVEBASE_HPP_
-#define SRC_IO_ARCHIVEBASE_HPP_
-
-#include<string>
-#include "io/Group.hpp"
-
-namespace frommle {
-namespace io {
-
-/*!
- * \brief Abstract base class for an output archive (i.e. a top level group)
- */
-
-class ArchiveBase:public Group {
-public:
-	ArchiveBase() : Group() {}
-
-	explicit ArchiveBase(const std::string &name) : Group(name) {
-	}
-	ArchiveBase(std::string name, std::string mode):Group(name){
-	    setAttribute("mode",mode);
-	    setAmode(mode);
-	}
-	ArchiveBase(std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {
-		setAmode();
-	}
+#ifndef FROMMLE_IOBINDINGS_HPP
+#define FROMMLE_IOBINDINGS_HPP
 
 
 
-private:
-};
+namespace frommle{
+    namespace io{
+        void registerArchives();
 
+    }
 
 }
-}
 
-#endif /* SRC_IO_ARCHIVEBASE_HPP_*/
+#endif //FROMMLE_IOBINDINGS_HPP

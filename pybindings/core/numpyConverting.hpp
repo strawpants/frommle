@@ -21,7 +21,7 @@
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 #include <boost/multi_array.hpp>
-#include "pybindings/tupleconversion.hpp"
+#include "tupleconversion.hpp"
 #include "core/GuideRegistry.hpp"
 
 namespace p = boost::python;

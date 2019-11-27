@@ -28,8 +28,7 @@
 #include <eigen3/Eigen/Core>
 #include <type_traits>
 #include "io/Group.hpp"
-#include "GuidePack.hpp"
-
+#include "core/frommle.hpp"
 namespace frommle {
     namespace core {
 
@@ -87,25 +86,25 @@ namespace frommle {
  * This class support the storing of multidimensional data in memory, whose dimensions are linked to Dimension objects
  * Furthermore, a unitbase can be assigned to the array
  */
-class GArrayBase {
-public:
-    virtual ~GArrayBase() {
-    }
-
-    std::string name() const { return name_; }
-
-    void setName(const std::string &name) {
-        name_ = name;
-    }
-//            virtual guides::GuidePackBasePtr gp()const=0;
-private:
-    std::string name_ = "data";
-
-};
+//class GArrayBase:public Frommle {
+//public:
+//    virtual ~GArrayBase() {
+//    }
+//
+//    std::string name() const { return name_; }
+//
+//    void setName(const std::string &name) {
+//        name_ = name;
+//    }
+////            virtual guides::GuidePackBasePtr gp()const=0;
+//private:
+//    std::string name_ = "data";
+//
+//};
 
 
 template<class T, int n>
-class GArrayDyn : public GArrayBase {
+class GArrayDyn : public Frommle {
 public:
     using gp_t=guides::GuidePackDyn<n>;
     using gp_tptr=std::shared_ptr<guides::GuidePackDyn < n>>;
@@ -116,12 +115,12 @@ public:
 
     ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
     template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
-    GArrayDyn(GP guidepack) : gp_(std::make_shared<GP>(std::move(guidepack))),
+    GArrayDyn(GP guidepack) : Frommle("GArray"),gp_(std::make_shared<GP>(std::move(guidepack))),
                               data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
                               ar_(data_.get(), gp_->extent()) {}
    
     //specialized constructor which casts a generic GuidePackPtr to an appropritate GuidePackDyn
-    GArrayDyn(const guides::GuidePackPtr & guidepack) : gp_(std::dynamic_pointer_cast<guides::GuidePackDyn<n>>(guidepack)),
+    GArrayDyn(const guides::GuidePackPtr & guidepack) :Frommle("GArray"),gp_(std::dynamic_pointer_cast<guides::GuidePackDyn<n>>(guidepack)),
                               data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
                               ar_(data_.get(), gp_->extent()) {}
 
@@ -138,11 +137,9 @@ public:
 //            }
 
     //note although empty, we always need to construct the multi_array_ref using a non-default constructor
-    GArrayDyn() : gp_(std::make_shared<gp_t>()), ar_(data_.get(), gp_->extent()) {}
+    GArrayDyn() :Frommle("GArray"),gp_(std::make_shared<gp_t>()), ar_(data_.get(), gp_->extent()) {}
 
     static const int ndim = n;
-    using GArrayBase::name;
-    using GArrayBase::setName;
     using arr=boost::multi_array_ref<T, ndim>;
     static typename arr::index_gen mindices(){
         return typename arr::index_gen();

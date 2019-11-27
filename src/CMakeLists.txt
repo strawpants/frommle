@@ -1,6 +1,6 @@
 # source files are to be added here
 
-LIST(APPEND COREHEADERS core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp
+LIST(APPEND COREHEADERS core/frommle.hpp core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp
         io/ArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp )
 
 LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp)
@@ -30,19 +30,6 @@ LIST(APPEND EARTHHEADERS earthmodels/EarthConstants.hpp)
 LIST(APPEND EARTHOBJS earthmodels/EarthConstants.cpp)
 #LIST(APPEND SEAOBJS sealevel/)
 
-if (PYTHON)
-    #add python wrapper routines
-    list(APPEND CXXPYWRAPS pybindings/GuideBaseBindings.cpp pybindings/coreGuides.cpp pybindings/datetimeconversion.cpp)
-
-    list(APPEND CXXPYWRAPS pybindings/coreBindings.cpp pybindings/coreBindings.hpp pybindings/tupleconversion.hpp pybindings/tupleconversion.cpp pybindings/earthBindings.cpp pybindings/numpyConverting.hpp pybindings/numpyConverting.cpp)
-    list(APPEND CXXPYWRAPS pybindings/SHBindings.cpp )
-    list(APPEND CXXPYWRAPS pybindings/geometryBindings.cpp )
-    list(APPEND CXXPYWRAPS pybindings/ElementBindings.hpp )
-    list(APPEND CXXPYWRAPS pybindings/GuidePackBindings.cpp )
-    list(APPEND CXXPYWRAPS pybindings/GArrayBindings.cpp )
-    list(APPEND CXXPYWRAPS pybindings/GOperatorBindings.cpp )
-    add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )
-endif()
 
 add_library(${FROMMLELIB} SHARED ${COREOBJS} ${COREHEADERS}
         ${SHHEADERS} ${SHOBJS}

@@ -18,50 +18,22 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "pybindings/numpyConverting.hpp"
-
-#ifndef PYBIND_ELEMENTS_HPP_
-#define CPYBIND_ELEMENTS_HPP_
+#include "numpyConverting.hpp"
 
 namespace frommle{
-namespace guides{
+
+    namespace py{
+
+        
+    void register_numpy_converters(){
+        
+        //register vector <-> ndarray converters
+        register_vector<double>();
+
+        register_mar<double,6>();
+        register_mar<size_t,6>();
 
 
-//   template<class Element>
-//       struct ElementConverter{
-//              static np::dtype dtype(){
-//                     return np::dtype::get_builtin<Element>();
-//              }
-//              using PyElement=Element;
-//
-//              PyElement convert(const Element & elin){
-//                  return PyElement();
-//              }
-//
-//
-//       };
-//
-//
-//    template<>
-//    struct ElementConverter<std::string>{
-//        static np::dtype dtype(){
-//            return np::dtype::get_builtin<std::>();
-//        }
-//        using PyElement=p::str;
-//
-//        PyElement convert(const Element & elin){
-//            return PyElement();
-//        }
-//
-//
-//    };
-
-
-
-
-
+    }        
+    }
 }
-
-}
-
-#endif

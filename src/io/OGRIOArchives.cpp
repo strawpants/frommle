@@ -77,7 +77,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         }
 
         bool OGRGroup::readlayer() {
-            layer_=static_cast<OGRArchive*>(getParent())->loadLayer(getName());
+            layer_=static_cast<OGRArchive*>(getParent())->loadLayer(name());
             if(layer_){
                 layerdef_ = layer_->GetLayerDefn();
                 if (!layerdef_){
@@ -90,7 +90,7 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         }
 
         bool OGRGroup::createlayer() {
-            layer_=static_cast<OGRArchive*>(getParent())->createLayer(getName(),wkbUnknown);
+            layer_=static_cast<OGRArchive*>(getParent())->createLayer(name(),wkbUnknown);
             layerdef_ = layer_->GetLayerDefn();
             if (!layerdef_){
                 throw core::IOException(" Cannot read layer definition");
@@ -249,9 +249,9 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         OGRGroup::~OGRGroup() {
             if(currentFeat and layer_ and writable()){
                 //write the last feature if it is still opened
-                auto geom=currentFeat->GetGeometryRef();
-                char ** wkt=new char*;
-                geom->exportToWkt(wkt);
+//                auto geom=currentFeat->GetGeometryRef();
+//                char ** wkt=new char*;
+//                geom->exportToWkt(wkt);
                 layer_->CreateFeature(currentFeat);
                 OGRFeature::DestroyFeature(currentFeat);
                 layer_->SyncToDisk();
@@ -330,14 +330,14 @@ OGRSpatialReference *OGRGroup::getOGRspatialRef()const{
         template<class T>
         OGRVarBase<T>::OGRVarBase(const std::string &fieldName):Variable<T>(fieldName){
            //note: this class now owns fielddef_
-           fieldef_=std::make_shared<fieldtype>(getName().c_str(),OGRtype<T>::type());
+           fieldef_=std::make_shared<fieldtype>(name().c_str(),OGRtype<T>::type());
 
         }
 
         template<class T>
         OGRVarBase<T>::OGRVarBase(core::TreeNodeRef &&in):Variable<T>(std::move(in)){
             //note: this class now owns fielddef_
-            fieldef_=std::make_shared<fieldtype>(getName().c_str(),OGRtype<T>::type());
+            fieldef_=std::make_shared<fieldtype>(name().c_str(),OGRtype<T>::type());
 
         }
 

@@ -23,7 +23,7 @@
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
 #include <boost/python/return_by_value.hpp>
-#include "pybindings/coreBindings.hpp"
+#include "../core/coreBindings.hpp"
 #include <ogr_geometry.h>
 #include "geometry/GuideMakerTools.hpp"
 

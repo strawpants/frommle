@@ -52,14 +52,14 @@ namespace frommle {
                 auto driver = getAttribute<std::string>("Driver");
                 if (driver == "PostGIS") {
                     //modify the input sourceName to refer to a valid POSTGIS resource
-                    setName(GDALPOSTGISSource(getName()));
+                    setName(GDALPOSTGISSource(name()));
                 }
                 gdalDriver = GetGDALDriverManager()->GetDriverByName(driver.c_str());
             }
 
             if(writable() and not readable()){
                 //remove resource if it is a regular file or directory
-                boost::filesystem::path path(getName());
+                boost::filesystem::path path(name());
                 if (boost::filesystem::is_directory(path) or boost::filesystem::is_regular_file(path)){
                     boost::filesystem::remove_all(path);
                 }
@@ -68,16 +68,16 @@ namespace frommle {
             if (writable() and  readable()) {
                 auto gdalaccess = GDAL_OF_UPDATE | GDAL_OF_VECTOR;
                 //try opening existing file
-                poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
+                poDS = static_cast<GDALDataset *>(GDALOpenEx(name().c_str(), gdalaccess, NULL, NULL, NULL));
             }else if (writable()){
                     if (!gdalDriver) {
                         throw core::InputException(
                                 "A GDAL driver must be set explicitly when creating files. Set the 'Driver' attribute of the Archive to a valid GDAL driver");
                     }
-                    poDS = gdalDriver->Create(getName().c_str(), 0, 0, 0, GDT_Unknown, NULL);
+                    poDS = gdalDriver->Create(name().c_str(), 0, 0, 0, GDT_Unknown, NULL);
             }else if (readable()){
                 auto gdalaccess = GDAL_OF_READONLY | GDAL_OF_VECTOR;
-                poDS = static_cast<GDALDataset *>(GDALOpenEx(getName().c_str(), gdalaccess, NULL, NULL, NULL));
+                poDS = static_cast<GDALDataset *>(GDALOpenEx(name().c_str(), gdalaccess, NULL, NULL, NULL));
             }
 
 

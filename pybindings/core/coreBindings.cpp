@@ -1,6 +1,6 @@
-/*! \file
- \brief Holds the base for the Dimension class
- \copyright Roelof Rietbroek 2018
+/*! \file coreBindings.cpp
+ \brief
+ \copyright Roelof Rietbroek 2019
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -16,42 +16,46 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+ Created by Roelof Rietbroek,  2019
+
  */
 
-#ifndef SRC_IO_ARCHIVEBASE_HPP_
-#define SRC_IO_ARCHIVEBASE_HPP_
+#include "coreBindings.hpp"
+using namespace frommle::py;
+using namespace frommle::core;
+using namespace frommle::guides;
 
-#include<string>
-#include "io/Group.hpp"
+void pyexport_core(){
 
-namespace frommle {
-namespace io {
+    //Register c++ to python conversions
 
-/*!
- * \brief Abstract base class for an output archive (i.e. a top level group)
- */
+    register_tuple_converters();
+    
+    register_numpy_converters();
 
-class ArchiveBase:public Group {
-public:
-	ArchiveBase() : Group() {}
+    //register to/from date converters
+    register_datetime();
 
-	explicit ArchiveBase(const std::string &name) : Group(name) {
-	}
-	ArchiveBase(std::string name, std::string mode):Group(name){
-	    setAttribute("mode",mode);
-	    setAmode(mode);
-	}
-	ArchiveBase(std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {
-		setAmode();
-	}
+    registerFrommle();
+
+    register_GuideBase();
+
+    register_coreGuides();
+
+    
+    
+    //register the GuidePack
+    registerGuidePack();
 
 
+    //register GArrays
+    registerGArrays();
 
-private:
-};
+    
+    registerGOperators();
 
+    register_logger();
 
 }
-}
 
-#endif /* SRC_IO_ARCHIVEBASE_HPP_*/

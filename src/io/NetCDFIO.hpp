@@ -109,7 +109,7 @@ namespace frommle {
             using Variable<T>::writable;
             using Variable<T>::readable;
             using Variable<T>::getParent;
-            using Variable<T>::getName;
+            using Variable<T>::name;
             using Variable<T>::singlePtr;
             using Variable<T>::single;
             using Variable<T>::getAttributeCount;
@@ -167,7 +167,7 @@ namespace frommle {
 
             if (readable() and ncparent_->id() != -1) {
                 //load variable id
-                NetCDFCheckerror(nc_inq_varid(ncparent_->id(),getName().c_str(),&id_));
+                NetCDFCheckerror(nc_inq_varid(ncparent_->id(), name().c_str(),&id_));
                 //load attributes
                 getAttr();
                 ///load dimension ids
@@ -214,7 +214,7 @@ namespace frommle {
 
                 //create/reuse dimensions from parent
                 for (int i = 0; i < ndim_; ++i) {
-                    std::string fallback(getName());
+                    std::string fallback(name());
                     if (getAttributeCount("Dimensions") == 0) {
                         if (ndim_ != 1) {
                             //append a dimension id to name as the variable for the 1D case
@@ -242,7 +242,7 @@ namespace frommle {
 
                 // After setting up /finding the dimensions we need to register the variable definition
                 NetCDFCheckerror(
-                        nc_def_var(ncparent_->id(), getName().c_str(), NetCDFtype<T>::type(), ndim_, dimids.data(),
+                        nc_def_var(ncparent_->id(), name().c_str(), NetCDFtype<T>::type(), ndim_, dimids.data(),
                                    &id_));
                 //also setup attributes
                 CFConventions::SetDataAttr(*this);

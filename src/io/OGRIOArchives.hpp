@@ -191,7 +191,7 @@ namespace frommle{
             using Variable<T>::writable;
             using Variable<T>::readable;
             using Variable<T>::getParent;
-            using Variable<T>::getName;
+            using Variable<T>::name;
 
             ~OGRVarBase() {}
 

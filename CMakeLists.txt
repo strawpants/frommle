@@ -140,6 +140,10 @@ add_subdirectory(src)
 #add directory with python and C++ wrappers
 add_subdirectory(python)
 
+if (PYTHON)
+    add_subdirectory(pybindings)
+endif()
+
 
 #add (C++) Apps  which are based upon the library
 add_subdirectory(apps)

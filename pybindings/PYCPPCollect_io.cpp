@@ -1,5 +1,5 @@
 /*! \file
- \brief Holds the base for the Dimension class
+ \brief This is the only file which is compiled through the python setup.py file and therefore does not belong to any c++ target
  \copyright Roelof Rietbroek 2018
  \license
  This file is part of Frommle.
@@ -18,40 +18,15 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef SRC_IO_ARCHIVEBASE_HPP_
-#define SRC_IO_ARCHIVEBASE_HPP_
-
-#include<string>
-#include "io/Group.hpp"
-
-namespace frommle {
-namespace io {
-
-/*!
- * \brief Abstract base class for an output archive (i.e. a top level group)
- */
-
-class ArchiveBase:public Group {
-public:
-	ArchiveBase() : Group() {}
-
-	explicit ArchiveBase(const std::string &name) : Group(name) {
-	}
-	ArchiveBase(std::string name, std::string mode):Group(name){
-	    setAttribute("mode",mode);
-	    setAmode(mode);
-	}
-	ArchiveBase(std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {
-		setAmode();
-	}
 
 
+#include <boost/python.hpp>
 
-private:
-};
+void pyexport_io();
 
-
-}
-}
-
-#endif /* SRC_IO_ARCHIVEBASE_HPP_*/
+BOOST_PYTHON_MODULE(_io)
+        {
+//        Py_Initialize();
+//        boost::python::numpy::initialize();
+                pyexport_io();
+        }

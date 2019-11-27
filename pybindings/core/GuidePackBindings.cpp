@@ -23,7 +23,7 @@
 #include <boost/core/noncopyable.hpp>
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
-#include "pybindings/GuidePackBindings.hpp"
+#include "GuidePackBindings.hpp"
 
 namespace frommle{
     namespace guides{
