@@ -162,7 +162,7 @@ namespace frommle{
 
             const OGRFeature *getFeature(const ptrdiff_t idx = -1) const;
 
-            core::TreeNodeRef convertChild(core::TreeNodeRef &&in);;
+            core::TreeNodeRef convertChild(core::TreeNodeRef &&in);
         private:
             void loadCollection();
 

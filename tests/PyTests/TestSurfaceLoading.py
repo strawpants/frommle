@@ -62,8 +62,5 @@ class testSurfaceLoading(unittest.TestCase):
         self.assertEqual("test","test")
         
 
-if __name__ == '__main__':
-    unittest.main()
-
 
 

@@ -25,42 +25,72 @@ from frommle.core.frlogger import logger
 from frommle.sh import SHtmnGuide
 import numpy as np
 from frommle.core.time import npdt64_2_datetime
+from enum import Enum
 
-class formats:
+class formats(Enum):
     standard=1
     icgem=2
     GSMv6=3
+    unknown=4
 
-def queryformat(filename):
+
+class shopen:
+    nmax_=-1
     gzip=False
+    def __init__(self,filen,mode='r',format=formats.unknown):
+        """A class which opens a spherical harmonic dataset in/read write"""
+        self.mode=mode
+        self.format=format
+        self.filen=filen
+        if filen.endswith(".gz"):
+            gzip=True
 
-    ftest=filename
+        if mode == 'r':
+            if format == formats.unknown:
+                self.format=queryformat()
+        elif mode == "w" and format == formats.unknown:
+            raise RunTimeError("When writing an sh file the format option is obligatory")
+        else:
+            raise RunTimeError("Unknown mode %s supplied",%mode)
 
-    if filename.endswith(".gz"):
-        gzip=True
+    def nmax(self):
+        if nmax_ == -1:
+            def load_()
+        return nmax_
+
+    def load_(self):
+        if self.mode == 'w':
+            raise RunTimeError("Cannot load sh data in write mode")
+
+
+    def queryformat(self):
+
         ftest=filename.strip(".gz")
 
-    if ftest.endswith("gfc"):
-        #quick return
-        return formats.icgem
-    
-    #no we open the file to search for format hints
-    if gzip:
-        fid=gz.open(filename,'rt')
-    else:
-        fid=open(filename,'rt')
-    try:
-        ln = fid.readline()
-    except Exception as excep:
-        raise IOError("Reading error for %s"%filename)
+        if ftest.endswith("gfc"):
+            #quick return
+            self.format=formats.icgem
 
-    fid.close()
+        #no we open the file to search for format hints
+        if gzip:
+            fid=gz.open(filename,'rt')
+        else:
+            fid=open(filename,'rt')
+        try:
+            ln = fid.readline()
+        except Exception as excep:
+            raise IOError("Reading error for %s"%filename)
 
-    if re.search("META",ln):
-        return formats.standard
-    
-    #fall back by means of exclusion
-    return formats.GSMv6
+        fid.close()
+
+        if re.search("META",ln):
+            self.format=formats.standard
+
+        #fall back by means of exclusion
+        self.format=formats.GSMv6
+
+
+
 
 def sh_read_asxar(shfiles,nmax=None):
     """Reads a list of Spherical harmonic files into a 2D xarray.DataArray.

@@ -21,6 +21,9 @@ from frommle.sh.shxarray import newshxarray
 import operator
 from frommle.core.time import decyear2datetime,datetime2decyear
 
+class shstandard:
+    def __init
+
 def read_shstandard(file, nmax=None, headerOnly=False,error=False):
     """Reads the standard SH format as produce by the RLFTLBX (first line has a META tag, with the maximum degree and start,center and end time)"""
 

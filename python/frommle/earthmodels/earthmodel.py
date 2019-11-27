@@ -18,7 +18,7 @@
 
 from frommle.earthmodels import LoadLove
 from frommle.earthmodels import WGS84,rho_water,rho_seawater,rho_earth
-from frommle.sh import shIsoOperator
+from frommle.sh import shisoperator_float64
 import numpy as np
 
 class EarthModel():

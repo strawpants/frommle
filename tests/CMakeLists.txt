@@ -16,12 +16,13 @@ endforeach(tester ${ALLTESTS})
 
 if (PYTHON)
     
-    list(APPEND ALLPYTESTS PyTests/TestSurfaceLoading.py )
+    list(APPEND ALLPYTESTS PyTests/shio_n_conversion.py )
 
     foreach(pytest ${ALLPYTESTS})
         get_filename_component(PYTESTNAME ${pytest} NAME_WE)
         add_test(NAME ${PYTESTNAME} COMMAND ${PYTHON} -m unittest ${pytest} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
-        #set_target_properties(${tester} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/testing)
+        file(COPY ${pytest}  DESTINATION ${CMAKE_BINARY_DIR}/testing/)
+        set_target_properties(${tester} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/testing)
     endforeach()
 
 
