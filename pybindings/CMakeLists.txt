@@ -2,6 +2,7 @@
 
 #core wrappers
 list(APPEND CXXPYWRAPS core/FrommleBindings.cpp)
+list(APPEND CXXPYWRAPS core/TreeNodeBindings.cpp)
 list(APPEND CXXPYWRAPS core/GuideBaseBindings.cpp
         core/coreGuides.cpp
         core/datetimeconversion.cpp)

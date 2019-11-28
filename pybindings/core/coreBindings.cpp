@@ -38,6 +38,7 @@ void pyexport_core(){
     register_datetime();
 
     registerFrommle();
+    registerTreeNodes();
 
     register_GuideBase();
 

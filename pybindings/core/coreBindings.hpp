@@ -31,6 +31,7 @@ namespace frommle{
 
     namespace core{
         void registerFrommle();
+        void registerTreeNodes();
         void registerGArrays();
         void registerGOperators();
         void register_logger();

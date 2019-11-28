@@ -91,7 +91,7 @@ namespace frommle {
         const TreeNodeRef &TreeNodeRef::operator=(TreeNodeRef &in) {
             if (!ptr_) {
                 //quick shortcut if current TreeNode is informationless
-                ptr_=std::move(in.ptr_);
+                ptr_=in.ptr_;
                 return *this;
             }
             std::string iname= ptr_->name();
@@ -141,6 +141,43 @@ namespace frommle {
         }
 
 
+        const TreeNodeRef TreeNodeRef::operator[](const size_t idx) const {
+            if (!ptr_) {
+                //just return this empty instance
+                return *this;
+//                    throw IndexingException("TreeNodeRef points to nothing");
+            }
+
+            return ptr_->operator[](idx);
+        }
+
+        TreeNodeRef TreeNodeRef::operator[](const size_t idx) {
+            if (!ptr_) {
+                return *this;
+//                    throw IndexingException("TreenodeRef points to nothing");
+            }
+            return ptr_->operator[](idx);
+        }
+
+        const TreeNodeRef TreeNodeRef::operator[](const std::string & idx) const {
+            if (!ptr_) {
+                //just return this empty instance
+                return *this;
+//                    throw IndexingException("TreeNodeRef points to nothing");
+            }
+
+            return ptr_->operator[](idx);
+        }
+
+        TreeNodeRef TreeNodeRef::operator[](const std::string & idx) {
+            if (!ptr_) {
+                return *this;
+//                    throw IndexingException("TreenodeRef points to nothing");
+            }
+            return ptr_->operator[](idx);
+        }
+
+
 
         const TreeNodeRef TreeNodeCollection::operator[](const std::string &name) const {
             auto idx = findidx(name);
@@ -161,14 +198,14 @@ namespace frommle {
             return collection_[idx];
         }
 
-        const TreeNodeRef TreeNodeCollection::operator[](const size_t &idx) const  {
+        const TreeNodeRef TreeNodeCollection::operator[](size_t idx) const  {
             if (idx >= collection_.size()) {
                 return TreeNodeBase();
             }
             return collection_[idx];
         }
 
-        TreeNodeRef TreeNodeCollection::operator[](const size_t &idx) {
+        TreeNodeRef TreeNodeCollection::operator[](size_t idx) {
             loadCollection(idx);
             if (idx >= collection_.size()) {
                 return TreeNodeBase().setParent(*this);

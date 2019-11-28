@@ -30,6 +30,16 @@ namespace frommle{
             return this->operator[](name).as<Group>();
         }
 
+        VariableDyn &Group::getVariable(const std::string &name) {
+            auto idx=findidx(name);
+            if (idx == -1){
+                //create a new empty VariableDyn
+                this->operator[](name)=VariableDyn();
+            }
+            return this->operator[](name).as<VariableDyn>();
+        }
+
+
         bool Group::readable() const {
             if (getParent()) {
                 return static_cast<Group *>(getParent())->readable();

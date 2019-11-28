@@ -43,6 +43,7 @@ namespace frommle{
 
 
         //forward declare a variable here
+        class VariableDyn;
         template<class T>
         class Variable;
 
@@ -94,7 +95,9 @@ namespace frommle{
 
             bool readable()const;
             bool writable()const;
-            Group & getGroup(const std::string &name);
+            virtual Group & getGroup(const std::string &name);
+
+            virtual VariableDyn & getVariable(const std::string &name);
 
             template<class T>
             Variable<T> & getVariable(const std::string & name);

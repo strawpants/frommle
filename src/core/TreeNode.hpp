@@ -41,15 +41,26 @@ namespace frommle{
         class TreeNodeRef{
         public:
             using cvec=std::vector<TreeNodeRef>;
+            using element_type=TreeNodeBase;
             TreeNodeRef(){}
             explicit TreeNodeRef(const std::string & name );
-            template<class T>
-            TreeNodeRef(T && nodeIn)noexcept{
-                ptr_=std::make_shared<T>(std::move(nodeIn));
+            TreeNodeRef(TreeNodeBase* ptr){
+                ptr_=std::make_shared<TreeNodeBase>(ptr);
             }
 
             template<class T>
-            TreeNodeRef(T & nodeIn)noexcept;
+            TreeNodeRef(const T & nodeIn)noexcept{
+                ptr_=std::make_shared<T>(nodeIn);
+            }
+
+//            template<class T>
+//            TreeNodeRef(T && nodeIn)noexcept{
+//                ptr_=std::make_shared<T>(std::move(nodeIn));
+//            }
+
+
+//            template<class T>
+//            TreeNodeRef(T & nodeIn)noexcept;
             TreeNodeRef(TreeNodeRef & in){
                 ptr_=in.ptr_;
             }
@@ -101,11 +112,10 @@ namespace frommle{
             template<class T>
             T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
 
-            template<class I>
-            const TreeNodeRef  operator[](const I &idx) const;
-
-            template<class I>
-            TreeNodeRef operator[](const I &idx);
+            const TreeNodeRef  operator[](const size_t idx) const;
+            const TreeNodeRef  operator[](const std::string &idx) const;
+            TreeNodeRef operator[](const size_t idx);
+            TreeNodeRef operator[](const std::string &idx);
 
             explicit operator bool()const;
             //forward some calls to underlying ptr
@@ -165,10 +175,10 @@ namespace frommle{
             }
 
             virtual const TreeNodeRef operator[](const std::string & name)const {throwMethExcept();return TreeNodeRef();};
-            virtual const TreeNodeRef operator[](const size_t & idx)const {throwMethExcept();return TreeNodeRef();};
+            virtual const TreeNodeRef operator[](size_t  idx)const {throwMethExcept();return TreeNodeRef();};
 
             virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();return TreeNodeRef();}
-            virtual TreeNodeRef operator[](const size_t & idx){throwMethExcept();return TreeNodeRef();};
+            virtual TreeNodeRef operator[](size_t  idx){throwMethExcept();return TreeNodeRef();};
 
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const=0;
 //            virtual const TreeNodeRef & ref()const=0;
@@ -228,10 +238,10 @@ namespace frommle{
             size_t size()const{return collection_.size();}
 
             virtual const TreeNodeRef operator[](const std::string & name)const;
-            virtual const TreeNodeRef operator[](const size_t & idx)const;
+            virtual const TreeNodeRef operator[](size_t  idx)const;
 
             virtual TreeNodeRef operator[](const std::string & name);
-            virtual TreeNodeRef operator[](const size_t & idx);
+            virtual TreeNodeRef operator[](size_t  idx);
 
             bool isCollection()const final{return true;}
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const;
@@ -290,32 +300,12 @@ namespace frommle{
             return *this;
         }
 
-        template<class I>
-        const TreeNodeRef TreeNodeRef::operator[](const I &idx) const {
-            if (!ptr_) {
-                //just return this empty instance
-                return *this;
-//                    throw IndexingException("TreeNodeRef points to nothing");
-            }
 
-            return ptr_->operator[](idx);
-        }
-
-
-        template<class I>
-        TreeNodeRef TreeNodeRef::operator[](const I &idx) {
-            if (!ptr_) {
-                return *this;
-//                    throw IndexingException("TreenodeRef points to nothing");
-            }
-            return ptr_->operator[](idx);
-        }
-
-        template<class T>
-        TreeNodeRef::TreeNodeRef(T &nodeIn) noexcept {
-            //use shared_ptr aliasing so the pointer points to the memory of nodein, but does not own it
-            ptr_=std::shared_ptr<T>(std::shared_ptr<T>(),& nodeIn);
-        }
+//        template<class T>
+//        TreeNodeRef::TreeNodeRef(T &nodeIn) noexcept {
+//            //use shared_ptr aliasing so the pointer points to the memory of nodein, but does not own it
+//            ptr_=std::shared_ptr<T>(std::shared_ptr<T>(),& nodeIn);
+//        }
 
 
 

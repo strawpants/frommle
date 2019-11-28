@@ -47,17 +47,34 @@ namespace frommle{
 //        };
 
 
+        template<class I,class NODE>
+        void assigntoGroup(Group &coll,const I & idx, const NODE & Value ){
+            coll.upsertChild(idx,Value);
+        }
         void registerArchives(){
 
 
 
-            p::class_<Group,p::bases<core::Frommle>>("Group")
+            p::class_<Group,p::bases<core::TreeNodeCollection>>("Group")
+            .def(p::init<std::string>())
             .def("readable",&Group::readable)
-            .def("writeable",&Group::writable)
-            .def("getGroup",&Group::getGroup,p::return_value_policy<p::reference_existing_object>());
+            .def("writable",&Group::writable)
+            .def("getGroup",&Group::getGroup,p::return_value_policy<p::reference_existing_object>())
+            .def("getVariable",&Group::getGroup,p::return_value_policy<p::reference_existing_object>())
+            .def("__setitem__",&assigntoGroup<size_t,Group>)
+            .def("__setitem__",&assigntoGroup<std::string,Group>)
+            .def("__setitem__",&assigntoGroup<size_t,VariableDyn>)
+            .def("__setitem__",&assigntoGroup<std::string,VariableDyn>);
+//            .def("__setitem__",&assigntoGroup<size_t,TreeNodeCollection>)
+//            .def("__setitem__",&assignNode<std::string,TreeNodeCollection>)
+
+            p::class_<VariableDyn,p::bases<core::TreeNodeItem>>("Variable")
+            .def(p::init<std::string>());
 
             p::class_<ArchiveBase,p::bases<Group>>("Archive")
             .def(p::init<std::string>());
+
+
 
 //            .def("__getitem__",);
 //            .def("__getitem__",);
