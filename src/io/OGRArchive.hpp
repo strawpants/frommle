@@ -36,12 +36,12 @@
 namespace frommle {
 	namespace io {
 
-	class OGRArchive : public ArchiveBase {
+	class OGRArchive : public Group {
 		public:
-			OGRArchive():ArchiveBase(){
+			OGRArchive():Group(){
 
 			}
-			OGRArchive(const std::string name,core::Attributes && attr):ArchiveBase(name,std::move(attr)){
+			OGRArchive(const std::string name,core::Attributes && attr):Group(name,std::move(attr)){
 				init();
 			}
 

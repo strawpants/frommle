@@ -17,7 +17,7 @@
 
 
 from frommle.core import typehash
-from frommle.io import Group,Archive,Variable,Variable_float64
+from frommle.io import Group,Variable,Variable_float64
 from frommle.sh import SHnmtGuide
 import gzip as gz
 
@@ -31,12 +31,14 @@ class formats(Enum):
 
 class SHVar(Variable):
         """contains a variable object which allows reading/writing to an SHarchive"""
-        def __init__(self,name="sh"):
+        def __init__(self,name="cnm"):
             Variable.__init__(self,name)
-            
+        def __getitem__(self,slc):
+            """overriding slicing"""
+            pass
 
 
-class SHArchive(Archive):
+class SHArchive(Group):
     """base type to read SH datasets from various text filetypes """
     loaded=False
     #Varnames holds valid variable names which can be overloaded/extended in derived classes 
@@ -44,8 +46,8 @@ class SHArchive(Archive):
     shg=SHnmtGuide(0)
     def __init__(self,filename,mode='r',nmax=None):
         #important: initialize 
-        # Group.__init__(self) 
-        Archive.__init__(self,mode)
+        Group.__init__(self,filename)
+        self.setAmode(mode)
 
     def fid(self):
         """Opens the text file (and possibly pass through a gzip filter) and returns a file descriptor"""
@@ -65,7 +67,7 @@ class SHArchive(Archive):
         self.fload()
         
         if varname in self.varnames:
-            self[varname]= SHVar();
+            self[varname]= SHVar(varname);
             if varname == "shg":
                 #set a dedicated typehash when the SHguide is called
                 self[varname].attr["typehash"]=SHnmtGuide(self.attr["nmax"]).hash()

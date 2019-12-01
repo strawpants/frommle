@@ -62,7 +62,7 @@ class SHIO(unittest.TestCase):
         shar=shopen(filen)
         shg=SHnmtGuide()
         shg.load(shar)
-        shg=shar.load(SHnmtGuide())
+        # shg=shar.load(SHnmtGuide())
         # epoch=datetime(2009,1,1)
         # hdr,sh=read_icgem(file,nmax=2,epoch=epoch)
         #

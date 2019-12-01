@@ -102,8 +102,8 @@ namespace frommle{
             template<class T>
             Variable<T> & getVariable(const std::string & name);
 
-            void setAmode(const std::string & mode){
-
+            void setAmode(std::string mode){
+                attr().set("mode",mode);
                 if (mode == "r"){
                     openForReading=true;
                     openForWriting=false;
@@ -168,6 +168,8 @@ namespace frommle{
         constexpr bool writable()const {
             return static_cast<Group *>(getParent())->writable();
         }
+
+
     };
 
 //        using valueVariant=boost::variant<double,int,long long int,std::string,OGRGeometry*>;

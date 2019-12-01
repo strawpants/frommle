@@ -23,6 +23,7 @@
 
 
 #include <boost/python.hpp>
+#include <boost/python/slice.hpp>
 #include <boost/python/reference_existing_object.hpp>
 #include <boost/python/return_value_policy.hpp>
 #include <boost/noncopyable.hpp>
@@ -36,16 +37,16 @@ namespace frommle{
         ///@brief Groupwrapper which is needed to allow dynamic python overloading
         class GroupWrapper:public Group,public p::wrapper<Group>{
         public:
-            GroupWrapper(){}
+            GroupWrapper():Group(){}
             GroupWrapper(std::string name):Group(name){}
-            void pysave(const Frommle & frobj){
-                frobj.save(static_cast<Group&>(*this));
-            }
-
-            Frommle* pyload(Frommle & frobj){
-                frobj.load(static_cast<Group&>(*this));
-                return &frobj;
-            }
+//            void pysave(const Frommle & frobj){
+//                frobj.save(static_cast<Group&>(*this));
+//            }
+//
+//            Frommle* pyload(Frommle & frobj){
+//                frobj.load(static_cast<Group&>(*this));
+//                return &frobj;
+//            }
 
 
             std::shared_ptr<VariableDyn> getVariable(const std::string &name){
@@ -68,19 +69,20 @@ namespace frommle{
         private:
         };
 
-        class ArchiveWrapper:public ArchiveBase,public p::wrapper<ArchiveBase>{
-        public:
-            ArchiveWrapper(){}
-            ArchiveWrapper(std::string name):ArchiveBase(name){}
-            ArchiveWrapper(std::string name,std::string mode):ArchiveBase(name,mode){}
-        };
         ///@brief Variablewrapper which is needed to allow dynamic python overloading
         class VariableWrapper:public VariableDyn,public p::wrapper<VariableDyn>{
         public:
             VariableWrapper(){}
             VariableWrapper(std::string name):VariableDyn(name){}
+            p::ndarray get(const p::slice & slice){
 
+
+            }
             //std::shared_ptr<VariableWrapper> ptr(){
+            p::ndarray get(const p::tuple & slicetuple){
+
+
+            }
                 //return std::make_shared<VariableWrapper>();
             //}
         private:
@@ -112,6 +114,10 @@ namespace frommle{
             
         //}
 
+        void (Group::*setamode1)(std::string )=&Group::setAmode;
+
+        void (Group::*setamode2)()=&Group::setAmode;
+
         void registerArchives(){
 
 
@@ -120,8 +126,10 @@ namespace frommle{
             .def(p::init<std::string>())
             .def("readable",&Group::readable)
             .def("writable",&Group::writable)
-            .def("load",&GroupWrapper::pyload,p::return_value_policy<p::manage_new_object>())
-            .def("save",&GroupWrapper::pysave)
+//            .def("load",&GroupWrapper::pyload,p::return_value_policy<p::manage_new_object>())
+//            .def("save",&GroupWrapper::pysave)
+            .def("setAmode",setamode1)
+            .def("setAmode",setamode2)
             .def("getGroup",&Group::getGroup,p::return_value_policy<p::reference_existing_object>())
             //.def("getVariable",&Group::getVariable,&GroupWrapper::default_getVariable)
             .def("__setitem__",&assigntoGroup<size_t,Group>)
@@ -143,11 +151,11 @@ namespace frommle{
             register_var<double>::reg("Variable_float64");
             register_var<int>::reg("Variable_int");
 
-            p::class_<ArchiveWrapper,p::bases<Group>,boost::noncopyable>("Archive")
-            .def(p::init<std::string,std::string>())
-            .def(p::init<std::string>());
+//            p::class_<ArchiveBase,p::bases<GroupWrapper>>("Archive")
+//            .def(p::init<std::string,std::string>())
+//            .def(p::init<std::string>());
 
-            p::register_ptr_to_python< std::shared_ptr<ArchiveBase> >();                   
+//            p::register_ptr_to_python< std::shared_ptr<ArchiveBase> >();
 
 //            .def("__getitem__",);
 //            .def("__getitem__",);
