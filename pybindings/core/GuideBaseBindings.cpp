@@ -46,7 +46,7 @@ namespace frommle{
             .def("size",&GuideBase::size)
             .def("hash",&GuideBase::hash)
             //.add_static_property("ndim",p::make_getter(&GuideBase::ndim))
-            .def("__str__",&GuideBase::printhash);
+            .def("__str__",&GuideBase::hashstr);
 //            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
 
     //we also want to be able to pass shared_pointers to and fromm python

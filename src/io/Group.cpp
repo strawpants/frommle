@@ -30,13 +30,13 @@ namespace frommle{
             return this->operator[](name).as<Group>();
         }
 
-        VariableDyn &Group::getVariable(const std::string &name) {
+        std::shared_ptr<VariableDyn> Group::getVariable(const std::string &name) {
             auto idx=findidx(name);
             if (idx == -1){
                 //create a new empty VariableDyn
                 this->operator[](name)=VariableDyn();
             }
-            return this->operator[](name).as<VariableDyn>();
+            return std::static_pointer_cast<VariableDyn>(this->operator[](name).ptr());
         }
 
 

@@ -24,7 +24,7 @@
 //#include <boost/serialization/split_free.hpp>
 #include "core/VisitorTools.hpp"
 #include "core/Hyperslab.hpp"
-
+#include "core/GuideBase.hpp"
 #ifndef FROMMLE_GROUPBASE_HPP
 #define FROMMLE_GROUPBASE_HPP
 //fowrward declare classes contained within the variant class below
@@ -54,7 +54,7 @@ namespace frommle{
             //construct when only the groupname is known
             Group(const std::string & name ):TreeNodeCollection(name){}
 //            Group(const std::string && name ):TreeNodeCollection(std::move(name)){}
-            Group(const std::string name, core::Attribs && attr):TreeNodeCollection(name,std::move(attr)){}
+            Group(const std::string name, core::Attributes && attr):TreeNodeCollection(name,std::move(attr)){}
             //construct when both the name and parent are known
             template<class P>
             Group(const std::string & name, const P * const parent ):TreeNodeCollection(name,parent){}
@@ -97,10 +97,11 @@ namespace frommle{
             bool writable()const;
             virtual Group & getGroup(const std::string &name);
 
-            virtual VariableDyn & getVariable(const std::string &name);
+            virtual std::shared_ptr<VariableDyn> getVariable(const std::string &name);
 
             template<class T>
             Variable<T> & getVariable(const std::string & name);
+
             void setAmode(const std::string & mode){
 
                 if (mode == "r"){
@@ -124,8 +125,8 @@ namespace frommle{
                     ogrgrp->setAmode();
                     openForReading=ogrgrp->readable();
                     openForWriting=ogrgrp->writable();
-                }else if (getAttributeCount("mode") != 0) {
-                    auto mode = getAttribute<std::string>("mode");
+                }else if (attr().getCount("mode") != 0) {
+                    auto mode = attr().get<std::string>("mode");
                     if( mode == "r"){
                         openForReading=true;
                         openForWriting=false;
@@ -156,9 +157,17 @@ namespace frommle{
     public:
         VariableDyn():TreeNodeItem(){}
         VariableDyn(std::string name):TreeNodeItem(name){}
-        VariableDyn(std::string name, core::Attribs && attr):TreeNodeItem(name,std::move(attr)){}
+        VariableDyn(std::string name, core::Attributes && attr):TreeNodeItem(name,std::move(attr)){}
         VariableDyn(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
+//        virtual guides:typehash typehash()const{return guides::typehash();}
 
+        constexpr bool readable()const{
+            return static_cast<Group*>(getParent())->readable();
+        }
+
+        constexpr bool writable()const {
+            return static_cast<Group *>(getParent())->writable();
+        }
     };
 
 //        using valueVariant=boost::variant<double,int,long long int,std::string,OGRGeometry*>;
@@ -171,7 +180,7 @@ namespace frommle{
         Variable(core::TreeNodeRef && in):VariableDyn(std::move(in)){}
         Variable():VariableDyn(){}
         Variable(std::string name):VariableDyn(name){}
-        Variable(std::string name, core::Attribs && attr):VariableDyn(name,std::move(attr)){}
+        Variable(std::string name, core::Attributes && attr):VariableDyn(name,std::move(attr)){}
         void setValue(const single & val,const ptrdiff_t idx) {
             //here we construct a shared_ptr but don't dealloacate the actual value after calling by using an alias constructor
             setValue(singlePtr(singlePtr(), const_cast<single*>(&val)),idx);
@@ -180,13 +189,6 @@ namespace frommle{
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
         virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
         virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not supported");}
-        constexpr bool readable()const{
-            return static_cast<Group*>(getParent())->readable();
-        }
-
-        bool writable()const {
-            return static_cast<Group *>(getParent())->writable();
-        }
         ///@brief iterator which loops over the values in this variable
         class iterator{
         public:

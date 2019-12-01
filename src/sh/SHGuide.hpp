@@ -26,6 +26,9 @@
 #include <cmath>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <iostream>
+#include "io/Group.hpp"
+#include <string>
+#include <regex>
 #ifndef FROMMLE_SHDIMENSION_HPP
 #define FROMMLE_SHDIMENSION_HPP
 
@@ -198,15 +201,38 @@ namespace frommle{
             using SHGuideBase::trig;
             using SHGuideBase::Element;
             using SHGuideBase::idx;
+            using GuideBase::hash;
             SHnmtGuide()=default;
 //            SHtmnGuide(const int nmax);
             SHnmtGuide(const int nmax,const std::string name="SHnmtGuide");
+            SHnmtGuide & operator = (const SHnmtGuide & gin){
+                nmax_=gin.nmax_;
+                return *this;
+            }
+            SHnmtGuide(const typehash & hashval){
+                //initiate from a typehase string
+                std::regex reg("SHnmtGuide.*");
+                if ( !std::regex_match(std::string(hashval),reg)){
+                   THROWINPUTEXCEPTION("SHGuide type not matching"); 
+                }
+                //extract nmax from the hash
+                nmax_=std::stoi(hashval.split()[1]);
+                // note nmin_ remains 0
+
+            }
             size_t idx(const int n, const int m, const trig t)const;
             Element operator[](const size_t idx)const;
             inline static size_t i_from_nmt(const int n, const int m, const SHGuideBase::trig t){
                 return 2*((n*(n+1))/2+m)+t;
             }
-
+        
+            void save(io::Group &ar)const{
+            }
+            
+            void load(io::Group &ar){
+                auto var = ar.getVariable("shg");
+                *this=SHnmtGuide(var->attr().get<guides::typehash>("typehash"));
+            }
         };
 
 

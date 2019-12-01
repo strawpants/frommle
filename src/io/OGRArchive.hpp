@@ -41,7 +41,7 @@ namespace frommle {
 			OGRArchive():ArchiveBase(){
 
 			}
-			OGRArchive(const std::string name,core::Attribs && attr):ArchiveBase(name,std::move(attr)){
+			OGRArchive(const std::string name,core::Attributes && attr):ArchiveBase(name,std::move(attr)){
 				init();
 			}
 

@@ -112,9 +112,7 @@ namespace frommle {
             using Variable<T>::name;
             using Variable<T>::singlePtr;
             using Variable<T>::single;
-            using Variable<T>::getAttributeCount;
-            using core::TreeNodeBase::getAttribute;
-            using core::TreeNodeBase::setAttribute;
+            using core::TreeNodeBase::attr;
 
 //            virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{}
 //            virtual void setValue(const singlePtr & val,const ptrdiff_t idx){}
@@ -144,7 +142,7 @@ namespace frommle {
         ///@brief a class which helps in setting attributes according to the CFconventions
         class NetCDFArchive : public ArchiveBase, public NetCDFGroupBase {
         public:
-            NetCDFArchive(const std::string source, core::Attribs &&attr);
+            NetCDFArchive(const std::string source, core::Attributes &&attrib);
 
             explicit NetCDFArchive(const std::string source);
 
@@ -215,7 +213,7 @@ namespace frommle {
                 //create/reuse dimensions from parent
                 for (int i = 0; i < ndim_; ++i) {
                     std::string fallback(name());
-                    if (getAttributeCount("Dimensions") == 0) {
+                    if (attr().getCount("Dimensions") == 0) {
                         if (ndim_ != 1) {
                             //append a dimension id to name as the variable for the 1D case
                             fallback += std::to_string(i);
@@ -225,8 +223,8 @@ namespace frommle {
                         dimids[i] = ncparent_->getdimid(extents[i]);
 
                     } else {
-                        fallback = core::TreeNodeBase::template getAttribute<std::vector<std::string> >(
-                                "Dimensions").at(i);
+                        fallback = (attr().template get<std::vector<std::string> >(
+                                "Dimensions")).at(i);
                         //try to find a dimension with the same name
                         dimids[i] = ncparent_->getdimid(fallback);
                     }
@@ -271,15 +269,15 @@ namespace frommle {
                 //put the attribute in the attribute map
                 switch (xtype){
                     case NC_CHAR: {
-                        std::string attr(atlen, ' ');
-                        NetCDFCheckerror(nc_get_att_text(ncparent_->id(), id_, atname, &(attr.front())));
-                        setAttribute(std::string(atname), attr);
+                        std::string att(atlen, ' ');
+                        NetCDFCheckerror(nc_get_att_text(ncparent_->id(), id_, atname, &(att.front())));
+                        attr().template set<std::string>(std::string(atname), att);
                         break;
                     }
                     case NC_UINT64: {
-                        long long unsigned int attr;
-                        NetCDFCheckerror(nc_get_att_ulonglong(ncparent_->id(), id_, atname, &attr));
-                        setAttribute(std::string(atname), attr);
+                        long long unsigned int att;
+                        NetCDFCheckerror(nc_get_att_ulonglong(ncparent_->id(), id_, atname, &att));
+                        attr().set(std::string(atname), att);
                         break;
                     }
 

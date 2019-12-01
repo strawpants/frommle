@@ -26,6 +26,7 @@
 #include <iterator>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <memory>
+#include <boost/algorithm/string.hpp>
 #include <ostream>
 #include <cmath>
 #include "core/Logging.hpp"
@@ -59,13 +60,20 @@ public:
     typehash add(const int & id){
         return typehash(hash_+","+std::to_string(id));
     }
-    operator std::string (){return hash_;}
+    operator std::string ()const{return hash_;}
     const std::string & name()const{return hash_;}
     bool operator == (const typehash &other)const{return hash_==other.hash_;}
 
+    bool operator != (const typehash &other)const{return not this->operator==(other);}
     std::ostream& write(std::ostream& os)const{
         return os << hash_;
     }
+    std::vector<std::string> split()const{
+        std::vector<std::string> vec;
+        boost::split(vec,hash_,boost::is_any_of(","));
+        return vec;
+    }
+
 private:
     std::string hash_{};
 };
@@ -96,7 +104,7 @@ class GuideBase:public core::Frommle {
         
         //add 1D index_range and index_gen types here?
         virtual typehash hash() const { return type_; }
-        std::string printhash()const{return std::string(hash());}
+        std::string hashstr()const{return std::string(hash());}
         size_t size() const { return size_; }
 
         virtual bool operator==(const GuideBase &in) const {

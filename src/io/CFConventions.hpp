@@ -61,10 +61,10 @@ namespace frommle{
                 //ok, this is just an optional feature
             }
 
-            for(auto & att:ar.getAttribMap()){
+            for(auto & att:ar.attr().map()){
                 //check for string(text) attributes
                 if(att.first == "title" or att.first == "comment"){
-                    ar.setAttr(att.first,ar.template getAttribute<std::string>(att.first));
+                    ar.setAttr(att.first,ar.attr().template get<std::string>(att.first));
                 }
             }
 
@@ -73,10 +73,10 @@ namespace frommle{
         template<class Ar>
         void CFConventions::SetGroupAttr(Ar &ar) {
             ar.setAttr("history","created: "+core::currentTimetag());
-            for(auto & att:ar.getAttribMap()){
+            for(auto & att:ar.attr().map()){
                 //check for string(text) attributes
                 if(att.first == "title" or att.first == "comment"){
-                    ar.setAttr(att.first,ar.template getAttribute<std::string>(att.first));
+                    ar.setAttr(att.first,ar.attr().template get<std::string>(att.first));
                 }
             }
 
@@ -85,12 +85,12 @@ namespace frommle{
 
         template<class Ar>
         void CFConventions::SetDataAttr(Ar &ar) {
-            for(auto & att:ar.getAttribMap()){
+            for(auto & att:ar.attr().map()){
                 //check for string(text) attributes
                 if(att.first == "long_name" or att.first == "units"
                 or   att.first == "standard_name"
                 or att.first == "coordinates"){
-                    ar.setAttr(att.first,ar.template getAttribute<std::string>(att.first));
+                    ar.setAttr(att.first,ar.attr().template get<std::string>(att.first));
                 }
             }
 

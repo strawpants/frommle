@@ -234,7 +234,7 @@ namespace frommle {
             return std::move(in);
         }
 
-        TreeNodeRef &TreeNodeCollection::upsertChild(const std::string name, TreeNodeRef &&in) {
+        TreeNodeRef &TreeNodeCollection::upsertChild(std::string name, TreeNodeRef &&in) {
             auto idx =findidx(name);
             in->setName(name);
             if(idx ==-1){

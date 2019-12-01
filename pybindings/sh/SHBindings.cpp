@@ -96,12 +96,12 @@ void pyexport_sh()
             .def("__iter__",p::iterator<const SHGuideBase>());
 
     //export subclass SHtmnGuide
-    p::class_<SHtmnGuide,p::bases<SHGuideBase> >("SHtmnGuide",p::init<int,p::optional<std::string>>());
+    p::class_<SHtmnGuide,p::bases<SHGuideBase> >("SHtmnGuide").def(p::init<int,p::optional<std::string>>());
             //.def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
             //.def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i");
 
     //export subclass SHnmtGuide
-    p::class_<SHnmtGuide,p::bases<SHGuideBase> >("SHnmtGuide",p::init<int,p::optional<std::string>>())
+    p::class_<SHnmtGuide,p::bases<SHGuideBase> >("SHnmtGuide").def(p::init<int,p::optional<std::string>>())
             .def("i_from_nmt",&SHnmtGuide::i_from_nmt).staticmethod("i_from_nmt");
 
 

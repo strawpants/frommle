@@ -36,6 +36,7 @@ namespace frommle {
 
     class FrommleWrapper:public Frommle,public p::wrapper<Frommle>{
     public:
+
                void save(io::Group & grp)const{
             if(auto saveop=this->get_override("save")){
                 saveop(grp);

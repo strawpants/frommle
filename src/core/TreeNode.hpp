@@ -20,20 +20,19 @@
 
 #include <string>
 #include <memory>
-#include <map>
 #include <vector>
-#include <boost/any.hpp>
 #include "core/Exceptions.hpp"
 #include <cassert>
 #include <functional>
 #include "core/frommle.hpp"
+#include "core/Attributes.hpp"
 #ifndef FROMMLE_TREENODE_HPP
 #define FROMMLE_TREENODE_HPP
 
 namespace frommle{
     namespace core{
 
-        using Attribs=std::map<std::string,boost::any>;
+//        using Attribs=std::map<std::string,boost::any>;
 
         class TreeNodeBase;
         class TreeNodeCollection;
@@ -52,6 +51,8 @@ namespace frommle{
             TreeNodeRef(const T & nodeIn)noexcept{
                 ptr_=std::make_shared<T>(nodeIn);
             }
+            template<class T>
+            TreeNodeRef(std::shared_ptr<T> ptr):ptr_(ptr){}
 
 //            template<class T>
 //            TreeNodeRef(T && nodeIn)noexcept{
@@ -109,6 +110,7 @@ namespace frommle{
             TreeNodeBase & operator *()const{return *ptr_;}
             TreeNodeBase * operator ->()const{return ptr_.get();}
             TreeNodeBase * get()const{return ptr_.get();}
+            std::shared_ptr<TreeNodeBase> ptr()const{return ptr_;}
             template<class T>
             T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
 
@@ -120,6 +122,7 @@ namespace frommle{
             explicit operator bool()const;
             //forward some calls to underlying ptr
             std::string  name()const;
+
         private:
             std::shared_ptr<TreeNodeBase> ptr_{};
         };
@@ -129,7 +132,7 @@ namespace frommle{
             TreeNodeBase(){}
             ~TreeNodeBase(){}
             TreeNodeBase(std::string name):Frommle(name){}
-            TreeNodeBase(std::string name, Attribs && attr):Frommle(name),attrib_(std::move(attr)){}
+            TreeNodeBase(std::string name, Attributes && attr):Frommle(name),attrib_(std::move(attr)){}
             TreeNodeBase(TreeNodeRef && in);
             TreeNodeBase(const TreeNodeBase & in)=default;
 
@@ -143,37 +146,18 @@ namespace frommle{
 //            void setName(const std::string name){name_=name;}
             virtual bool isCollection()const{return false;};//dynamically determines whether this is a collection or whether it holds a single value
 
-            template<class Value>
-            void setAttribute(const std::string & name,const Value & val){
-                attrib_[name]=boost::any(val);
-            }
+//            template<class Value>
+//            void setAttribute(const std::string & name,const Value & val){
+//                attrib_[name]=boost::any(val);
+//            }
 
 //            template<class Value>
 //           Value getAttribute(const std::string &name){
 //                return boost::any_cast<Value>(attrib_[name]);
 //            }
 
-            size_t getAttributeCount(const std::string & name){return attrib_.count(name);}
-            const Attribs & getAttribMap(){return attrib_;}
-
             template <class T>
             bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval);
-            ///@brief standard way to retrieve an attribute
-            template<class Value>
-            typename std::enable_if<!std::is_same<Value,std::string>::value,Value>::type getAttribute(const std::string &name){
-                return boost::any_cast<Value>(attrib_[name]);
-            }
-
-            ///@brief special treatment of std::string attribute retrieval (accepts both char * and string )
-            template<class Value>
-            typename std::enable_if<std::is_same<Value,std::string>::value,Value>::type getAttribute(const std::string &name){
-                try{
-                    return boost::any_cast<std::string>(attrib_[name]);
-                }catch(boost::bad_any_cast & excep){
-                    return std::string(boost::any_cast<char const * >(attrib_[name]));
-                }
-            }
-
             virtual const TreeNodeRef operator[](const std::string & name)const {throwMethExcept();return TreeNodeRef();};
             virtual const TreeNodeRef operator[](size_t  idx)const {throwMethExcept();return TreeNodeRef();};
 
@@ -201,6 +185,8 @@ namespace frommle{
 //                parent_=std::move(parent);
 //                parentHook();
 //            }
+            Attributes & attr(){return attrib_;}
+            const Attributes & attr()const{return attrib_;}
         protected:
 
         private:
@@ -208,7 +194,7 @@ namespace frommle{
             ///@brief possibly overload this function to perform actions after assigning a new parent
             virtual void parentHook(){};
 //            std::string name_="";
-            Attribs attrib_{};
+            Attributes attrib_{};
             TreeNodeCollection *parent_=nullptr;
         };
 
@@ -217,7 +203,7 @@ namespace frommle{
         public:
             TreeNodeItem(){}
             TreeNodeItem(const std::string & name):TreeNodeBase(name){}
-            TreeNodeItem(const std::string name, Attribs && attr):TreeNodeBase(name,std::move(attr)){}
+            TreeNodeItem(const std::string name, Attributes && attr):TreeNodeBase(name,std::move(attr)){}
             TreeNodeItem(TreeNodeRef && in):TreeNodeBase(std::move(in)){}
         private:
         };
@@ -229,7 +215,7 @@ namespace frommle{
             TreeNodeCollection():TreeNodeBase(){}
             TreeNodeCollection(const std::string & name):TreeNodeBase(name){}
             TreeNodeCollection(const std::string && name):TreeNodeBase(std::move(name)){}
-            TreeNodeCollection(const std::string name, Attribs && attr):TreeNodeBase(name,std::move(attr)){}
+            TreeNodeCollection(const std::string name, Attributes && attr):TreeNodeBase(name,std::move(attr)){}
             TreeNodeCollection(TreeNodeRef && in):TreeNodeBase(std::move(in)){}
             typename cvec::const_iterator cbegin()const{return collection_.cbegin();}
             typename cvec::const_iterator cend()const{return collection_.cend();}
@@ -250,12 +236,24 @@ namespace frommle{
 //                return TreeNodeRef(new TreeNodeCollection(*this));
 //            }
             template<class T>
-            TreeNodeRef & upsertChild(const std::string name,T && in);
+            TreeNodeRef & upsertChild(std::string name,T && in);
             template<class T>
             TreeNodeRef & upsertChild(const size_t idx,T && in);
 
             TreeNodeRef & upsertChild(const size_t idx,TreeNodeRef && in);
-            TreeNodeRef & upsertChild(const std::string name,TreeNodeRef && in);
+            TreeNodeRef & upsertChild(std::string name,TreeNodeRef && in);
+            
+            template<class T>
+            TreeNodeRef & upsertChild(const size_t idx,std::shared_ptr<T> ptr){
+                return upsertChild(idx,TreeNodeRef(ptr));
+            } 
+            
+            template<class T>
+            TreeNodeRef & upsertChild(std::string name ,std::shared_ptr<T> ptr){
+               return  upsertChild(name,TreeNodeRef(ptr));
+            } 
+
+
             void deleteCollection(){
                 collection_=cvec{};
             }

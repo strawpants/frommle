@@ -16,8 +16,10 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
 
 
-
-from frommle.io import Archive,Variable_float64
+from frommle.core import typehash
+from frommle.io import Group,Archive,Variable,Variable_float64
+from frommle.sh import SHnmtGuide
+import gzip as gz
 
 from enum import Enum
 
@@ -30,60 +32,70 @@ class formats(Enum):
 class SHVar(Variable):
         """contains a variable object which allows reading/writing to an SHarchive"""
         def __init__(self,name="sh"):
-            pass
-
+            Variable.__init__(self,name)
+            
 
 
 class SHArchive(Archive):
-    """Reads sh datasets from various files"""
-    gzip=False
-    def __init__(self,filename,mode='r',format=formats.unknown):
-        super().__init__(name,mode)
+    """base type to read SH datasets from various text filetypes """
+    loaded=False
+    #Varnames holds valid variable names which can be overloaded/extended in derived classes 
+    varnames=["shg","cnm"]
+    shg=SHnmtGuide(0)
+    def __init__(self,filename,mode='r',nmax=None):
+        #important: initialize 
+        # Group.__init__(self) 
+        Archive.__init__(self,mode)
 
-        if filen.endswith(".gz"):
-            gzip=True
+    def fid(self):
+        """Opens the text file (and possibly pass through a gzip filter) and returns a file descriptor"""
+        if self.readable():
+            mod="rt"
+        elif self.writeable():
+            mod="wt"
 
-        if mode == 'r':
-            if format == formats.unknown:
-                self.format=queryformat()
-        elif mode == "w" and format == formats.unknown:
-            raise RunTimeError("When writing an sh file the format option is obligatory")
+        if self.name.endswith(".gz"):
+            return gz.open(self.name,mod)
         else:
-            raise RunTimeError("Unknown mode %s supplied",%mode)
-
-
-    def getVariable(self,name):
-        if name in self:
-            #already exists
-            return self[name]
+            return open(self.name,mod)
+    
+    def getVariable(self,varname):
+        """This overloads the c++ routine getVariable"""
+        
+        self.fload()
+        
+        if varname in self.varnames:
+            self[varname]= SHVar();
+            if varname == "shg":
+                #set a dedicated typehash when the SHguide is called
+                self[varname].attr["typehash"]=SHnmtGuide(self.attr["nmax"]).hash()
+                
         else:
-            return self[name]=SHVar(name);
+            raise RunTimeError("Variable %s not supported for this archive"%varname)
+    
+        return self[varname]
 
 
-    def queryformat(self):
+# def __getitem__(self,id):
+    #         """Overload  getitem so we are able to extract the different variables"""
+    #     #possibly load file content if needed
+    #     load()
+    #     if name in self:
+    #         #exists
+    #         return self[name]
+    #     else:
+    #         raise RunTimeError("Variable name %s not recognized, specify one of 'nmt','cnm' or 'cnm_sig'")
 
-        ftest=self.name.strip(".gz")
+    def fload(self):
+        if self.loaded:
+            return
 
-        if ftest.endswith("gfc"):
-            #quick return
-            self.format=formats.icgem
+        if self.attr["mode"] == 'w':
+            raise RunTimeError("Cannot load sh data in write mode")
 
-        #no we open the file to search for format hints
-        if gzip:
-            fid=gz.open(self.name,'rt')
-        else:
-            fid=open(self.name,'rt')
-        try:
-            ln = fid.readline()
-        except Exception as excep:
-            raise IOError("Reading error for %s"%self.name)
+        #call abstract method of the derived class
+        self.fload_impl()
+        self.loaded=True
 
-        fid.close()
-
-        if re.search("META",ln):
-            self.format=formats.standard
-
-        #fall back by means of exclusion
-        self.format=formats.GSMv6
-
-
+    def fload_impl(self):
+        pass

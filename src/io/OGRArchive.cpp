@@ -48,8 +48,8 @@ namespace frommle {
 
             GDALDriver* gdalDriver=nullptr;
 
-            if (getAttributeCount("Driver") > 0) {
-                auto driver = getAttribute<std::string>("Driver");
+            if (attr().getCount("Driver") > 0) {
+                auto driver = attr().get<std::string>("Driver");
                 if (driver == "PostGIS") {
                     //modify the input sourceName to refer to a valid POSTGIS resource
                     setName(GDALPOSTGISSource(name()));

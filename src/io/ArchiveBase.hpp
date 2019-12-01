@@ -38,10 +38,10 @@ public:
 	explicit ArchiveBase(const std::string &name) : Group(name) {
 	}
 	ArchiveBase(std::string name, std::string mode):Group(name){
-	    setAttribute("mode",mode);
+	    attr().set("mode",mode);
 	    setAmode(mode);
 	}
-	ArchiveBase(std::string name, core::Attribs &&attrib) : Group(name, std::move(attrib)) {
+	ArchiveBase(std::string name, core::Attributes &&attrib) : Group(name, std::move(attrib)) {
 		setAmode();
 	}
 

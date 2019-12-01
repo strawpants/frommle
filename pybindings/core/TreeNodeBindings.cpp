@@ -22,8 +22,9 @@
 #include <boost/python.hpp>
 #include <boost/core/noncopyable.hpp>
 #include "core/TreeNode.hpp"
-
-
+#include <boost/python/return_internal_reference.hpp>
+#include "core/GuideBase.hpp"
+#include <boost/date_time.hpp>
 namespace p = boost::python;
 namespace boost {
     namespace python {
@@ -43,44 +44,6 @@ namespace frommle {
             return const_cast<TreeNodeBase *>(treePtr.get());
         }
 
-//        class FrommleWrapper:public Frommle,public p::wrapper<Frommle>{
-//        public:
-//            void save(io::Group & grp)const{
-//                if(auto saveop=this->get_override("save")){
-//                    saveop(grp);
-//
-//                }else{
-//                    Frommle::save(grp);
-//
-//                }
-//
-//            }
-//
-//            void save_default(io::Group & grp)const{
-//                Frommle::save(grp);
-//
-//            }
-//
-//
-//            void load(io::Group & grp){
-//                if(auto loadop=this->get_override("load")){
-//                    loadop(grp);
-//
-//                }else{
-//                    Frommle::load(grp);
-//
-//                }
-//
-//            }
-//
-//            void load_default(io::Group & grp){
-//                Frommle::load(grp);
-//
-//            }
-//
-//
-//        };
-
         const TreeNodeRef (TreeNodeBase::*cgeti1)(size_t )const=&TreeNodeBase::operator[];
         const TreeNodeRef (TreeNodeBase::*cgeti2)(const std::string &)const=&TreeNodeBase::operator[];
 
@@ -92,20 +55,75 @@ namespace frommle {
         }
 
         template<class I,class NODE>
-        void assignNode(TreeNodeCollection &coll,const I & idx, const NODE & Value ){
+        void assignNode(TreeNodeCollection &coll,const I & idx, std::shared_ptr<NODE> & Value ){
             coll.upsertChild(idx,Value);
         }
 
 
+        Attributes & (TreeNodeBase::*attrf)()=&TreeNodeBase::attr;
+
+
+        using attGP=p::class_<Attributes>;
+
+        template<class ...T>
+        struct registerAttributes;
+
+        template<class T, class ... TOthers>
+        struct registerAttributes<T,TOthers...>{
+            static void reg(){
+
+                regothers(p::class_<Attributes>("Attributes")
+                    .def("__contains__",&Attributes::contains).def("__getitem__",&registerAttributes::tryget));
+            }
+
+            static attGP & regothers(attGP & bpatt){
+                return registerAttributes<TOthers...>::regothers(bpatt
+                        .def("__setitem__",&Attributes::set<T>));
+            }
+
+            static PyObject* tryget(Attributes & attr,const std::string & key){
+                    
+                    try{
+                        LOGINFO << "tryincast " << typeid(T).name() << std::endl;
+                        return p::incref(p::object(attr.get<T>(key)).ptr());
+                    }catch (boost::bad_any_cast & exc){
+                        //OK tjust try the next possiblity
+                        return registerAttributes<TOthers...>::tryget(attr,key);
+
+                    }
+            }
+
+        };
+
+
+        template<>
+        struct registerAttributes<>{
+            static attGP & regothers(attGP & bpatt){
+                //nothing to add just return input
+                return bpatt;
+            }
+
+            static PyObject* tryget(Attributes & attr,const std::string & key){
+                THROWNOTIMPLEMENTED("cannot cast boost any to known python type");
+
+            }
+        };
+
+
         void registerTreeNodes() {
             using namespace boost::python;
+            //note the order of the types is important (first will be tested first)
+            registerAttributes<p::object,double,int,size_t,std::string, guides::typehash,boost::gregorian::date,boost::posix_time::ptime>::reg();
+
 
             p::class_<TreeNodeBase,TreeNodeRef,p::bases<Frommle>>("TreeNode")
                     .def(p::init<std::string>())
                     .def("__getitem__",geti1)
                     .def("__getitem__",geti2)
-                    .def("isCollection",&TreeNodeBase::isCollection);
-
+                    .def("isCollection",&TreeNodeBase::isCollection)
+                    .add_property("attr",p::make_function(attrf,p::return_internal_reference<>()));
+            p::register_ptr_to_python< std::shared_ptr<TreeNodeBase> >();                   
+  
             p::class_<TreeNodeItem,p::bases<TreeNodeBase>>("TreeNodeItem")
             .def(p::init<std::string>());
 
@@ -119,6 +137,7 @@ namespace frommle {
             .def("__setitem__",&assignNode<std::string,TreeNodeCollection>)
             ;
 
+            p::register_ptr_to_python< std::shared_ptr<TreeNodeCollection> >();                   
         }
 
 

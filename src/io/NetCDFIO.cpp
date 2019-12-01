@@ -33,7 +33,7 @@ namespace frommle{
     namespace io{
 
 
-        NetCDFArchive::NetCDFArchive(const std::string source, core::Attribs &&attr) :ArchiveBase(source,std::move(attr)){
+        NetCDFArchive::NetCDFArchive(const std::string source, core::Attributes &&attr) :ArchiveBase(source,std::move(attr)){
             init();
         }
 

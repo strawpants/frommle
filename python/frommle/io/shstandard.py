@@ -17,91 +17,88 @@
 
 import numpy as np
 from frommle.sh import SHnmtGuide,trig
-from frommle.sh.shxarray import newshxarray
-import operator
+from frommle.io import SHArchive
+# from frommle.sh.shxarray import newshxarray
+# import operator
 from frommle.core.time import decyear2datetime,datetime2decyear
 
-class shstandard:
-    def __init
+class SHStandardArchive(SHArchive):
+    def __init__(self,filen,mode='r',nmax=None):
+        super().__init__(filen,mode,nmax)
 
-def read_shstandard(file, nmax=None, headerOnly=False,error=False):
-    """Reads the standard SH format as produce by the RLFTLBX (first line has a META tag, with the maximum degree and start,center and end time)"""
-
-
-    with open(file, 'rt') as fid:
-        ln = fid.readline()
-        lnspl = ln.split()
-        meta = {"nmax": int(lnspl[1]), "tstart": decyear2datetime(float(lnspl[2])),
-                "tcent": decyear2datetime(float(lnspl[3])), "tend": decyear2datetime(float(lnspl[4]))}
-
-        if headerOnly:
-            return meta,None,None,None
-
-        if not nmax:
-            nmax=meta["nmax"]
-
-        shcoef=[]
-        if error:
-            sherr=[]
-        else:
-            sherr=None
-        
-        # import pdb;pdb.set_trace()
-        idx=[]
-        
-        for ln in fid:
+    def fload_impl(self):
+        """Loads the data into variables"""
+        with self.fid() as fid:
+            ln = fid.readline()
             lnspl = ln.split()
-            n = int(lnspl[0])
-            if n > nmax:
-                continue
+            self.attr["nmaxfile"]=int(lnspl[1])
+            if not "nmax" in self.attr:
+                self.attr["nmax"]=self.attr["nmaxfile"]
+            tags=["tstart","tcent","tend"]
+            for ky,val in zip(tags,lnspl[2:5]):
+                decyr=float(val)
+                if decyr > 0:
+                    self.attr[ky]=decyear2datetime(decyr)
 
-            m = int(lnspl[1])
-            idx.append((n, m,trig.c))
+            nmax=self.attr["nmax"]
+            self.shg=SHnmtGuide(nmax)
+            self.cnm=np.zeros([self.shg.size()])
+            self.signcnm=np.zeros([self.shg.size()])
+            for ln in fid:
+                lnspl = ln.split()
 
-            # import pdb;pdb.set_trace()
-            shcoef.append(float(lnspl[2]))
-            if m != 0:
-                idx.append( (n, m, trig.s))
-                shcoef.append(float(lnspl[3]))
-            if error and len(lnspl) > 5:
-                sherr.append(float(lnspl[4]))
-                if m != 0:
-                    sherr.append(float(lnspl[5]))
-    # pdb.set_trace()
-    return meta,idx,shcoef,sherr
-
-def write_shstandard(file,idx, shcoef,sherr=None,meta=None):
-    """Write a dataset of spherical harmonic coeficients to a 'standard' sh file"""
+                n = int(lnspl[0])
+                if n > nmax:
+                    continue
     
-    #find the  maximum degree
-    nmax=max(idx,key=operator.itemgetter(0))[0]
-    # import pdb;pdb.set_trace()
-    #file order is  according to SHnmtGuide
-    shg=SHnmtGuide(nmax)
-    idxsorted=sorted(enumerate(idx),key=lambda val:shg.idx(val[1]))
-    
-    tstamps=[0.0,0.0,0.0]
-    if meta:
-        for i,tag in enumerate(["tstart","tcent","tend"]):
-            if tag in meta:
-                tstamps[i]=datetime2decyear(meta[tag])
+                m = int(lnspl[1])
 
-    #create an index vector which is used to fix the 
-    with open(file,'wt') as fid:
-        fid.write("META   %d %f %f %f\n"%(nmax,tstamps[0],tstamps[1],tstamps[2]))
-        
-        if sherr:
-            lineval=[0.0,0.0,0.0,0.0]
-            for i,(n,m,t) in idxsorted:
-                lineval[t]=shcoef[i]
-                lineval[2+t]=sherr[i]
-                if t == trig.s:
-                    #print out line
-                    fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
-        else: 
-            lineval=[0.0,0.0]
-            for i,(n,m,t) in idxsorted:
-                lineval[t]=shcoef[i]
-                if t == trig.s:
-                    #print out line
-                    fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))
+                idxc=self.shg.idx((n, m,trig.c))
+                idxs=self.shg.idx((n,m,trig.s))
+    
+                # import pdb;pdb.set_trace()
+                self.cnm[idxc]=float(lnspl[2])
+                if m!=0:
+                    self.cnm[idxs]=float(lnspl[3])
+
+
+                if len(lnspl) == 6:
+                    self.sigcnm[idxc]=float(lnspl[2])
+                    if m!=0:
+                        self.sigcnm[idxs]=float(lnspl[3])
+
+# def write_shstandard(file,idx, shcoef,sherr=None,meta=None):
+#     """Write a dataset of spherical harmonic coeficients to a 'standard' sh file"""
+#
+#     #find the  maximum degree
+#     nmax=max(idx,key=operator.itemgetter(0))[0]
+#     # import pdb;pdb.set_trace()
+#     #file order is  according to SHnmtGuide
+#     shg=SHnmtGuide(nmax)
+#     idxsorted=sorted(enumerate(idx),key=lambda val:shg.idx(val[1]))
+#
+#     tstamps=[0.0,0.0,0.0]
+#     if meta:
+#         for i,tag in enumerate(["tstart","tcent","tend"]):
+#             if tag in meta:
+#                 tstamps[i]=datetime2decyear(meta[tag])
+#
+#     #create an index vector which is used to fix the
+#     with open(file,'wt') as fid:
+#         fid.write("META   %d %f %f %f\n"%(nmax,tstamps[0],tstamps[1],tstamps[2]))
+#
+#         if sherr:
+#             lineval=[0.0,0.0,0.0,0.0]
+#             for i,(n,m,t) in idxsorted:
+#                 lineval[t]=shcoef[i]
+#                 lineval[2+t]=sherr[i]
+#                 if t == trig.s:
+#                     #print out line
+#                     fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
+#         else:
+#             lineval=[0.0,0.0]
+#             for i,(n,m,t) in idxsorted:
+#                 lineval[t]=shcoef[i]
+#                 if t == trig.s:
+#                     #print out line
+#                     fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))
