@@ -24,6 +24,19 @@
 namespace frommle {
     namespace core {
 
+        ///Implement (non-templated) constructors of Treenoderef
+        TreeNodeRef::TreeNodeRef(){}
+        TreeNodeRef::TreeNodeRef(const std::string &name) {
+            ptr_=std::make_shared<TreeNodeItem>(name);
+        }
+        TreeNodeRef::TreeNodeRef(TreeNodeBase* ptr){
+            ptr_=std::make_shared<TreeNodeBase>(ptr);
+        }
+
+        TreeNodeRef::TreeNodeRef(TreeNodeRef & in){
+            ptr_=in.ptr_;
+        }
+
 
         TreeNodeRef::cvec::const_iterator
         TreeNodeRef::cbegin() const {
@@ -118,9 +131,6 @@ namespace frommle {
 
         std::string TreeNodeRef::name() const {return ptr_->name();}
 
-        TreeNodeRef::TreeNodeRef(const std::string &name) {
-            ptr_=std::make_shared<TreeNodeItem>(name);
-        }
 
         TreeNodeRef::operator bool() const {
             if (ptr_) {
@@ -141,7 +151,7 @@ namespace frommle {
         }
 
 
-        const TreeNodeRef TreeNodeRef::operator[](const size_t idx) const {
+        const TreeNodeRef & TreeNodeRef::operator[](const size_t idx) const {
             if (!ptr_) {
                 //just return this empty instance
                 return *this;
@@ -159,7 +169,7 @@ namespace frommle {
             return ptr_->operator[](idx);
         }
 
-        const TreeNodeRef TreeNodeRef::operator[](const std::string & idx) const {
+        const TreeNodeRef & TreeNodeRef::operator[](const std::string & idx) const {
             if (!ptr_) {
                 //just return this empty instance
                 return *this;
@@ -179,10 +189,12 @@ namespace frommle {
 
 
 
-        const TreeNodeRef TreeNodeCollection::operator[](const std::string &name) const {
+        const TreeNodeRef & TreeNodeCollection::operator[](const std::string &name) const {
             auto idx = findidx(name);
             if (idx == -1) {
-                return TreeNodeBase(name);
+                auto message=std::string("Treenode not found: ")+ name;
+                THROWINPUTEXCEPTION(message);
+//                return TreeNodeBase(name);
             }
             return collection_[idx];
         }
@@ -192,15 +204,17 @@ namespace frommle {
             loadCollection(name);
             auto idx = findidx(name);
             if (idx == -1) {
-                //return a
+                //return a new TReenode with the parent appriopriately assigned
                 return TreeNodeBase(name).setParent(*this);
             }
             return collection_[idx];
         }
 
-        const TreeNodeRef TreeNodeCollection::operator[](size_t idx) const  {
+        const TreeNodeRef & TreeNodeCollection::operator[](size_t idx) const  {
             if (idx >= collection_.size()) {
-                return TreeNodeBase();
+                auto message=std::string("Treenode index not found: ");
+                THROWINPUTEXCEPTION(message);
+//                return TreeNodeBase();
             }
             return collection_[idx];
         }

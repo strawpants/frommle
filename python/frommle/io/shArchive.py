@@ -20,7 +20,6 @@ from frommle.core import typehash
 from frommle.io import Group,Variable,Variable_float64
 from frommle.sh import SHnmtGuide
 import gzip as gz
-
 from enum import Enum
 
 class formats(Enum):
@@ -29,25 +28,45 @@ class formats(Enum):
     GSMv6=3
     unknown=4
 
-class SHVar(Variable):
-        """contains a variable object which allows reading/writing to an SHarchive"""
-        def __init__(self,name="cnm"):
-            Variable.__init__(self,name)
-        def __getitem__(self,slc):
-            """overriding slicing"""
-            pass
+class SHGVar(Variable):
+    def __init__(self,shg=None,name=None):
+        if name:
+            super().__init__(name)
+        else:
+            super().__init__()
+        
+        if shg:
+            self.attr["typehash"]=shg.hash()
+
+# class SHVar(Variable_float64):
+        # """contains a variable object which allows reading/writing to an SHarchive"""
+        # def __init__(self,name="cnm"):
+            # # TreeNode.__init__(self)
+            # super().__init__(name)
+
+        # def __getitem__(self,slc):
+            # """return (slices of) the data"""
+            # return self.parent.vars[self.name][slc];
+
 
 
 class SHArchive(Group):
     """base type to read SH datasets from various text filetypes """
     loaded=False
     #Varnames holds valid variable names which can be overloaded/extended in derived classes 
-    varnames=["shg","cnm"]
-    shg=SHnmtGuide(0)
+    # vars={"shg":None,"cnm":None}
+    shg_c=SHnmtGuide
     def __init__(self,filename,mode='r',nmax=None):
-        #important: initialize 
+        #important: initialize Group class as well
         Group.__init__(self,filename)
         self.setAmode(mode)
+        self.fload()
+        #also sets the variables
+        # for varname,val in self.vars.items():
+            # self[varname]= SHVar(varname);
+            # if varname == "shg":
+                # #set a dedicated typehash (needed to load SHGuides from C++)
+                # self[varname].attr["typehash"]=val.hash()
 
     def fid(self):
         """Opens the text file (and possibly pass through a gzip filter) and returns a file descriptor"""
@@ -61,32 +80,26 @@ class SHArchive(Group):
         else:
             return open(self.name,mod)
     
-    def getVariable(self,varname):
-        """This overloads the c++ routine getVariable"""
+    # def getVariable(self,varname):
+        # """This overloads the c++ routine getVariable (needed if more complexed object will be read from C++)"""
         
-        self.fload()
+        # self.fload()
         
-        if varname in self.varnames:
-            self[varname]= SHVar(varname);
-            if varname == "shg":
-                #set a dedicated typehash when the SHguide is called
-                self[varname].attr["typehash"]=SHnmtGuide(self.attr["nmax"]).hash()
+        # if varname in self.vars.keys():
+            # # self[varname]= SHVar(varname);
+            # if varname == "shg":
+                # #set a dedicated typehash (needed to load SHGuides from C++)
+                # self[varname].attr["typehash"]=self.vars[varname].hash()
                 
-        else:
-            raise RunTimeError("Variable %s not supported for this archive"%varname)
+        # else:
+            # raise RunTimeError("Variable %s not supported for this archive"%varname)
     
-        return self[varname]
+        # return self[varname]
 
-
-# def __getitem__(self,id):
-    #         """Overload  getitem so we are able to extract the different variables"""
-    #     #possibly load file content if needed
-    #     load()
-    #     if name in self:
-    #         #exists
-    #         return self[name]
-    #     else:
-    #         raise RunTimeError("Variable name %s not recognized, specify one of 'nmt','cnm' or 'cnm_sig'")
+    # def shg(self):
+        # """Convenience function to retrieve the stored SH guide"""
+        # self.fload()
+        # return self.vars["shg"]
 
     def fload(self):
         if self.loaded:

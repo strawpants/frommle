@@ -20,7 +20,9 @@
 
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
+#include <boost/python/slice.hpp>
 #include <boost/multi_array.hpp>
+#include "core/Hyperslab.hpp"
 #include "tupleconversion.hpp"
 #include "core/GuideRegistry.hpp"
 
@@ -199,8 +201,63 @@ namespace frommle{
         //return py_array;
     //}
 
+        ///@brief hyperslab <-> ndarray converter (dimension is dynamic)
+        template<typename T>
+        struct hslab_to_ndarray{
+            using HS=core::Hyperslab<T>;
+            static PyObject* convert (const HS & hslab){
+                return p::incref(get(hslab).ptr());
+            }
+            static np::ndarray get(const HS & hslab){
+                np::dtype dtype = np_dtype<T>::get();
+                //note: that we're removing the constness of the data because we want to allow modifications from python
+                return np::from_data(const_cast<T *>(hslab.data()),dtype,hslab.shape(),hslab.stride(),p::object());
 
-    void register_numpy_converters();
+            }
+        };
+
+        template<class T>
+        p::slice slice_from_hslab(const core::Hyperslab<T>  & hslab,size_t idx=0){
+            return p::slice(hslab.offset()[idx],hslab.shape()[idx],hslab.stride()[idx]);
+        }
+
+        core::slice convPyslice(p::slice pslice);
+
+
+
+        template<class T>
+        core::Hyperslab<T> hslab_from_slice(const p::slice & slc){
+
+            return core::Hyperslab<T>(convPyslice(slc));
+        }
+
+        template<class T>
+        core::Hyperslab<T> hslab_from_slices(const p::tuple & slc){
+            int ndim=p::len(slc);
+            std::vector<core::slice> slices(ndim);
+            for(int i=0;i<ndim;++i){
+                slices[i]=convPyslice(p::extract<p::slice>(slc[i]));
+            }
+            return core::Hyperslab<T>(slices);
+        }
+
+
+        template<class T>
+        p::list slices_from_hslab(const core::Hyperslab<T>  & hslab){
+            p::list slices;
+            for(int i=0;i<hslab.ndim();++i){
+                slices.append(slice_from_hslab(hslab,i));
+            }
+            return slices;
+        }
+
+        template<class T>
+        void register_hslab(){
+            p::to_python_converter<core::Hyperslab<T>, hslab_to_ndarray <T>> ();
+
+        }
+
+//    void register_numpy_converters();
 
     }
 

@@ -24,7 +24,27 @@ namespace frommle{
 
     namespace py{
 
-        
+        core::slice convPyslice(p::slice pslice){
+
+            ptrdiff_t start=0;
+            ptrdiff_t stop=-1;
+            ptrdiff_t step=1;
+
+            if(pslice.start() != p::slice_nil()){
+                start=p::extract<ptrdiff_t>(pslice.start());
+            }
+
+            if(pslice.stop() != p::slice_nil()) {
+                stop = p::extract<ptrdiff_t>(pslice.stop());
+            }
+
+            if(pslice.step() != p::slice_nil()) {
+                step = p::extract<ptrdiff_t>(pslice.step());
+            }
+
+            return {{start,stop,step}};
+        }
+
     void register_numpy_converters(){
         
         //register vector <-> ndarray converters
@@ -33,6 +53,7 @@ namespace frommle{
         register_mar<double,6>();
         register_mar<size_t,6>();
 
+        register_hslab<double>();
 
     }        
     }

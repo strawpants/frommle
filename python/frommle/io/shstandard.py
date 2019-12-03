@@ -17,7 +17,9 @@
 
 import numpy as np
 from frommle.sh import SHnmtGuide,trig
-from frommle.io import SHArchive
+from frommle.io.shArchive import SHArchive,SHGVar
+from frommle.io.numpyVariable import np_float64Var
+
 # from frommle.sh.shxarray import newshxarray
 # import operator
 from frommle.core.time import decyear2datetime,datetime2decyear
@@ -28,9 +30,15 @@ class SHStandardArchive(SHArchive):
 
     def fload_impl(self):
         """Loads the data into variables"""
+
+        witherrors=False
         with self.fid() as fid:
             ln = fid.readline()
             lnspl = ln.split()
+
+            if len(lnspl) == 6:
+                witherrors=True
+
             self.attr["nmaxfile"]=int(lnspl[1])
             if not "nmax" in self.attr:
                 self.attr["nmax"]=self.attr["nmaxfile"]
@@ -41,9 +49,12 @@ class SHStandardArchive(SHArchive):
                     self.attr[ky]=decyear2datetime(decyr)
 
             nmax=self.attr["nmax"]
-            self.shg=SHnmtGuide(nmax)
-            self.cnm=np.zeros([self.shg.size()])
-            self.signcnm=np.zeros([self.shg.size()])
+            shg=self.shg_c(nmax)
+            sz=shg.size()
+
+            cnm=np.zeros([sz])
+            sigcnm=np.zeros([sz])
+
             for ln in fid:
                 lnspl = ln.split()
 
@@ -53,19 +64,31 @@ class SHStandardArchive(SHArchive):
     
                 m = int(lnspl[1])
 
-                idxc=self.shg.idx((n, m,trig.c))
-                idxs=self.shg.idx((n,m,trig.s))
+                idxc=shg.idx((n, m,trig.c))
+                idxs=shg.idx((n,m,trig.s))
     
                 # import pdb;pdb.set_trace()
-                self.cnm[idxc]=float(lnspl[2])
+                cnm[idxc]=float(lnspl[2])
                 if m!=0:
-                    self.cnm[idxs]=float(lnspl[3])
+                    cnm[idxs]=float(lnspl[3])
 
 
-                if len(lnspl) == 6:
-                    self.sigcnm[idxc]=float(lnspl[2])
+                if witherrors:
+                    sigcnm[idxc]=float(lnspl[2])
                     if m!=0:
-                        self.sigcnm[idxs]=float(lnspl[3])
+                        sigcnm[idxs]=float(lnspl[3])
+
+            #set variables and assign ndarray's to them
+            shgin=SHGVar(shg)
+            self["shg"]=shgin
+            shgout=self["shg"]
+
+
+            self["shg"]=SHGVar(shg)
+            self["cnm"]=np_float64Var(cnm)
+            if witherrors:
+                self["sigcnm"]=np_float64Var(sigcnm)
+
 
 # def write_shstandard(file,idx, shcoef,sherr=None,meta=None):
 #     """Write a dataset of spherical harmonic coeficients to a 'standard' sh file"""

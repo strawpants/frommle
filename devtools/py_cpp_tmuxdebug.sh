@@ -3,5 +3,5 @@
 #usage
 #py_cpp_tmuxdebug.sh path/tomainfile.py [extra arguments]
 
-vimcomm="vim +'packadd termdebug'  +'let g:termdebug_wide=163'  +'e  $1' +'Termdebug python3' +'Run -m pdb $*'"
+vimcomm="vim +'packadd termdebug'  +'let g:termdebug_wide=163'  +'e  $1' +'Termdebug python' +'Run -m ipdb $*'"
 tmux new-session  "$vimcomm"

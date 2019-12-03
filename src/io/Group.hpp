@@ -170,6 +170,7 @@ namespace frommle{
         }
 
 
+
     };
 
 //        using valueVariant=boost::variant<double,int,long long int,std::string,OGRGeometry*>;
@@ -191,6 +192,8 @@ namespace frommle{
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
         virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
         virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not supported");}
+
+
         ///@brief iterator which loops over the values in this variable
         class iterator{
         public:

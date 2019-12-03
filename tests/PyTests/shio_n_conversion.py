@@ -60,8 +60,13 @@ class SHIO(unittest.TestCase):
     def test_standard(self):
         filen=makeTestStokes()
         shar=shopen(filen)
-        shg=SHnmtGuide()
-        shg.load(shar)
+        # shg=shar["shg"][:]
+        cnm=shar["cnm"]
+        tmp=cnm[:]
+
+        #load the cnm coefficients
+        # cnm=shar[""]
+
         # shg=shar.load(SHnmtGuide())
         # epoch=datetime(2009,1,1)
         # hdr,sh=read_icgem(file,nmax=2,epoch=epoch)

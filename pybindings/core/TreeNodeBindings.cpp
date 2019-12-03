@@ -44,8 +44,8 @@ namespace frommle {
             return const_cast<TreeNodeBase *>(treePtr.get());
         }
 
-        const TreeNodeRef (TreeNodeBase::*cgeti1)(size_t )const=&TreeNodeBase::operator[];
-        const TreeNodeRef (TreeNodeBase::*cgeti2)(const std::string &)const=&TreeNodeBase::operator[];
+        const TreeNodeRef & (TreeNodeBase::*cgeti1)(size_t )const=&TreeNodeBase::operator[];
+        const TreeNodeRef & (TreeNodeBase::*cgeti2)(const std::string &)const=&TreeNodeBase::operator[];
 
         TreeNodeRef  (TreeNodeBase::*geti1)(size_t )=&TreeNodeBase::operator[];
         TreeNodeRef  (TreeNodeBase::*geti2)(const std::string &)=&TreeNodeBase::operator[];
@@ -55,9 +55,11 @@ namespace frommle {
         }
 
         template<class I,class NODE>
-        void assignNode(TreeNodeCollection &coll,const I & idx, std::shared_ptr<NODE> & Value ){
+        void assignNode(TreeNodeCollection &coll,const I & idx, std::shared_ptr<NODE> Value ){
             coll.upsertChild(idx,Value);
         }
+
+
 
 
         Attributes & (TreeNodeBase::*attrf)()=&TreeNodeBase::attr;
@@ -118,10 +120,11 @@ namespace frommle {
 
             p::class_<TreeNodeBase,TreeNodeRef,p::bases<Frommle>>("TreeNode")
                     .def(p::init<std::string>())
-                    .def("__getitem__",geti1)
-                    .def("__getitem__",geti2)
+                    .def("__getitem__",cgeti1,p::return_internal_reference<>())
+                    .def("__getitem__",cgeti2,p::return_internal_reference<>())
                     .def("isCollection",&TreeNodeBase::isCollection)
-                    .add_property("attr",p::make_function(attrf,p::return_internal_reference<>()));
+                    .add_property("attr",p::make_function(attrf,p::return_internal_reference<>()))
+                    .add_property("parent",p::make_function(&TreeNodeBase::getParentCollection,p::return_internal_reference<>()));
             p::register_ptr_to_python< std::shared_ptr<TreeNodeBase> >();                   
   
             p::class_<TreeNodeItem,p::bases<TreeNodeBase>>("TreeNodeItem")

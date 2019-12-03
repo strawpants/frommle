@@ -32,21 +32,26 @@
 namespace frommle{
     namespace core{
 
-//        using Attribs=std::map<std::string,boost::any>;
-
+        //Since the classes will be referred to below but defined later in this file we need to  forward declare them here
         class TreeNodeBase;
         class TreeNodeCollection;
+
+
+
+
         //@brief wrapper class around a shared_ptr which also forwards operator[] to the pointee. Note that this is implemented in the shared_ptr from c++11
         class TreeNodeRef{
         public:
             using cvec=std::vector<TreeNodeRef>;
             using element_type=TreeNodeBase;
-            TreeNodeRef(){}
-            explicit TreeNodeRef(const std::string & name );
-            TreeNodeRef(TreeNodeBase* ptr){
-                ptr_=std::make_shared<TreeNodeBase>(ptr);
-            }
 
+            //structors
+            TreeNodeRef();
+            explicit TreeNodeRef(const std::string & name );
+            TreeNodeRef(TreeNodeBase* ptr);
+            TreeNodeRef(TreeNodeRef & in);
+
+            //templated structors
             template<class T>
             TreeNodeRef(const T & nodeIn)noexcept{
                 ptr_=std::make_shared<T>(nodeIn);
@@ -54,21 +59,10 @@ namespace frommle{
             template<class T>
             TreeNodeRef(std::shared_ptr<T> ptr):ptr_(ptr){}
 
-//            template<class T>
-//            TreeNodeRef(T && nodeIn)noexcept{
-//                ptr_=std::make_shared<T>(std::move(nodeIn));
-//            }
+//            explicit TreeNodeRef(const TreeNodeCollection * parent);
 
 
-//            template<class T>
-//            TreeNodeRef(T & nodeIn)noexcept;
-            TreeNodeRef(TreeNodeRef & in){
-                ptr_=in.ptr_;
-            }
-            explicit TreeNodeRef(const TreeNodeCollection * parent);
-//            explicit TreeNodeRef(const std::string name){
-//
-//            }
+
             ///@brief replace the current treenode while keeping the original name and parent
             const TreeNodeRef & operator=(TreeNodeRef && in);
             //@brief copy a TreenodeRef in the current position but don't update the parent and name in the original
@@ -114,8 +108,8 @@ namespace frommle{
             template<class T>
             T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
 
-            const TreeNodeRef  operator[](const size_t idx) const;
-            const TreeNodeRef  operator[](const std::string &idx) const;
+            const TreeNodeRef & operator[](const size_t idx) const;
+            const TreeNodeRef & operator[](const std::string &idx) const;
             TreeNodeRef operator[](const size_t idx);
             TreeNodeRef operator[](const std::string &idx);
 
@@ -158,15 +152,16 @@ namespace frommle{
 
             template <class T>
             bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval);
-            virtual const TreeNodeRef operator[](const std::string & name)const {throwMethExcept();return TreeNodeRef();};
-            virtual const TreeNodeRef operator[](size_t  idx)const {throwMethExcept();return TreeNodeRef();};
+            virtual const TreeNodeRef & operator[](const std::string & name)const {throwMethExcept();};
+            virtual const TreeNodeRef & operator[](size_t  idx)const {throwMethExcept();};
 
             virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();return TreeNodeRef();}
             virtual TreeNodeRef operator[](size_t  idx){throwMethExcept();return TreeNodeRef();};
 
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const=0;
 //            virtual const TreeNodeRef & ref()const=0;
-            TreeNodeCollection* getParent()const{return parent_;}
+            TreeNodeCollection * getParent()const{return parent_;}
+            TreeNodeCollection & getParentCollection()const{return *parent_;}
 //            std::shared_ptr<TreeNodeBase> getParent()const{return parent_;}
             template<class T>
             TreeNodeBase & setParent(T & parent) &{
@@ -223,8 +218,8 @@ namespace frommle{
             typename cvec::iterator end(){return collection_.end();}
             size_t size()const{return collection_.size();}
 
-            virtual const TreeNodeRef operator[](const std::string & name)const;
-            virtual const TreeNodeRef operator[](size_t  idx)const;
+            virtual const TreeNodeRef & operator[](const std::string & name)const;
+            virtual const TreeNodeRef & operator[](size_t  idx)const;
 
             virtual TreeNodeRef operator[](const std::string & name);
             virtual TreeNodeRef operator[](size_t  idx);
@@ -271,6 +266,10 @@ namespace frommle{
             cvec collection_{};
 //            TreeNodeRef ref_{};
         };
+
+
+
+
 
         template<class T>
         TreeNodeRef &TreeNodeRef::operator=(T &&in) {
