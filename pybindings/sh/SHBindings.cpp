@@ -3,8 +3,8 @@
 #include <boost/python/numpy.hpp>
 #include "../core/coreBindings.hpp"
 #include "core/GuideBase.hpp"
+#include "../core/numpyConverting.hpp"
 #include "sh/SHisoOperator.hpp"
-
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
@@ -93,7 +93,10 @@ void pyexport_sh()
             .add_property("nmin",&SHGuideBase::nmin)
             .def("idx",&SHGuideBase::idxfromEl)
             .def("__getitem__",p::pure_virtual(&SHGuideBase::operator[]))
-            .def("__iter__",p::iterator<const SHGuideBase>());
+//            .def("__iter__",p::range<p::return_value_policy<p::copy_const_reference>>(&SHGuideBase::begin,&SHGuideBase::end))
+            .def("__iter__",p::iterator<const SHGuideBase>())
+//            .def("__iter__",p::iterator<const SHGuideBase>())
+            .def("__array__",&py::guide_to_ndarray<SHGuideBase>);
 
     //export subclass SHtmnGuide
     p::class_<SHtmnGuide,p::bases<SHGuideBase> >("SHtmnGuide").def(p::init<int,p::optional<std::string>>());

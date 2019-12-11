@@ -31,7 +31,7 @@ namespace boost {
         template <>
         struct pointee<frommle::core::TreeNodeRef>
         {
-            using type = frommle::core::TreeNodeBase;
+            typedef frommle::core::TreeNodeBase type;
         };
     }
 }
@@ -40,7 +40,7 @@ namespace boost {
 namespace frommle {
     namespace core {
 
-        TreeNodeBase *get_pointer(frommle::core::TreeNodeRef const &treePtr) {
+        TreeNodeBase *get_pointer(const frommle::core::TreeNodeRef &treePtr) {
             return const_cast<TreeNodeBase *>(treePtr.get());
         }
 
@@ -111,6 +111,16 @@ namespace frommle {
             }
         };
 
+        template<class  IX>
+        std::shared_ptr<TreeNodeBase> getItemfromColl(TreeNodeCollection & col, const IX & idx ){
+            return col[idx].ptr();
+        }
+
+        template<class  IX>
+        void setIteminColl(TreeNodeCollection & col, const IX & idx,std::shared_ptr<TreeNodeBase> shptr ){
+            col.upsertChild(idx,shptr);
+        }
+
 
         void registerTreeNodes() {
             using namespace boost::python;
@@ -118,14 +128,14 @@ namespace frommle {
             registerAttributes<p::object,double,int,size_t,std::string, guides::typehash,boost::gregorian::date,boost::posix_time::ptime>::reg();
 
 
-            p::class_<TreeNodeBase,TreeNodeRef,p::bases<Frommle>>("TreeNode")
+            p::class_<TreeNodeBase,p::bases<Frommle>>("TreeNode")
                     .def(p::init<std::string>())
-                    .def("__getitem__",cgeti1,p::return_internal_reference<>())
-                    .def("__getitem__",cgeti2,p::return_internal_reference<>())
+//                    .def("__getitem__",cgeti1,p::return_internal_reference<>())
+//                    .def("__getitem__",cgeti2,p::return_internal_reference<>())
                     .def("isCollection",&TreeNodeBase::isCollection)
                     .add_property("attr",p::make_function(attrf,p::return_internal_reference<>()))
                     .add_property("parent",p::make_function(&TreeNodeBase::getParentCollection,p::return_internal_reference<>()));
-            p::register_ptr_to_python< std::shared_ptr<TreeNodeBase> >();                   
+            p::register_ptr_to_python< std::shared_ptr<TreeNodeBase> >();
   
             p::class_<TreeNodeItem,p::bases<TreeNodeBase>>("TreeNodeItem")
             .def(p::init<std::string>());
@@ -134,10 +144,12 @@ namespace frommle {
             p::class_<TreeNodeCollection,p::bases<TreeNodeBase>>("TreeNodeCollection")
             .def(p::init<std::string>())
             .def("__contains__",&contains)
-            .def("__setitem__",&assignNode<size_t,TreeNodeItem>)
-            .def("__setitem__",&assignNode<std::string,TreeNodeItem>)
-            .def("__setitem__",&assignNode<size_t,TreeNodeCollection>)
-            .def("__setitem__",&assignNode<std::string,TreeNodeCollection>)
+            .def("__getitem__",&getItemfromColl<std::string>)
+            .def("__setitem__",&setIteminColl<std::string>)
+//            .def("__setitem__",&assignNode<size_t,TreeNodeItem>)
+//            .def("__setitem__",&assignNode<std::string,TreeNodeItem>)
+//            .def("__setitem__",&assignNode<size_t,TreeNodeCollection>)
+//            .def("__setitem__",&assignNode<std::string,TreeNodeCollection>)
             ;
 
             p::register_ptr_to_python< std::shared_ptr<TreeNodeCollection> >();                   

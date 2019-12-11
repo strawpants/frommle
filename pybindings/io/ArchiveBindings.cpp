@@ -172,28 +172,6 @@ namespace frommle{
         };
 
 
-//        template<class I,class NODE>
-//        void assigntoGroup(Group &coll,const I & idx, std::shared_ptr<NODE> Value ){
-//            //auto test=dynamic_cast<VariableWrapper*>(Value);
-//            //if (test){
-//            //LOGINFO << "VariableWrapper "<< test<<" " << Value->name() <<std::endl;
-//            //}
-//            coll.upsertChild(idx,Value);
-//        }
-
-        template<class I,class NODE>
-        void assigntoGroup(Group &coll,const I & idx, p::object obj ){
-            //auto test=dynamic_cast<VariableWrapper*>(Value);
-            //if (test){
-            LOGINFO << "VariableWrapper "<< std::endl;
-            //}
-
-
-
-//            coll.upsertChild(idx,Value);
-        }
-
-
 
         void (Group::*setamode1)(std::string )=&Group::setAmode;
 
@@ -214,11 +192,6 @@ namespace frommle{
                         .def("setAmode",setamode1)
                         .def("setAmode",setamode2)
                         .def("getGroup",&Group::getGroup,p::return_value_policy<p::reference_existing_object>())
-                                //.def("getVariable",&Group::getVariable,&GroupWrapper::default_getVariable)
-//                        .def("__setitem__",&assigntoGroup<size_t,Group>)
-//                        .def("__setitem__",&assigntoGroup<std::string,Group>)
-//                        .def("__setitem__",&assigntoGroup<size_t,VariableDyn>)
-//                        .def("__setitem__",&assigntoGroup<std::string,VariableDyn>)
                 );
                 //also register pointer to group
                 p::register_ptr_to_python< std::shared_ptr<Group> >();

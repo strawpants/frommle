@@ -161,28 +161,135 @@ class GuideBase:public core::Frommle {
 
 
     //!@brief templated abstract forward iterator (both usable as const and non-const version, set Element to e.g int const versus just int) class for use in Guides
-    template<class Element>
-    class Guideiterator{
-    public:
-        //iterator traits
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = Element;
-        using difference_type = std::ptrdiff_t;
-        using pointer = Element*;
-        using reference = Element&;
+//    template<class Element>
+//    class Guideiterator{
+//    public:
+//        //iterator traits
+//        using iterator_category = std::forward_iterator_tag;
+//        using value_type = Element;
+//        using difference_type = std::ptrdiff_t;
+//        using pointer = Element*;
+//        using reference = Element&;
+////        explicit Guideiterator(Element el, Element elstop):elVal(el),elStop(elstop){}
+//        explicit Guideiterator(Element * el):elVal(el){}
+//        virtual Guideiterator& operator++()=0;
+//        bool operator==(Guideiterator & other) const {return elVal == other.elVal;}
+//        bool operator!=(Guideiterator & other) const {return !(*this == other);}
+//        Element & operator*() {return *elVal;}
+//        ~Guideiterator(){}
+//        Guideiterator(){}
+//    protected:
+//        Element* elVal=nullptr;
+//    private:
+//    };
+
+
+        template<class GD>
+        class GuideIterator{
+        public:
+            //iterator traits
+            using Element=typename GD::Element;
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = Element;
+            using difference_type = std::ptrdiff_t;
+            using pointer = Element*;
+            using reference = Element&;
+            GuideIterator()=delete;
 //        explicit Guideiterator(Element el, Element elstop):elVal(el),elStop(elstop){}
-        explicit Guideiterator(Element el):elVal(el){}
-        virtual Guideiterator& operator++()=0;
-        bool operator==(Guideiterator & other) const {return elVal == other.elVal;}
-        bool operator!=(Guideiterator & other) const {return !(*this == other);}
-        Element & operator*() {return elVal;}
-        ~Guideiterator(){}
-        Guideiterator(){}
-    protected:
-        Element elVal={};
-//        Element elStop={};
-    private:
-    };
+            GuideIterator(GD * guide,ptrdiff_t advance=0):idx_(advance),sz_(guide->size()),g_ptr(guide){
+//                loadElVal();
+            }
+            GuideIterator(const GuideIterator & giter, ptrdiff_t advance=0):idx_(giter.idx_+advance),sz_(giter.sz_),g_ptr(giter.g_ptr){
+                //truncate idx_ to 1 past the end
+                idx_=idx_>sz_?sz_:idx_;
+//                loadElVal();
+            }
+
+            GuideIterator& operator++(){
+                ++idx_;
+                idx_=idx_>sz_?sz_:idx_;
+//                loadElVal();
+                return *this;
+            }
+
+            GuideIterator operator++(int){
+                GuideIterator retval(*this);
+                ++(*this);
+                return retval;
+            }
+
+            bool operator==(GuideIterator & other) const {return idx_ == other.idx_;}
+            bool operator!=(GuideIterator & other) const {return !(*this == other);}
+
+
+            Element & operator*();
+
+            GuideIterator operator+(ptrdiff_t advance)const{
+                return GuideIterator(this,advance);
+            }
+
+            ~GuideIterator(){}
+        protected:
+            size_t idx_=0;
+            size_t sz_=0;
+            //note the iterator does not own the guide pointer so we just use a normal one here
+            GD* g_ptr=nullptr;
+//            Element elVal{};
+        private:
+        };
+
+        template<class GD, class Element>
+        class InjectGuideIterator{
+        public:
+            using const_iterator=GuideIterator<const GD>;
+            using iterator=GuideIterator<GD>;
+
+            const_iterator begin()const{
+                return const_iterator(dynamic_cast<const GD*>(this));
+            }
+
+            const_iterator end()const{
+            //return iterator shifted to one passed the end
+                auto gd=dynamic_cast<const GD*>(this);
+                return const_iterator(gd,gd->size());
+        }
+
+
+//            iterator begin(){
+//                return iterator(dynamic_cast<GD*>(this));
+//            }
+//
+//            iterator end(){
+//                //return iterator shifted to one passed the end
+//                auto gd=dynamic_cast<GD*>(this);
+//                return iterator(gd,gd->size());
+//            }
+            //we need at least 1 virtual function here so dynamic casts bask to GD work (so let's make the descructor virtual)
+            virtual ~InjectGuideIterator(){};
+
+        private:
+            friend const_iterator;
+            friend iterator;
+            void setEl(Element el)const{
+                ElementCache_=el;
+            }
+            Element & getEl()const{return ElementCache_;}
+            mutable Element ElementCache_;
+
+        };
+
+
+
+        template<class GD>
+        typename GD::Element & GuideIterator<GD>::operator*()
+        {
+            if (idx_ >= sz_){
+                THROWINPUTEXCEPTION("Dereferencing non-existent Element in GuideIterator");
+            }
+            g_ptr->setEl(g_ptr->operator[](idx_));
+            return g_ptr->getEl();
+        }
+
 
     using GuideBasePtr=std::shared_ptr<GuideBase>;
     using constGuideBasePtr=std::shared_ptr<const GuideBase>;

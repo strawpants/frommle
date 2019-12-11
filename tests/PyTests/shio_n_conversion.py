@@ -16,9 +16,10 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2018
 
 import unittest
-from frommle.io.shio import shopen
+from frommle.io.shio import shopen,formats
 from frommle.sh import SHnmtGuide
 from frommle.core import logInfo
+from frommle.core import TreeNode
 from datetime import datetime
 import gzip
 import io
@@ -58,14 +59,19 @@ def makeTestStokes():
 
 class SHIO(unittest.TestCase):
     def test_standard(self):
-        filen=makeTestStokes()
-        shar=shopen(filen)
-        # shg=shar["shg"][:]
-        cnm=shar["cnm"]
-        tmp=cnm[:]
 
-        #load the cnm coefficients
-        # cnm=shar[""]
+        filen=makeTestStokes()
+        with shopen(filen) as shar:
+        # shg=shar["shg"][:]
+            cnm=shar["cnm"][:]
+
+        #write to file
+        fileout='tmpout.sh.gz'
+        with shopen(fileout,mode='w',format=formats.standard) as sharout:
+            sharout["cnm"][:]=cnm
+            sharout["sigcnm"][:]=cnm
+
+
 
         # shg=shar.load(SHnmtGuide())
         # epoch=datetime(2009,1,1)

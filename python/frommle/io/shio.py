@@ -66,16 +66,17 @@ def queryformat(filename):
 
 def shopen(filen,mode='r',format=formats.unknown):
     """Factory function which returns an appropriate SH archive"""
+    if mode != 'r' and mode != 'w':
+        raise RuntimeError("Cannot understand this mode: %s"%mode)
+
     if mode == 'r':
         if format == formats.unknown:
             format=queryformat(filen)
     elif mode == "w" and format == formats.unknown:
-        raise RunTimeError("When writing an sh file the format option is obligatory")
-    else:
-        raise RunTimeError("Unknown mode %s supplied"%mode)
+        raise RuntimeError("When writing an sh file the format option is obligatory")
 
     if format == format.unknown:
-        raise RunTimeError("Don't know how to open this format")
+        raise RuntimeError("Don't know how to open this format")
 
     # archives={formats.icgem:icgemArchive,formats.standard:SHStandardArchive,formats.GSMv6:GSMV6Archive}
     archives={formats.standard:SHStandardArchive}

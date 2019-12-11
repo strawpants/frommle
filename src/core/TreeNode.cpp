@@ -30,7 +30,8 @@ namespace frommle {
             ptr_=std::make_shared<TreeNodeItem>(name);
         }
         TreeNodeRef::TreeNodeRef(TreeNodeBase* ptr){
-            ptr_=std::make_shared<TreeNodeBase>(ptr);
+            //This takes ownership of the pointer deallocation duties!
+            ptr_=std::shared_ptr<TreeNodeBase>(ptr);
         }
 
         TreeNodeRef::TreeNodeRef(TreeNodeRef & in){
@@ -157,7 +158,8 @@ namespace frommle {
                 return *this;
 //                    throw IndexingException("TreeNodeRef points to nothing");
             }
-
+            
+            //forward call to held type
             return ptr_->operator[](idx);
         }
 

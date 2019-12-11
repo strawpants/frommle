@@ -79,15 +79,46 @@ class SHStandardArchive(SHArchive):
                         sigcnm[idxs]=float(lnspl[3])
 
             #set variables and assign ndarray's to them
-            shgin=SHGVar(shg)
-            self["shg"]=shgin
-            shgout=self["shg"]
 
-
-            self["shg"]=SHGVar(shg)
             self["cnm"]=np_float64Var(cnm)
+            self["shg"]=SHGVar(shg)
             if witherrors:
                 self["sigcnm"]=np_float64Var(sigcnm)
+
+    def fsave_impl(self):
+
+        cnm=self["cnm"][:]
+        sigcnm=self["sigcnm"][:]
+        shg=self["shg"][:]
+
+        tstamps=[0.0,0.0,0.0]
+        for i,tag in enumerate(["tstart","tcent","tend"]):
+            if tag in self.attr:
+                tstamps[i]=datetime2decyear(meta[tag])
+
+        with self.fid() as fid:
+            fid.write("META   %d %f %f %f\n"%(shg.nmax,tstamps[0],tstamps[1],tstamps[2]))
+
+
+        for val in enumerate(shg):
+            print(val)
+        # idxsorted=sorted(enumerate(shg),key=lambda val:val[1])
+
+        if sigcnm.isSet():
+            lineval=[0.0,0.0,0.0,0.0]
+            for i,(n,m,t) in idxsorted:
+                lineval[t]=cnm[i]
+                lineval[2+t]=sigcnm[i]
+                if t == trig.s:
+                    #print out line
+                    fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
+        else:
+            lineval=[0.0,0.0]
+            for i,(n,m,t) in idxsorted:
+                lineval[t]=cnm[i]
+                if t == trig.s:
+                    #print out line
+                    fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))
 
 
 # def write_shstandard(file,idx, shcoef,sherr=None,meta=None):

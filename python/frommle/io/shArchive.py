@@ -17,7 +17,8 @@
 
 
 from frommle.core import typehash
-from frommle.io import Group,Variable,Variable_float64
+from frommle.io import Group,Variable
+from frommle.io.numpyVariable import np_float64Var
 from frommle.sh import SHnmtGuide
 import gzip as gz
 from enum import Enum
@@ -29,6 +30,7 @@ class formats(Enum):
     unknown=4
 
 class SHGVar(Variable):
+    shg=None
     def __init__(self,shg=None,name=None):
         if name:
             super().__init__(name)
@@ -37,42 +39,52 @@ class SHGVar(Variable):
         
         if shg:
             self.attr["typehash"]=shg.hash()
+            self.shg=shg
+    def __getitem__(self,slc):
+        if type(slc) == slice:
+            selectall = slc == slice(None)
+        else:
+            raise RuntimeError("cannot get item without slicing")
 
-# class SHVar(Variable_float64):
-        # """contains a variable object which allows reading/writing to an SHarchive"""
-        # def __init__(self,name="cnm"):
-            # # TreeNode.__init__(self)
-            # super().__init__(name)
-
-        # def __getitem__(self,slc):
-            # """return (slices of) the data"""
-            # return self.parent.vars[self.name][slc];
-
-
+        if selectall:
+            return self.shg
+        else:
+            return self.shg.__array__()[slc]
 
 class SHArchive(Group):
     """base type to read SH datasets from various text filetypes """
     loaded=False
-    #Varnames holds valid variable names which can be overloaded/extended in derived classes 
-    # vars={"shg":None,"cnm":None}
+    #Varnames holds valid variable names with variable classes which may be overloaded/extended in derived classes
+    vars={"shg":SHGVar,"cnm":np_float64Var,"sigcnm":np_float64Var}
     shg_c=SHnmtGuide
-    def __init__(self,filename,mode='r',nmax=None):
+    def __init__(self,filename,mode='r',nmax=0):
         #important: initialize Group class as well
         Group.__init__(self,filename)
         self.setAmode(mode)
-        self.fload()
-        #also sets the variables
-        # for varname,val in self.vars.items():
-            # self[varname]= SHVar(varname);
-            # if varname == "shg":
-                # #set a dedicated typehash (needed to load SHGuides from C++)
-                # self[varname].attr["typehash"]=val.hash()
+        #also setup the variables (don't fill them with data yet)
+        for varname,varclass in self.vars.items():
+            if varclass == SHGVar:
+                if nmax:
+                    self[varname]=varclass(shg=self.shg_c(nmax))
+                else:
+                    self[varname]=varclass(shg=self.shg_c())
+            else:
+                self[varname]=varclass(varname);
+
+    def __enter__(self):
+        if self.readable():
+            self.fload_impl()
+        return self
+    def __exit__(self, type, value, traceback):
+        """This save the existing data to a file when the  archive is in write mode"""
+        if self.writable():
+            self.fsave_impl()
 
     def fid(self):
         """Opens the text file (and possibly pass through a gzip filter) and returns a file descriptor"""
         if self.readable():
             mod="rt"
-        elif self.writeable():
+        elif self.writable():
             mod="wt"
 
         if self.name.endswith(".gz"):
@@ -80,37 +92,20 @@ class SHArchive(Group):
         else:
             return open(self.name,mod)
     
-    # def getVariable(self,varname):
-        # """This overloads the c++ routine getVariable (needed if more complexed object will be read from C++)"""
-        
-        # self.fload()
-        
-        # if varname in self.vars.keys():
-            # # self[varname]= SHVar(varname);
-            # if varname == "shg":
-                # #set a dedicated typehash (needed to load SHGuides from C++)
-                # self[varname].attr["typehash"]=self.vars[varname].hash()
-                
-        # else:
-            # raise RunTimeError("Variable %s not supported for this archive"%varname)
-    
-        # return self[varname]
-
-    # def shg(self):
-        # """Convenience function to retrieve the stored SH guide"""
-        # self.fload()
-        # return self.vars["shg"]
-
     def fload(self):
         if self.loaded:
             return
 
         if self.attr["mode"] == 'w':
-            raise RunTimeError("Cannot load sh data in write mode")
+            #no need to load file as it is in write mode
+            return
 
         #call abstract method of the derived class
         self.fload_impl()
         self.loaded=True
 
     def fload_impl(self):
+        pass
+
+    def fsave_impl(self):
         pass

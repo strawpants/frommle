@@ -35,8 +35,7 @@ class np_float64Var(Variable_float64):
    
     def __getitem__(self,slc=None):
         """returns (a slice of) the internal array"""
-        import ipdb;ipdb.set_trace()
-        if not array:
+        if type(self.array) == type(None):
             return None
         if slc == slice(None,None):
             #return the whole thing
@@ -44,5 +43,21 @@ class np_float64Var(Variable_float64):
         else:
             return self.array[slc]
 
-    def __setitem__(self,slc,Value):
-        pass
+    def isSet(self):
+        return type(self.array) != type(None)
+
+    def __setitem__(self,slc,ArrValue):
+        """sets the internal array"""
+        if type(slc) == tuple:
+            #ndim slicing
+            selectall=all(map(lambda x: x==slice(None),slc))
+        elif type(slc) == slice:
+            selectall = slc == slice(None)
+
+        if selectall:
+            self.array=ArrValue
+        else:
+            if  not self.isSet():
+                raise RuntimeError("Cannot set slice of non existing array")
+            else:
+                self.array[slc]=ArrValue

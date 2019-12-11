@@ -166,6 +166,27 @@ namespace frommle{
             }
         };
 
+
+        template<class T>
+        np::ndarray guide_to_ndarray(const T & guide){
+            using Element=typename T::Element;
+            np::dtype dtype = py::np_dtype<Element>::get();
+            //create an numpy array
+            p::tuple shape=p::make_tuple(guide.size());
+            np::ndarray py_array = np::empty(shape, dtype);
+            if (py::np_dtype<Element>::isobject()) {
+                std::transform(guide.begin(), guide.end(), reinterpret_cast<p::object *>(py_array.get_data()),
+                               [](const Element &el) {
+                                   return p::object(el);
+                               });
+            }else{
+                //copy values not object (pointers)
+                std::copy(guide.begin(),guide.end(),reinterpret_cast<Element*>(py_array.get_data()));
+
+            }
+            return py_array;
+        }
+
         template<class T, int n>
         struct register_mar{
             register_mar(){

@@ -41,7 +41,7 @@ namespace frommle{
         class gvar_to_ndarray: public boost::static_visitor<np::ndarray>{
         public:
             template<class T>
-            np::ndarray operator()(T & gvar)const{
+            np::ndarray operator()(const T & gvar)const{
                 using Element=typename T::element_type::Element;
                 np::dtype dtype = py::np_dtype<Element>::get();
                 //create an numpy array

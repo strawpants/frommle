@@ -29,37 +29,42 @@ namespace frommle{
         /*!brief
          * A guide which keeps track on (permuted) indices
          */
-        class IndexGuide:public GuideBase{
+        class IndexGuide:public GuideBase, public InjectGuideIterator<IndexGuide,unsigned long long int>{
         public:
             using Element=unsigned long long int;
+
             IndexGuide():GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(0)){}
             IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize),nsize){}
             IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize),nsize){}
             Element operator[](const size_t idx)const{return idx;}
+            using const_iterator=InjectGuideIterator<IndexGuide,Element>::const_iterator;
+            using InjectGuideIterator<IndexGuide,Element>::begin;
+            using InjectGuideIterator<IndexGuide,Element>::end;
+//            using InjectGuideIterator<IndexGuide>::cbegin;
+//            using InjectGuideIterator<IndexGuide>::cend;
+//            class const_iterator:public Guideiterator<Element>{
+//            public:
+//                const_iterator():Guideiterator(-1){}
+//                const_iterator(const IndexGuide & ing):Guideiterator(ing[0]),last(ing.size()){}
+//                const_iterator operator++(int){
+//                    const_iterator retval(*this);
+//                    ++(*this);
+//                    return retval;
+//                }
+//                const_iterator & operator++(){
+//                    ++elVal;
+//                    if (elVal >= last) {
+//                        elVal=-1;
+//                    }
+//                    return *this;
+//                }
+//
+//        private:
+//            Element last{};
+//            };
 
-            class const_iterator:public Guideiterator<Element>{
-            public:
-                const_iterator():Guideiterator(-1){}
-                const_iterator(const IndexGuide & ing):Guideiterator(ing[0]),last(ing.size()){}
-                const_iterator operator++(int){
-                    const_iterator retval(*this);
-                    ++(*this);
-                    return retval;
-                }
-                const_iterator & operator++(){
-                    ++elVal;
-                    if (elVal >= last) {
-                        elVal=-1;
-                    }
-                    return *this;
-                }
-
-        private:
-            Element last{};
-            };
-
-            const_iterator begin()const{return const_iterator(*this);};
-            const_iterator end()const{return const_iterator();}
+//            const_iterator begin()const{return const_iterator(*this);};
+//            const_iterator end()const{return const_iterator();}
             size_t idx(const Element & el)const {return el;}
             private:
             friend class io::serialize;
