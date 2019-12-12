@@ -40,36 +40,8 @@ namespace frommle{
             using const_iterator=InjectGuideIterator<IndexGuide,Element>::const_iterator;
             using InjectGuideIterator<IndexGuide,Element>::begin;
             using InjectGuideIterator<IndexGuide,Element>::end;
-//            using InjectGuideIterator<IndexGuide>::cbegin;
-//            using InjectGuideIterator<IndexGuide>::cend;
-//            class const_iterator:public Guideiterator<Element>{
-//            public:
-//                const_iterator():Guideiterator(-1){}
-//                const_iterator(const IndexGuide & ing):Guideiterator(ing[0]),last(ing.size()){}
-//                const_iterator operator++(int){
-//                    const_iterator retval(*this);
-//                    ++(*this);
-//                    return retval;
-//                }
-//                const_iterator & operator++(){
-//                    ++elVal;
-//                    if (elVal >= last) {
-//                        elVal=-1;
-//                    }
-//                    return *this;
-//                }
-//
-//        private:
-//            Element last{};
-//            };
-
-//            const_iterator begin()const{return const_iterator(*this);};
-//            const_iterator end()const{return const_iterator();}
             size_t idx(const Element & el)const {return el;}
-            private:
-            friend class io::serialize;
-            template<class Archive>
-            void load(Archive & Ar){
+            void load(io::Group & Ar){
                 std::string gname=name();
                 if (gname.empty()){
                     gname=std::string(hash());
@@ -82,18 +54,17 @@ namespace frommle{
 
             }
 
-            template<class Archive>
-            void save(Archive & Ar)const{
-                //create an empty variable holding the index range
-                using rangear=std::array<size_t,2>;
-                rangear irange{0,size()-1};
-                std::string gname=name();
-                if (gname.empty()){
-                    gname=std::string(hash());
-                }
-                Ar[gname]=io::Variable<size_t>(gname,{{"guidetype",std::string(hash())}});
-
-                Ar[gname].template as<io::Variable<size_t>>().setValue(core::Hyperslab<size_t>(irange));
+            void save(io::Group & Ar)const{
+//                //create an empty variable holding the index range
+//                using rangear=std::array<size_t,2>;
+//                rangear irange{0,size()-1};
+//                std::string gname=name();
+//                if (gname.empty()){
+//                    gname=std::string(hash());
+//                }
+//                Ar[gname]=io::Variable<size_t>(gname,{{"guidetype",std::string(hash())}});
+//
+//                Ar[gname].template as<io::Variable<size_t>>().setValue(core::Hyperslab<size_t>(irange));
 
             }
         };

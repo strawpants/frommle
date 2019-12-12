@@ -67,7 +67,27 @@ namespace frommle{
         public:
             VariableWrapper():Variable<T>(){}
             VariableWrapper(std::string name):Variable<T>(name){}
+            void setValue(const core::Hyperslab<T> & hslab){
+                //we need to use python sliceig
 
+                if (p::override setf = this->get_override("__setitem__")) {
+
+                        if(hslab.ndim() ==1){
+                            p::slice slc=py::slice_from_hslab<T>(hslab);
+                            setf(slc,hslab);
+                        }else{
+                            //use a list of slices
+                            p::list slc=py::slices_from_hslab<T>(hslab);
+                            setf(slc,hslab);
+                        }
+                }else{
+                    Variable<T>::setValue(hslab);
+                }
+            }
+
+//            void default_setValue(const core::Hyperslab<T> & hslab){
+//                Variable<T>::setValue(hslab);
+//            }
 
 //            static np::ndarray getitem(PyObject* varptr, const  p::slice & slice){
 //                auto res=p::call_method<np::ndarray>(varptr,"__getitem__",slice);
@@ -162,6 +182,7 @@ namespace frommle{
                     
                     p::class_<VariableWrapper<T>,p::bases<VariableDyn>,boost::noncopyable>(basename.c_str())
                             .def(p::init<std::string>())
+//                            .def("setValue",&Variable<T>::setValue,&VariableWrapper<T>::default_setValue)
 //                            .def("__getitem__",&VariableWrapper<T>::getitem);
                             .def("__getitem__",geti1);
                             //.def("__getitem__",geti2);

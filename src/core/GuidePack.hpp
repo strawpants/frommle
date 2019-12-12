@@ -177,6 +177,18 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
 //        iterator end()override{return gpar_.end();}
         const_iterator begin()const override{ return GVIterator(gpar_.begin());}
         const_iterator end()const override{ return GVIterator(gpar_.end());}
+
+        void save(io::Group &ar)const{
+            for(auto const & gd:gpar_){
+                boost::apply_visitor(guides::gvar_save(&ar),gd);
+            }
+        }
+
+            void load(io::Group &ar){
+                THROWNOTIMPLEMENTED("No loading ");
+//        auto var = ar.getVariable("shg");
+//        *this=SHnmtGuide(var->attr().get<guides::typehash>("typehash"));
+            }
     protected:
         std::array<Gvar,n> gpar_{};
 //        std::array<GuideBasePtr,n> gpar_{{}};

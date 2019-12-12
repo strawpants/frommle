@@ -40,6 +40,7 @@ class SHGVar(Variable):
         if shg:
             self.attr["typehash"]=shg.hash()
             self.shg=shg
+
     def __getitem__(self,slc):
         if type(slc) == slice:
             selectall = slc == slice(None)
@@ -50,6 +51,7 @@ class SHGVar(Variable):
             return self.shg
         else:
             return self.shg.__array__()[slc]
+
 
 class SHArchive(Group):
     """base type to read SH datasets from various text filetypes """

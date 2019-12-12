@@ -85,16 +85,16 @@ namespace frommle{
             //return core::MaskedGuide<OGRGuide>(static_cast<const OGRGuide&>(*this));
             //}
             //using GuideBase::operator MaskedGuide<OGRGuide>;
+            void load(io::Group & Ar);
+            void save(io::Group & Ar)const;
         private:
-            friend io::Group;
+//            friend io::Group;
 //            friend class io::serialize;
 //            template<class Archive>
 //            void load(Archive & Ar);
 //            template<class Archive>
 //            void save(Archive & Ar)const;
 
-            void load(io::Group & Ar);
-            void save(io::Group & Ar)const;
 
             std::vector <Element> geoms_={};
             std::shared_ptr<rtree> rtreeIndex{};

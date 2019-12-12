@@ -59,6 +59,18 @@ namespace frommle{
 
         };
 
+    class gvar_save:public boost::static_visitor<void>{
+    public:
+        gvar_save()=delete;
+        gvar_save(io::Group * grp):grp_(grp){}
+        template<class T>
+                void operator()(const T & gvar)const{
+                    gvar->save(*grp_);
+                }
+    private:
+        io::Group* grp_=nullptr;
+    };
+
 
 
         template<class Element>

@@ -104,21 +104,21 @@ class SHStandardArchive(SHArchive):
             print(val)
         # idxsorted=sorted(enumerate(shg),key=lambda val:val[1])
 
-        if sigcnm.isSet():
-            lineval=[0.0,0.0,0.0,0.0]
-            for i,(n,m,t) in idxsorted:
-                lineval[t]=cnm[i]
-                lineval[2+t]=sigcnm[i]
-                if t == trig.s:
-                    #print out line
-                    fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
-        else:
-            lineval=[0.0,0.0]
-            for i,(n,m,t) in idxsorted:
-                lineval[t]=cnm[i]
-                if t == trig.s:
-                    #print out line
-                    fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))
+        # if sigcnm.isSet():
+        #     lineval=[0.0,0.0,0.0,0.0]
+        #     for i,(n,m,t) in idxsorted:
+        #         lineval[t]=cnm[i]
+        #         lineval[2+t]=sigcnm[i]
+        #         if t == trig.s:
+        #             #print out line
+        #             fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
+        # else:
+        #     lineval=[0.0,0.0]
+        #     for i,(n,m,t) in idxsorted:
+        #         lineval[t]=cnm[i]
+        #         if t == trig.s:
+        #             #print out line
+        #             fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))
 
 
 # def write_shstandard(file,idx, shcoef,sherr=None,meta=None):

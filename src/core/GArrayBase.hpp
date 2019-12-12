@@ -18,9 +18,6 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef SRC_CPP_GARRAYBASE_HPP_
-#define SRC_CPP_GARRAYBASE_HPP_
-
 #include <string>
 #include <boost/multi_array.hpp>
 #include <tuple>
@@ -29,6 +26,11 @@
 #include <type_traits>
 #include "io/Group.hpp"
 #include "core/frommle.hpp"
+#include "core/Hyperslab.hpp"
+
+#ifndef SRC_CPP_GARRAYBASE_HPP_
+#define SRC_CPP_GARRAYBASE_HPP_
+
 namespace frommle {
     namespace core {
 
@@ -210,6 +212,21 @@ public:
 //
 //
 //            }
+
+    void save(io::Group &ar)const{
+        //save guidepack
+        gp_->save(ar);
+
+        //save matrix data
+        auto mar=ar.getVariable<T>(name());
+        mar.setValue(Hyperslab<T>(mat()));
+    }
+
+    void load(io::Group &ar){
+        THROWNOTIMPLEMENTED("No loading functionality implemented");
+//        auto var = ar.getVariable("shg");
+//        *this=SHnmtGuide(var->attr().get<guides::typehash>("typehash"));
+    }
 private:
     template<class TO, int no>
     friend

@@ -20,6 +20,7 @@ from frommle.io.shio import shopen,formats
 from frommle.sh import SHnmtGuide
 from frommle.core import logInfo
 from frommle.core import TreeNode
+from frommle.core import makeGArray
 from datetime import datetime
 import gzip
 import io
@@ -66,10 +67,15 @@ class SHIO(unittest.TestCase):
             cnm=shar["cnm"][:]
 
         #write to file
+        nmax=5
+        shgar=makeGArray(SHnmtGuide(nmax))
+        # shg=SHnmtGuide(nmax)
         fileout='tmpout.sh.gz'
         with shopen(fileout,mode='w',format=formats.standard) as sharout:
-            sharout["cnm"][:]=cnm
-            sharout["sigcnm"][:]=cnm
+            shgar.save(sharout)
+            # sharout["shg"][:]=SHnmtGuide(nmax)
+            # sharout["cnm"][:]=cnm
+            # sharout["sigcnm"][:]=cnm
 
 
 
