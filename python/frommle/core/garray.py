@@ -30,11 +30,16 @@ def makeGArray(*guides,**kwargs):
     else:
         dt=np.float64
 
+    if "name" in kwargs:
+        name=kwargs["name"]
+    else:
+        name="data"
+
     if dt == np.float64:
-        return makeGArray_float64(makeGuidePack(*guides))
+        return makeGArray_float64(makeGuidePack(*guides),name)
 
     if dt == np.dtype('uint64'):
-        return makeGArray_uint64(makeGuidePack(*guides))
+        return makeGArray_uint64(makeGuidePack(*guides),name)
 
     raise NotImplementedError("cannot (yet) create a GArray with dtype %s"%str(dt))
 

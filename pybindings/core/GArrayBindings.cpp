@@ -80,8 +80,8 @@ namespace frommle{
             register_dyngar<T,n-1>::reg(basename);
             }
 
-        static  std::shared_ptr<GArrayDyn<T,n>> makegarr(const guides::GuidePackDyn<n> & gpin){
-            return std::make_shared<GArrayDyn<T,n>>(gpin);
+        static  std::shared_ptr<GArrayDyn<T,n>> makegarr(const guides::GuidePackDyn<n> & gpin,const std::string name){
+            return std::make_shared<GArrayDyn<T,n>>(gpin,name);
         }
 
         };

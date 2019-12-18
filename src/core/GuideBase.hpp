@@ -23,11 +23,8 @@
 
 #include <string>
 #include <vector>
-#include <iterator>
-#include <boost/iterator/iterator_adaptor.hpp>
+//#include <boost/iterator/iterator_adaptor.hpp>
 #include <memory>
-#include <boost/algorithm/string.hpp>
-#include <ostream>
 #include <cmath>
 #include "core/Logging.hpp"
 #include "core/frommle.hpp"
@@ -51,50 +48,20 @@ namespace guides {
  * containers can store (smart) pointers to DimensionBase
  */
 
-///@brief a structure which holds a hash
-class typehash{
-public:
-    typehash(){}
-    typehash(const std::string base):hash_(base){}
-    //append an integer to the hash
-    typehash add(const int & id){
-        return typehash(hash_+","+std::to_string(id));
-    }
-    operator std::string ()const{return hash_;}
-    const std::string & name()const{return hash_;}
-    bool operator == (const typehash &other)const{return hash_==other.hash_;}
-
-    bool operator != (const typehash &other)const{return not this->operator==(other);}
-    std::ostream& write(std::ostream& os)const{
-        return os << hash_;
-    }
-    std::vector<std::string> split()const{
-        std::vector<std::string> vec;
-        boost::split(vec,hash_,boost::is_any_of(","));
-        return vec;
-    }
-
-private:
-    std::string hash_{};
-};
-
-////free function to allow streaming the typehas to a stream
-std::ostream &operator<<(std::ostream &os, typehash const &m);
-
 
 
 
 
 class GuideBase:public core::Frommle {
     public:
-
+        using typehash=core::typehash;
         GuideBase():Frommle("GuideBase") {};
 
-        GuideBase(const typehash &type, const size_t &sz) :Frommle("GuideBase"), type_(type), size_(sz) {}
-        GuideBase(const std::string & name, const typehash &type, const size_t &sz) : Frommle(name),type_(type), size_(sz){}
+        GuideBase(const core::typehash &type, const size_t &sz) :Frommle("GuideBase",type), size_(sz) {}
+        GuideBase(const std::string & name, const core::typehash &type, const size_t &sz) : Frommle(name,type), size_(sz){}
 
-        GuideBase(const typehash &type) : type_(type) {}
-        GuideBase(const std::string & name,const typehash &type):Frommle(name),type_(type){}
+        GuideBase(const core::typehash &type) : Frommle("GuideBase",type) {}
+        GuideBase(const std::string & name,const core::typehash &type):Frommle(name,type){}
         virtual ~GuideBase() {
         }
         using Element=std::string;
@@ -102,9 +69,6 @@ class GuideBase:public core::Frommle {
         template<class G>
         explicit   operator MaskedGuide<G>();
         
-        //add 1D index_range and index_gen types here?
-        virtual typehash hash() const { return type_; }
-        std::string hashstr()const{return std::string(hash());}
         size_t size() const { return size_; }
 
         virtual bool operator==(const GuideBase &in) const {
@@ -153,7 +117,7 @@ class GuideBase:public core::Frommle {
             }
         }
     protected:
-        typehash type_{"FROMMLE"};
+        using core::Frommle::type_;
         size_t size_ = 0;
 //        std::string name_="Guide";
         std::vector<Element> descripcache_{}; 

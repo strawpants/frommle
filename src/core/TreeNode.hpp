@@ -104,9 +104,17 @@ namespace frommle{
             TreeNodeBase & operator *()const{return *ptr_;}
             TreeNodeBase * operator ->()const{return ptr_.get();}
             TreeNodeBase * get()const{return ptr_.get();}
+            //extract shared pointers
             std::shared_ptr<TreeNodeBase> ptr()const{return ptr_;}
+
+            template<class T>
+            std::shared_ptr<T> ptr()const{return std::static_pointer_cast<T>(ptr_);}
+
+            //extract references
             template<class T>
             T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
+
+
 
             const TreeNodeRef & operator[](const size_t idx) const;
             const TreeNodeRef & operator[](const std::string &idx) const;

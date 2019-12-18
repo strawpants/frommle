@@ -125,7 +125,7 @@ namespace frommle {
         void registerTreeNodes() {
             using namespace boost::python;
             //note the order of the types is important (first will be tested first)
-            registerAttributes<p::object,double,int,size_t,std::string, guides::typehash,boost::gregorian::date,boost::posix_time::ptime>::reg();
+            registerAttributes<p::object,double,int,size_t,std::string, core::typehash,boost::gregorian::date,boost::posix_time::ptime>::reg();
 
 
             p::class_<TreeNodeBase,p::bases<Frommle>>("TreeNode")

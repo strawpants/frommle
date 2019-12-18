@@ -210,7 +210,7 @@ namespace frommle{
             using SHGuideBase::idx;
             SHtmnGuide()=default;
 //            SHtmnGuide(const int nmax);
-            SHtmnGuide(const int nmax,const std::string name="SHtmnGuide");
+            SHtmnGuide(const int nmax,const std::string name="shg");
             size_t idx(const int n, const int m, const trig t)const;
             Element operator[](const size_t idx)const;
 
@@ -228,7 +228,7 @@ namespace frommle{
             using GuideBase::hash;
             SHnmtGuide()=default;
 //            SHtmnGuide(const int nmax);
-            SHnmtGuide(const int nmax,const std::string name="SHnmtGuide");
+            SHnmtGuide(const int nmax,const std::string name="shg");
             SHnmtGuide & operator = (const SHnmtGuide & gin){
                 nmax_=gin.nmax_;
                 return *this;
@@ -251,11 +251,14 @@ namespace frommle{
             }
         
             void save(io::Group &ar)const{
+                auto var = ar.getVariable(name());
+                var->attr().set("typehash",hash());
+//                var->setPtr(this);
             }
             
             void load(io::Group &ar){
-                auto var = ar.getVariable("shg");
-                *this=SHnmtGuide(var->attr().get<guides::typehash>("typehash"));
+                auto var = ar.getVariable(name());
+                *this=SHnmtGuide(var->attr().get<typehash>("typehash"));
             }
         };
 

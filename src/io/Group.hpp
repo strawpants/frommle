@@ -169,7 +169,23 @@ namespace frommle{
             return static_cast<Group *>(getParent())->writable();
         }
 
+        template<class T>
+        void setValue(const core::Hyperslab<T> & hslab);
 
+        template<class T>
+        void setPtr( T * const ptr){
+            ptr_=static_cast<core::Frommle* const>(ptr);
+        }
+
+
+        template<class T>
+        const T* getPtr(){
+            return static_cast<T*>(ptr_);
+        }
+
+    private:
+        //we can store a pointer to anything which derived from a Frommle primitive
+        core::Frommle * ptr_=nullptr;
 
     };
 
@@ -188,12 +204,12 @@ namespace frommle{
             //here we construct a shared_ptr but don't dealloacate the actual value after calling by using an alias constructor
             setValue(singlePtr(singlePtr(), const_cast<single*>(&val)),idx);
         }
+
+
         virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{THROWMETHODEXCEPTION("getValue not implemented");}
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
         virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
         virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not supported");}
-
-
         ///@brief iterator which loops over the values in this variable
         class iterator{
         public:
@@ -273,7 +289,20 @@ namespace frommle{
             }
         };
 
+        ///@brief forwards setrValue call to underlying variable specialization
+        template<class T>
+        void VariableDyn::setValue(const core::Hyperslab<T> & hslab){
+            VariableDyn* ptr=this;
+            Variable<T> * varptr=dynamic_cast<Variable<T>*>(ptr);
 
+            if(varptr){
+                varptr->setValue(hslab);
+            }else{
+                THROWINPUTEXCEPTION("Cannot dynamically downcast VariableDyn to requeste type");
+            }
+
+
+        }
 
     }
 

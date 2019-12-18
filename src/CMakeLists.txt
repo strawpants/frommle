@@ -4,7 +4,8 @@ LIST(APPEND COREHEADERS core/frommle.hpp core/GuideBase.hpp core/TimeGuide.hpp c
         io/ArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/MarrayEig.hpp core/Logging.hpp )
 
 LIST(APPEND COREHEADERS core/Attributes.hpp)
-LIST(APPEND COREOBJS core/GuideBase.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp)
+LIST(APPEND COREHEADERS core/typehash.hpp)
+LIST(APPEND COREOBJS core/typehash.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp)
 
 LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp )
 LIST(APPEND COREOBJS core/UserSettings.cpp core/GArrayDiag.hpp)

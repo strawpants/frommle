@@ -24,14 +24,15 @@ import numpy as np
 class np_float64Var(Variable_float64):
     """Class which implements the C++ Variable_float64, so it can be used both from C++ and python """
     array=None
-    def __init__(self,arr=None,name=None):
+    def __init__(self,arr=None,name:str=None):
         if name:
             super().__init__(name)
         else:
             super().__init__()
 
         if type(arr) != type(None):
-            self.array=arr
+            #this also allows the conversion of a list to a numpy array if needed
+            self.array=np.array(arr)
    
     def __getitem__(self,slc=None):
         """returns (a slice of) the internal array"""
@@ -50,14 +51,12 @@ class np_float64Var(Variable_float64):
         """sets the internal array"""
         if type(slc) == tuple:
             #ndim slicing
-            selectall=all(map(lambda x: x==slice(None),slc))
+            maxshape=np.zeros([s.stop for s in slc])
         elif type(slc) == slice:
-            selectall = slc == slice(None)
+            maxshape=[slc.stop]
 
-        if selectall:
-            self.array=ArrValue
-        else:
-            if  not self.isSet():
-                raise RuntimeError("Cannot set slice of non existing array")
-            else:
-                self.array[slc]=ArrValue
+        if not self.array:
+            self.array=np.zeros(maxshape)
+
+        self.array[slc]=ArrValue
+

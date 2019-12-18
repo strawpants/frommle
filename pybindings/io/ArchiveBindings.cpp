@@ -42,13 +42,23 @@ namespace frommle{
             GroupWrapper(std::string name):Group(name){}
 
 
-            std::shared_ptr<VariableDyn> getVariable(const std::string &name){
-                if (p::override f = this->get_override("getVariable")){
-                              return f(name); 
+            std::shared_ptr<VariableDyn> getVariable(const std::string &name) {
+
+                //quyick return if a variable with the name already exists
+                auto idx = findidx(name);
+                if (idx != -1) {
+                    return this->operator[](idx).ptr<VariableDyn>();
                 }
-                
-                return Group::getVariable(name);
+
+
+                //else try to create a new one using the python overload
+                if (p::override f = this->get_override("getVariable")) {
+                    return f(name);
+                } else {
+                    //just tap into the virtual functions from the base class
+                    return Group::getVariable(name);
                 }
+            }
        
             
             std::shared_ptr<VariableDyn> default_getVariable(const std::string & name) {

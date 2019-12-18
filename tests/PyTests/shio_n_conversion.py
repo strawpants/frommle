@@ -68,7 +68,11 @@ class SHIO(unittest.TestCase):
 
         #write to file
         nmax=5
-        shgar=makeGArray(SHnmtGuide(nmax))
+        shgar=makeGArray(SHnmtGuide(nmax),name="cnm")
+        #put random stuff in there
+        print(shgar.mat()[0])
+        shgar.mat()[:]=5
+        print(shgar.mat()[0])
         # shg=SHnmtGuide(nmax)
         fileout='tmpout.sh.gz'
         with shopen(fileout,mode='w',format=formats.standard) as sharout:

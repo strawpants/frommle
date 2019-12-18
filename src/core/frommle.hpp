@@ -23,6 +23,7 @@
 
 #include <string>
 #include "core/Exceptions.hpp"
+#include "core/typehash.hpp"
 #ifndef FROMMLE_FROMMLE_HPP
 #define FROMMLE_FROMMLE_HPP
 
@@ -40,7 +41,7 @@ namespace frommle{
         class Frommle{
         public:
             Frommle(){};
-            Frommle(std::string name):name_(name){}
+            Frommle(std::string name,typehash th=typehash("Frommle_t")):name_(name),type_(th){}
             std::string name()const{return name_;}
             void setName(std::string name){name_=name;}
 
@@ -51,7 +52,13 @@ namespace frommle{
             virtual void load(io::Group & group){
                 THROWNOTIMPLEMENTED("This object cannot be loaded from an archive");
             }
+            //add 1D index_range and index_gen types here?
+            virtual typehash hash() const { return type_; }
+            std::string hashstr()const{return std::string(hash());}
+
+        protected:
             std::string name_="Frommle";
+            typehash type_{"Frommle_t"};
         };
 
     }

@@ -120,7 +120,12 @@ public:
     GArrayDyn(GP guidepack) : Frommle("GArray"),gp_(std::make_shared<GP>(std::move(guidepack))),
                               data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
                               ar_(data_.get(), gp_->extent()) {}
-   
+
+    template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
+    GArrayDyn(GP guidepack,std::string name) : Frommle(name),gp_(std::make_shared<GP>(std::move(guidepack))),
+                              data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
+                              ar_(data_.get(), gp_->extent()) {}
+                              
     //specialized constructor which casts a generic GuidePackPtr to an appropritate GuidePackDyn
     GArrayDyn(const guides::GuidePackPtr & guidepack) :Frommle("GArray"),gp_(std::dynamic_pointer_cast<guides::GuidePackDyn<n>>(guidepack)),
                               data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
@@ -218,8 +223,8 @@ public:
         gp_->save(ar);
 
         //save matrix data
-        auto mar=ar.getVariable<T>(name());
-        mar.setValue(Hyperslab<T>(mat()));
+        auto mar=ar.getVariable(name());
+        mar->setValue(Hyperslab<T>(mat()));
     }
 
     void load(io::Group &ar){

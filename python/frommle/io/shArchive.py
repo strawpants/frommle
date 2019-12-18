@@ -52,6 +52,10 @@ class SHGVar(Variable):
         else:
             return self.shg.__array__()[slc]
 
+    def __setitem__(self,slc,value):
+        pass
+
+
 
 class SHArchive(Group):
     """base type to read SH datasets from various text filetypes """
@@ -71,7 +75,7 @@ class SHArchive(Group):
                 else:
                     self[varname]=varclass(shg=self.shg_c())
             else:
-                self[varname]=varclass(varname);
+                self[varname]=varclass(name=varname);
 
     def __enter__(self):
         if self.readable():
