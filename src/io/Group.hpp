@@ -155,10 +155,16 @@ namespace frommle{
 
     class VariableDyn:public core::TreeNodeItem{
     public:
+        using TreeNodeItem::name;
         VariableDyn():TreeNodeItem(){}
         VariableDyn(std::string name):TreeNodeItem(name){}
         VariableDyn(std::string name, core::Attributes && attr):TreeNodeItem(name,std::move(attr)){}
         VariableDyn(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
+
+        VariableDyn(core::Frommle * frptr):TreeNodeItem(frptr->name()),frptr_(frptr){}
+
+//        template<class T,typename std::enable_if< std::is_base_of<core::Frommle,T>::value_type,int>::type =0 >
+//        VariableDyn(std::shared_ptr<T> payload):TreeNodeItem(payload->name()),frptr_(payload){}
 //        virtual guides:typehash typehash()const{return guides::typehash();}
 
         constexpr bool readable()const{
@@ -172,20 +178,31 @@ namespace frommle{
         template<class T>
         void setValue(const core::Hyperslab<T> & hslab);
 
-        template<class T>
-        void setPtr( T * const ptr){
-            ptr_=static_cast<core::Frommle* const>(ptr);
+        ///@brief setValue of frommle object at once
+        virtual void setValue(std::shared_ptr<const core::Frommle> frptr){
+            //overloading this function in derived classes allows for runtime writing of Frommle classes
+            //The  default just sets the internal pointer to the payload
+            frptr_=frptr;
         }
 
-
-        template<class T>
-        const T* getPtr(){
-            return static_cast<T*>(ptr_);
+        core::typehash hash() const {
+            if( frptr_){
+                return frptr_->hash();
+            }else{
+                THROWINPUTEXCEPTION("cannot provide hash from VariableDyn because pointer is not set");
+            }
         }
+//        ///@brief setValue of frommle object at once
+//        virtual void getValue(std::shared_ptr<const core::Frommle> frptr)const{
+//                //overloading this function in derived classes allows for runtime writing of Frommle classes
+//                //The  default just gets the internal pointer to the payload
+//                frptr=frptr_;
+//
+//        }
 
     private:
-        //we can store a pointer to anything which derived from a Frommle primitive
-        core::Frommle * ptr_=nullptr;
+        //we can store a pointer to anything which is derived from a Frommle base class
+        std::shared_ptr<const core::Frommle> frptr_{};
 
     };
 
@@ -210,6 +227,7 @@ namespace frommle{
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
         virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
         virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not supported");}
+
         ///@brief iterator which loops over the values in this variable
         class iterator{
         public:
@@ -251,6 +269,7 @@ namespace frommle{
             //create a new Variable
             this->operator[](name)=Variable<T>();
         }
+        //check if the variable is derived
         return this->operator[](name).as<Variable<T>>();
 
         }

@@ -252,13 +252,13 @@ namespace frommle{
         
             void save(io::Group &ar)const{
                 auto var = ar.getVariable(name());
-                var->attr().set("typehash",hash());
-//                var->setPtr(this);
+                var->setValue(this->getPtr());
             }
             
             void load(io::Group &ar){
                 auto var = ar.getVariable(name());
-                *this=SHnmtGuide(var->attr().get<typehash>("typehash"));
+                //construct a new guide just based upon the hash
+                *this=SHnmtGuide(var->hash());
             }
         };
 

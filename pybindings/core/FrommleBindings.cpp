@@ -75,10 +75,20 @@ namespace frommle {
 
 
         void registerFrommle() {
-            p::class_<FrommleWrapper,boost::noncopyable>("Frommle").def("name", &Frommle::name)
+
+            // we need to register the typehash which is closely linked to the Frommle class
+            p::class_<typehash>("typehash").def(p::init<std::string>())
+                    .def("__str__",&typehash::operator std::string )
+                    .def("add",&typehash::add);
+
+            p::class_<FrommleWrapper,boost::noncopyable>("Frommle")
                     .add_property("name", &Frommle::name, &Frommle::setName)
                     .def("save",&Frommle::save,&FrommleWrapper::save_default)
-                    .def("load",&Frommle::load,&FrommleWrapper::load_default);
+                    .def("load",&Frommle::load,&FrommleWrapper::load_default)
+                    .def("hash",&Frommle::hash)
+                    .def("__str__",&Frommle::hashstr);
+
+            p::register_ptr_to_python< std::shared_ptr<Frommle> >();
 //            p::class_<Frommle>("Frommle").def("name", &Frommle::name)
 //                    .add_property("name", &Frommle::name, &Frommle::setName);
 

@@ -44,11 +44,6 @@ namespace frommle {
             return const_cast<TreeNodeBase *>(treePtr.get());
         }
 
-        const TreeNodeRef & (TreeNodeBase::*cgeti1)(size_t )const=&TreeNodeBase::operator[];
-        const TreeNodeRef & (TreeNodeBase::*cgeti2)(const std::string &)const=&TreeNodeBase::operator[];
-
-        TreeNodeRef  (TreeNodeBase::*geti1)(size_t )=&TreeNodeBase::operator[];
-        TreeNodeRef  (TreeNodeBase::*geti2)(const std::string &)=&TreeNodeBase::operator[];
 
         bool contains(const TreeNodeCollection & coll, std::string name){
             return coll.findidx(name) != -1;
@@ -128,10 +123,9 @@ namespace frommle {
             registerAttributes<p::object,double,int,size_t,std::string, core::typehash,boost::gregorian::date,boost::posix_time::ptime>::reg();
 
 
-            p::class_<TreeNodeBase,p::bases<Frommle>>("TreeNode")
+            p::class_<TreeNodeBase>("TreeNode")
                     .def(p::init<std::string>())
-//                    .def("__getitem__",cgeti1,p::return_internal_reference<>())
-//                    .def("__getitem__",cgeti2,p::return_internal_reference<>())
+                    .add_property("name", &TreeNodeBase::name, &TreeNodeBase::setName)
                     .def("isCollection",&TreeNodeBase::isCollection)
                     .add_property("attr",p::make_function(attrf,p::return_internal_reference<>()))
                     .add_property("parent",p::make_function(&TreeNodeBase::getParentCollection,p::return_internal_reference<>()));

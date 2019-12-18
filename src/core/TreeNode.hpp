@@ -56,12 +56,35 @@ namespace frommle{
             TreeNodeRef(const T & nodeIn)noexcept{
                 ptr_=std::make_shared<T>(nodeIn);
             }
+
             template<class T>
             TreeNodeRef(std::shared_ptr<T> ptr):ptr_(ptr){}
 
+            template<class T>
+            const TreeNodeRef & at(const T & idx)const;
+
+            template<class T>
+            TreeNodeRef & at(const T & idx);
+
+    
+            const TreeNodeRef & operator[](const std::string & idx) const {
+                return at(idx);
+            }
+            
+            TreeNodeRef & operator[](const std::string & idx){
+                return at(idx);
+            }
+
+            const TreeNodeRef & operator[](const size_t idx)const {
+                return at(idx);
+            }
+
+            TreeNodeRef & operator[](const size_t idx){
+                return at(idx);
+            }
+
+
 //            explicit TreeNodeRef(const TreeNodeCollection * parent);
-
-
 
             ///@brief replace the current treenode while keeping the original name and parent
             const TreeNodeRef & operator=(TreeNodeRef && in);
@@ -110,16 +133,11 @@ namespace frommle{
             template<class T>
             std::shared_ptr<T> ptr()const{return std::static_pointer_cast<T>(ptr_);}
 
-            //extract references
+            //extract references (note that this will throw a runtime exception when not succesfull
             template<class T>
             T & as(){return dynamic_cast<T&>(*(ptr_.get()));}
 
 
-
-            const TreeNodeRef & operator[](const size_t idx) const;
-            const TreeNodeRef & operator[](const std::string &idx) const;
-            TreeNodeRef operator[](const size_t idx);
-            TreeNodeRef operator[](const std::string &idx);
 
             explicit operator bool()const;
             //forward some calls to underlying ptr
@@ -129,12 +147,12 @@ namespace frommle{
             std::shared_ptr<TreeNodeBase> ptr_{};
         };
 
-        class TreeNodeBase:public Frommle{
+        class TreeNodeBase{
         public:
             TreeNodeBase(){}
             ~TreeNodeBase(){}
-            TreeNodeBase(std::string name):Frommle(name){}
-            TreeNodeBase(std::string name, Attributes && attr):Frommle(name),attrib_(std::move(attr)){}
+            TreeNodeBase(std::string name):name_(name){}
+            TreeNodeBase(std::string name, Attributes && attr):name_(name),attrib_(std::move(attr)){}
             TreeNodeBase(TreeNodeRef && in);
             TreeNodeBase(const TreeNodeBase & in)=default;
 
@@ -160,11 +178,11 @@ namespace frommle{
 
             template <class T>
             bool findUpstream(std::function<bool(const TreeNodeBase*,T&)> testfunc,T& retval);
-            virtual const TreeNodeRef & operator[](const std::string & name)const {throwMethExcept();};
-            virtual const TreeNodeRef & operator[](size_t  idx)const {throwMethExcept();};
+            //virtual const TreeNodeRef & operator[](const std::string & name)const {throwMethExcept();};
+            //virtual const TreeNodeRef & operator[](size_t  idx)const {throwMethExcept();};
 
-            virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();return TreeNodeRef();}
-            virtual TreeNodeRef operator[](size_t  idx){throwMethExcept();return TreeNodeRef();};
+            //virtual TreeNodeRef operator[](const std::string & name){throwMethExcept();return TreeNodeRef();}
+            //virtual TreeNodeRef operator[](size_t  idx){throwMethExcept();return TreeNodeRef();};
 
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const=0;
 //            virtual const TreeNodeRef & ref()const=0;
@@ -190,13 +208,15 @@ namespace frommle{
 //            }
             Attributes & attr(){return attrib_;}
             const Attributes & attr()const{return attrib_;}
+            std::string name()const{return name_;}
+            void setName(std::string name){name_=name;}
         protected:
 
         private:
             void throwMethExcept()const;
             ///@brief possibly overload this function to perform actions after assigning a new parent
             virtual void parentHook(){};
-//            std::string name_="";
+            std::string name_="";
             Attributes attrib_{};
             TreeNodeCollection *parent_=nullptr;
         };
@@ -229,8 +249,8 @@ namespace frommle{
             virtual const TreeNodeRef & operator[](const std::string & name)const;
             virtual const TreeNodeRef & operator[](size_t  idx)const;
 
-            virtual TreeNodeRef operator[](const std::string & name);
-            virtual TreeNodeRef operator[](size_t  idx);
+            virtual TreeNodeRef & operator[](const std::string & name);
+            virtual TreeNodeRef & operator[](size_t  idx);
 
             bool isCollection()const final{return true;}
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const;
@@ -277,7 +297,35 @@ namespace frommle{
 
 
 
+            template<class T>
+            const TreeNodeRef & TreeNodeRef::at(const T & idx)const{
+                if (!ptr_) {
+                    THROWINPUTEXCEPTION("Cannot set item on empty TreenodeRef");
+                }
+            
+                //forward call to held type
+                if (ptr_->isCollection()){
+                    return static_cast<const TreeNodeCollection*>(ptr_.get())->operator[](idx);
+                }else{
+                    THROWINPUTEXCEPTION("Cannot apply [] to a treeNodeitem");
+            
+                }
+            }
 
+            template<class T>
+            TreeNodeRef & TreeNodeRef::at(const T & idx){
+                if (!ptr_) {
+                    THROWINPUTEXCEPTION("Cannot set item on empty TreenodeRef");
+                }
+            
+                //forward call to held type
+                if (ptr_->isCollection()){
+                    return static_cast<TreeNodeCollection*>(ptr_.get())->operator[](idx);
+                }else{
+                    THROWINPUTEXCEPTION("Cannot apply [] to a treeNodeitem");
+            
+                }
+            }
 
         template<class T>
         TreeNodeRef &TreeNodeRef::operator=(T &&in) {

@@ -152,42 +152,8 @@ namespace frommle {
         }
 
 
-        const TreeNodeRef & TreeNodeRef::operator[](const size_t idx) const {
-            if (!ptr_) {
-                //just return this empty instance
-                return *this;
-//                    throw IndexingException("TreeNodeRef points to nothing");
-            }
-            
-            //forward call to held type
-            return ptr_->operator[](idx);
-        }
 
-        TreeNodeRef TreeNodeRef::operator[](const size_t idx) {
-            if (!ptr_) {
-                return *this;
-//                    throw IndexingException("TreenodeRef points to nothing");
-            }
-            return ptr_->operator[](idx);
-        }
 
-        const TreeNodeRef & TreeNodeRef::operator[](const std::string & idx) const {
-            if (!ptr_) {
-                //just return this empty instance
-                return *this;
-//                    throw IndexingException("TreeNodeRef points to nothing");
-            }
-
-            return ptr_->operator[](idx);
-        }
-
-        TreeNodeRef TreeNodeRef::operator[](const std::string & idx) {
-            if (!ptr_) {
-                return *this;
-//                    throw IndexingException("TreenodeRef points to nothing");
-            }
-            return ptr_->operator[](idx);
-        }
 
 
 
@@ -202,12 +168,13 @@ namespace frommle {
         }
 
         ///@brief at operator which autmomatically creates a new entry in the collection
-        TreeNodeRef TreeNodeCollection::operator[](const std::string &name) {
+        TreeNodeRef & TreeNodeCollection::operator[](const std::string &name) {
             loadCollection(name);
             auto idx = findidx(name);
             if (idx == -1) {
-                //return a new TReenode with the parent appriopriately assigned
-                return TreeNodeBase(name).setParent(*this);
+                //create a new Treenode with the parent appriopriately assigned
+                collection_.push_back(TreeNodeBase(name).setParent(*this));
+                idx=collection_.size()-1;
             }
             return collection_[idx];
         }
@@ -221,10 +188,12 @@ namespace frommle {
             return collection_[idx];
         }
 
-        TreeNodeRef TreeNodeCollection::operator[](size_t idx) {
+        TreeNodeRef & TreeNodeCollection::operator[](size_t idx) {
             loadCollection(idx);
             if (idx >= collection_.size()) {
-                return TreeNodeBase().setParent(*this);
+                collection_.resize(idx); 
+                //create a new Treenode with the parent appriopriately assigned
+                collection_.push_back(TreeNodeBase().setParent(*this));
             }
             return collection_[idx];
         }
@@ -282,7 +251,7 @@ namespace frommle {
         }
 
 
-        TreeNodeBase::TreeNodeBase(TreeNodeRef &&in):Frommle(in.name()) {
+        TreeNodeBase::TreeNodeBase(TreeNodeRef &&in):name_(in.name()) {
             attrib_ = in->attrib_;
             parent_ = in->parent_;
         }

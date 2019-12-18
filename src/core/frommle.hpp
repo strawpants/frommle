@@ -24,6 +24,7 @@
 #include <string>
 #include "core/Exceptions.hpp"
 #include "core/typehash.hpp"
+#include <memory>
 #ifndef FROMMLE_FROMMLE_HPP
 #define FROMMLE_FROMMLE_HPP
 
@@ -32,13 +33,11 @@ namespace frommle{
     namespace io {
         //we only need to forward declare Group here
         class Group;
-        //and for the python bindings the wrapper version
-//        class GroupWrapper;
     }
 
     namespace core{
         ///@brief Polymorphic base class which wraps all important frommle classes
-        class Frommle{
+    class Frommle:public std::enable_shared_from_this<Frommle> {
         public:
             Frommle(){};
             Frommle(std::string name,typehash th=typehash("Frommle_t")):name_(name),type_(th){}
@@ -47,15 +46,26 @@ namespace frommle{
 
 
             virtual void save(io::Group & grp)const{
-                THROWNOTIMPLEMENTED("This object cannot be saved to an archive");
+                THROWNOTIMPLEMENTED("This object cannot (yet) be saved to an archive");
             }
             virtual void load(io::Group & group){
-                THROWNOTIMPLEMENTED("This object cannot be loaded from an archive");
+                THROWNOTIMPLEMENTED("This object cannot (yet) be loaded from an archive");
             }
             //add 1D index_range and index_gen types here?
             virtual typehash hash() const { return type_; }
             std::string hashstr()const{return std::string(hash());}
 
+            template<class T=const Frommle>
+            std::shared_ptr<T> getPtr()const{
+                return std::static_pointer_cast<T>(shared_from_this());
+
+            }
+
+            template<class T=Frommle>
+            std::shared_ptr<T> getPtr(){
+                return std::static_pointer_cast<T>(shared_from_this());
+
+            }
         protected:
             std::string name_="Frommle";
             typehash type_{"Frommle_t"};

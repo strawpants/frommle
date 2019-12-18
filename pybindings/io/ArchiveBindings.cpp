@@ -69,7 +69,24 @@ namespace frommle{
         private:
         };
 
-        
+
+        ///@brief Variablewrapper which is needed to allow dynamic python overloading
+        class VariableDynWrapper:public VariableDyn,public p::wrapper<VariableDyn> {
+        public:
+            VariableDynWrapper():VariableDyn(){}
+            VariableDynWrapper(const std::string name):VariableDyn(name){}
+
+            void setValue(std::shared_ptr<const core::Frommle> ptr){
+                if (p::override setf = this->get_override("__setitem__")) {
+                    setf(p::slice(),ptr);
+
+                }else{
+                    //tap into the virtual resolution of the base
+                    VariableDyn::setValue(ptr);
+                }
+            }
+
+        };
 
         ///@brief Variablewrapper which is needed to allow dynamic python overloading
         template<class T>
@@ -257,7 +274,7 @@ namespace frommle{
 
             register_group<double,int>::reg();
 
-            p::class_<VariableDyn,p::bases<core::TreeNodeItem>>("Variable")
+            p::class_<VariableDynWrapper,p::bases<core::TreeNodeItem>,boost::noncopyable>("Variable")
             .def(p::init<std::string>());
 
             p::register_ptr_to_python< std::shared_ptr<VariableDyn> >();                   

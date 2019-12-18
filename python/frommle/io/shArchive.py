@@ -33,9 +33,9 @@ class SHGVar(Variable):
     shg=None
     def __init__(self,shg=None,name=None):
         if name:
-            super().__init__(name)
+            Variable.__init__(name)
         else:
-            super().__init__()
+            Variable.__init__()
         
         if shg:
             self.attr["typehash"]=shg.hash()
@@ -53,8 +53,12 @@ class SHGVar(Variable):
             return self.shg.__array__()[slc]
 
     def __setitem__(self,slc,value):
-        pass
-
+        selectall=False
+        if type(slc) == slice:
+            selectall = slc == slice(None)
+        if not selectall:
+            raise RuntimeError("Only calls with full slicing is allowed (e.g. shvar[:]= ..)")
+        shg=value
 
 
 class SHArchive(Group):

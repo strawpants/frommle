@@ -35,18 +35,12 @@ namespace frommle{
     void register_GuideBase(){
     ///registration of Guides defined in frommle::core
 
-    // we need to register the typehash which is closely linked to the Guidebase 
-    p::class_<typehash>("typehash").def(p::init<std::string>())
-         .def("__str__",&typehash::operator std::string )
-         .def("add",&typehash::add);
 
     //GuideBase
     p::class_<GuideBase,p::bases<Frommle>>("GuideBase")
 //            .add_property("name",&GuideBase::name, &GuideBase::name)
-            .def("size",&GuideBase::size)
-            .def("hash",&GuideBase::hash)
+            .def("size",&GuideBase::size);
             //.add_static_property("ndim",p::make_getter(&GuideBase::ndim))
-            .def("__str__",&GuideBase::hashstr);
 //            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
 
     //we also want to be able to pass shared_pointers to and fromm python
