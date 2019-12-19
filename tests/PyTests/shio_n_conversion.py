@@ -61,31 +61,23 @@ def makeTestStokes():
 class SHIO(unittest.TestCase):
     def test_standard(self):
 
-        # filen=makeTestStokes()
-        # with shopen(filen) as shar:
-        # # shg=shar["shg"][:]
-        #     cnm=shar["cnm"][:]
-
-        #write to file
         nmax=5
         shgar=makeGArray(SHnmtGuide(nmax),name="cnm")
         #put random stuff in there
-
-        shgar.mat=5
-        # m=np.random.random_sample(shgar.mat.shape)
-        # shgar.mat()[:]=m
+        shgar.mat[:]=np.random.random_sample(shgar.mat.shape)
+        #write to file
         fileout='tmpout.sh.gz'
         with shopen(fileout,mode='w',format=formats.standard) as sharout:
+            sharout.attr["tstart"]=datetime(2000,1,1)
+            sharout.attr["tend"]=datetime(2002,6,30)
+            sharout.attr["tcent"]=(sharout.attr["tend"]-sharout.attr["tstart"])/2+sharout.attr["tstart"]
             shgar.save(sharout)
 
+        #read stuff in again
+        shgarload=makeGArray(SHnmtGuide(),name="cnm")
+        with shopen(fileout,mode='r',format=formats.standard) as sharin:
+            shgarload.load(sharin)
 
-
-        # shg=shar.load(SHnmtGuide())
-        # epoch=datetime(2009,1,1)
-        # hdr,sh=read_icgem(file,nmax=2,epoch=epoch)
-        #
-        # for i,(c,s) in enumerate(zip(sh.C,sh.S)):
-        #     print(sh.nm(i),c,s)
 
         self.assertEqual("test","test")
 

@@ -228,15 +228,22 @@ public:
     }
 
     void load(io::Group &ar){
-        THROWNOTIMPLEMENTED("No loading functionality implemented");
-//        auto var = ar.getVariable("shg");
-//        *this=SHnmtGuide(var->attr().get<guides::typehash>("typehash"));
+        //load guidepack
+        gp_->load(ar);
+
+        auto var = ar.getVariable(name());
+        //possibly resize/allocate internal array
+
+
     }
 private:
     template<class TO, int no>
     friend
     class GArrayDyn;
-
+        ///@brief resize data and internal array to a possibly update guidepack
+        void resize(){
+            auto sz=0;
+        }
     gp_tptr gp_{};
     std::shared_ptr<T[]> data_{};
 protected:

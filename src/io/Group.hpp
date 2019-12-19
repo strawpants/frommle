@@ -187,8 +187,9 @@ namespace frommle{
         core::typehash hash() const {
             if( frptr_){
                 return frptr_->hash();
-            }else{
-                THROWINPUTEXCEPTION("cannot provide hash from VariableDyn because pointer is not set");
+            }else {
+                //try to retreieve the hash from the attributes
+                return attr().get<core::typehash>("frhash");
             }
         }
 //        ///@brief setValue of frommle object at once

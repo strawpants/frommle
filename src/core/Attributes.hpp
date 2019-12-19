@@ -50,24 +50,24 @@ namespace frommle{
 
             ///@brief standard way to retrieve an attribute
             template<class Value>
-            typename std::enable_if<!std::is_same<Value,std::string>::value,Value>::type get(const std::string &name){
+            typename std::enable_if<!std::is_same<Value,std::string>::value,Value>::type get(const std::string &name)const{
                 if(! contains(name)){
                     THROWINPUTEXCEPTION("key not found in Attributes");
                 }
-                return boost::any_cast<Value>(attrib_[name]);
+                return boost::any_cast<Value>(attrib_.at(name));
             }
 
             ///@brief special treatment of std::string attribute retrieval (accepts both char * and string )
             template<class Value>
-            typename std::enable_if<std::is_same<Value,std::string>::value,Value>::type get(const std::string &name){
+            typename std::enable_if<std::is_same<Value,std::string>::value,Value>::type get(const std::string &name)const{
                 if(! contains(name)){
                     THROWINPUTEXCEPTION("key not found in Attributes");
                 }
                 
                 try{
-                    return boost::any_cast<std::string>(attrib_[name]);
+                    return boost::any_cast<std::string>(attrib_.at(name));
                 }catch(boost::bad_any_cast & excep){
-                    return std::string(boost::any_cast<char const * >(attrib_[name]));
+                    return std::string(boost::any_cast<char const * >(attrib_.at(name)));
                 }
             }
 

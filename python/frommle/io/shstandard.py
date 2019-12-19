@@ -94,7 +94,7 @@ class SHStandardArchive(SHArchive):
         tstamps=[0.0,0.0,0.0]
         for i,tag in enumerate(["tstart","tcent","tend"]):
             if tag in self.attr:
-                tstamps[i]=datetime2decyear(meta[tag])
+                tstamps[i]=datetime2decyear(self.attr[tag])
 
         with self.fid() as fid:
             fid.write("META   %d %f %f %f\n"%(shg.nmax,tstamps[0],tstamps[1],tstamps[2]))
@@ -109,6 +109,9 @@ class SHStandardArchive(SHArchive):
                     lineval[t]=cnm[i]
                     lineval[2+t]=sigcnm[i]
                     if t == trig.s:
+                        if m ==0:
+                            lineval[t]=0.0
+                            lineval[2+t]=0.0
                         #print out line
                         fid.write("%5d %5d %14.10e %14.10e %14.10e %14.10e\n"%(n,m,*lineval))
             else:
@@ -116,6 +119,8 @@ class SHStandardArchive(SHArchive):
                 for i,(n,m,t) in idxsorted:
                     lineval[t]=cnm[i]
                     if t == trig.s:
+                        if m ==0:
+                            lineval[t]=0.0
                         #print out line
                         fid.write("%5d %5d %14.10e %14.10e\n"%(n,m,*lineval[0:2]))
 

@@ -38,7 +38,7 @@ class SHGVar(Variable):
             Variable.__init__(self)
         
         if shg:
-            self.attr["typehash"]=shg.hash()
+            self.attr["frhash"]=shg.hash()
             self.shg=shg
 
     def __getitem__(self,slc):
@@ -59,6 +59,7 @@ class SHGVar(Variable):
         if not selectall:
             raise RuntimeError("Only calls with full slicing is allowed (e.g. shvar[:]= ..)")
         self.shg=value
+        self.attr["frhash"]=value.hash()
 
 
 class SHArchive(Group):

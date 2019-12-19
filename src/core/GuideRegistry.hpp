@@ -72,6 +72,17 @@ namespace frommle{
     };
 
 
+    class gvar_load:public boost::static_visitor<void>{
+    public:
+        gvar_load()=delete;
+        gvar_load(io::Group * grp):grp_(grp){}
+        template<class T>
+        void operator()(T & gvar)const{
+            gvar->load(*grp_);
+        }
+    private:
+        io::Group* grp_=nullptr;
+    };
 
         template<class Element>
     class gvar_idx:public boost::static_visitor<size_t>{

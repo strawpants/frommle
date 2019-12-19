@@ -92,6 +92,13 @@ namespace frommle{
         //alias to be consistent with multi_array terminology
         const ivec & shape()const{return count_;}
         const ivec & stride()const{return stride_;}
+        const ivec bytestride()const{
+            ivec bvec=stride();
+            std::for_each(bvec.begin(),bvec.end(),[](size_t & str){
+                str*=sizeof(T);
+            });
+            return bvec;
+        }
         const ivec & offset()const{return offset_;}
 
         size_t ndim()const{return ndim_;};

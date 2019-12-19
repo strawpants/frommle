@@ -185,9 +185,9 @@ class GuidePackDyn: public virtual GuidePackBase,public GauxVirtImpl<n>{
         }
 
             void load(io::Group &ar){
-                THROWNOTIMPLEMENTED("No loading ");
-//        auto var = ar.getVariable("shg");
-//        *this=SHnmtGuide(var->attr().get<guides::typehash>("typehash"));
+                for(auto & gd:gpar_){
+                    boost::apply_visitor(guides::gvar_load(&ar),gd);
+                }
             }
     protected:
         std::array<Gvar,n> gpar_{};

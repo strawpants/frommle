@@ -232,7 +232,7 @@ namespace frommle{
             static np::ndarray get(const HS & hslab){
                 np::dtype dtype = np_dtype<T>::get();
                 //note: that we're removing the constness of the data because we want to allow modifications from python
-                return np::from_data(const_cast<T *>(hslab.data()),dtype,hslab.shape(),hslab.stride(),p::object());
+                return np::from_data(const_cast<T *>(hslab.data()),dtype,hslab.shape(),hslab.bytestride(),p::object());
 
             }
         };

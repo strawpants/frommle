@@ -191,6 +191,11 @@ namespace frommle{
 //            //return iterator shifted to one passed the end
 //            return itbegin_+size();
 //        }
+
+        void save(io::Group &ar)const{
+            auto var = ar.getVariable(name());
+            var->setValue(this->getPtr());
+        }
         protected:
             int nmax_=-1;
             int nmin_=-1;
@@ -250,14 +255,10 @@ namespace frommle{
                 return 2*((n*(n+1))/2+m)+t;
             }
         
-            void save(io::Group &ar)const{
-                auto var = ar.getVariable(name());
-                var->setValue(this->getPtr());
-            }
-            
+
             void load(io::Group &ar){
                 auto var = ar.getVariable(name());
-                //construct a new guide just based upon the hash
+                //construct a new guide just based upon the hash in the attributes
                 *this=SHnmtGuide(var->hash());
             }
         };
