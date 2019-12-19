@@ -24,7 +24,7 @@ from frommle.core import makeGArray
 from datetime import datetime
 import gzip
 import io
-
+import numpy as np
 
 def makeTestStokes():
     """Writes a gzipped test file with independently computed degree 5 expansion of ones convolved with PREM
@@ -61,25 +61,22 @@ def makeTestStokes():
 class SHIO(unittest.TestCase):
     def test_standard(self):
 
-        filen=makeTestStokes()
-        with shopen(filen) as shar:
-        # shg=shar["shg"][:]
-            cnm=shar["cnm"][:]
+        # filen=makeTestStokes()
+        # with shopen(filen) as shar:
+        # # shg=shar["shg"][:]
+        #     cnm=shar["cnm"][:]
 
         #write to file
         nmax=5
         shgar=makeGArray(SHnmtGuide(nmax),name="cnm")
         #put random stuff in there
-        print(shgar.mat()[0])
-        shgar.mat()[:]=5
-        print(shgar.mat()[0])
-        # shg=SHnmtGuide(nmax)
+
+        shgar.mat=5
+        # m=np.random.random_sample(shgar.mat.shape)
+        # shgar.mat()[:]=m
         fileout='tmpout.sh.gz'
         with shopen(fileout,mode='w',format=formats.standard) as sharout:
             shgar.save(sharout)
-            # sharout["shg"][:]=SHnmtGuide(nmax)
-            # sharout["cnm"][:]=cnm
-            # sharout["sigcnm"][:]=cnm
 
 
 

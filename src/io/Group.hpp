@@ -144,7 +144,6 @@ namespace frommle{
                 }
 
             }
-
         protected:
             friend serialize;
             bool openForReading=true;

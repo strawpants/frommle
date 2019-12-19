@@ -100,25 +100,24 @@ class SHStandardArchive(SHArchive):
             fid.write("META   %d %f %f %f\n"%(shg.nmax,tstamps[0],tstamps[1],tstamps[2]))
 
 
-        for val in enumerate(shg):
-            print(val)
-        # idxsorted=sorted(enumerate(shg),key=lambda val:val[1])
-
-        # if sigcnm.isSet():
-        #     lineval=[0.0,0.0,0.0,0.0]
-        #     for i,(n,m,t) in idxsorted:
-        #         lineval[t]=cnm[i]
-        #         lineval[2+t]=sigcnm[i]
-        #         if t == trig.s:
-        #             #print out line
-        #             fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
-        # else:
-        #     lineval=[0.0,0.0]
-        #     for i,(n,m,t) in idxsorted:
-        #         lineval[t]=cnm[i]
-        #         if t == trig.s:
-        #             #print out line
-        #             fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))
+            # for val in enumerate(shg):
+            #     print(val)
+            idxsorted=sorted(enumerate(shg),key=lambda val:val[1])
+            if sigcnm:
+                lineval=[0.0,0.0,0.0,0.0]
+                for i,(n,m,t) in idxsorted:
+                    lineval[t]=cnm[i]
+                    lineval[2+t]=sigcnm[i]
+                    if t == trig.s:
+                        #print out line
+                        fid.write("%5d %5d %14.10e %14.10e %14.10e %14.10e\n"%(n,m,*lineval))
+            else:
+                lineval=[0.0,0.0]
+                for i,(n,m,t) in idxsorted:
+                    lineval[t]=cnm[i]
+                    if t == trig.s:
+                        #print out line
+                        fid.write("%5d %5d %14.10e %14.10e\n"%(n,m,*lineval[0:2]))
 
 
 # def write_shstandard(file,idx, shcoef,sherr=None,meta=None):

@@ -41,7 +41,6 @@ namespace frommle{
             GroupWrapper():Group(){}
             GroupWrapper(std::string name):Group(name){}
 
-
             std::shared_ptr<VariableDyn> getVariable(const std::string &name) {
 
                 //quyick return if a variable with the name already exists
@@ -63,8 +62,8 @@ namespace frommle{
             
             std::shared_ptr<VariableDyn> default_getVariable(const std::string & name) {
                 return this->Group::getVariable(name);
-            }   
-            
+            }
+
 
         private:
         };

@@ -58,11 +58,12 @@ namespace frommle{
             }
         };
 
+
         template<class T, int n>
         struct register_dyngar{
+            using dyngar=GArrayDyn<T,n>;
             static void reg(const std::string & basename){
 
-                using dyngar=GArrayDyn<T,n>;
                 typename dyngar::arr & (dyngar::*matf)()=&dyngar::mat;
 
                 const typename dyngar::gp_tptr & (dyngar::*gpfc)()const=&dyngar::gpp;
@@ -70,7 +71,7 @@ namespace frommle{
                 p::class_<dyngar,p::bases<Frommle>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
             .def(p::init<const guides::GuidePackDyn<n> &>())
             .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>())
-            .def("mat",matf,p::return_value_policy<p::copy_non_const_reference>())
+            .add_property("mat",&register_dyngar::getndarray,&register_dyngar::setndarray)
             .def("DataArray",&garr_to_xarDataArray<T,n>::convert);
             
             //also register a shared_ptr
@@ -83,7 +84,34 @@ namespace frommle{
         static  std::shared_ptr<GArrayDyn<T,n>> makegarr(const guides::GuidePackDyn<n> & gpin,const std::string name){
             return std::make_shared<GArrayDyn<T,n>>(gpin,name);
         }
+        static np::ndarray getndarray(const dyngar & garr){
+                return py::marrayref_to_ndarray<T,n>::get(garr.mat());
+            }
+        static void setndarray(dyngar & garr,PyObject * pyob){
+                //check if it is a ndarray
 
+                auto ndar = p::extract<np::ndarray&>(pyob);
+                if (ndar.check()) {
+                    //compare dimensions (should be the same)
+                    if (ndar.get_nd() != n){
+                        THROWINPUTEXCEPTION("input ndarray  has non-matching dimension");
+                    }
+                    auto ext=dyngar.gp().extent();
+                    for(int i=0;i<n;++i){
+                        if (ndar.shape(i) != ext[i]){
+                            THROWINPUTEXCEPTION("input ndarray  has non-matching shape");
+                        }
+                    }
+
+                    //if we arrive here we can copy/move the data
+                    auto dstart=reinterpret_cast<T const *>(ndar.get_data());
+
+                }else{
+                    THROWINPUTEXCEPTION("input is not a ndarray");
+
+                }
+//            return py::marrayref_to_ndarray<T,n>::get(garr.mat());
+        }
         };
 
         template<class T>

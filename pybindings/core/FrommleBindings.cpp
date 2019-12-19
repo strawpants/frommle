@@ -89,6 +89,7 @@ namespace frommle {
                     .def("__str__",&Frommle::hashstr);
 
             p::register_ptr_to_python< std::shared_ptr<Frommle> >();
+            p::register_ptr_to_python< std::shared_ptr<const Frommle> >();
 //            p::class_<Frommle>("Frommle").def("name", &Frommle::name)
 //                    .add_property("name", &Frommle::name, &Frommle::setName);
 
