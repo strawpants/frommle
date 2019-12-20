@@ -192,13 +192,12 @@ namespace frommle{
                 return attr().get<core::typehash>("frhash");
             }
         }
-//        ///@brief setValue of frommle object at once
-//        virtual void getValue(std::shared_ptr<const core::Frommle> frptr)const{
-//                //overloading this function in derived classes allows for runtime writing of Frommle classes
-//                //The  default just gets the internal pointer to the payload
-//                frptr=frptr_;
-//
-//        }
+//        ///@brief getValue of frommle object at once
+        virtual void getValue(std::shared_ptr<const core::Frommle> frptr)const{
+                //overloading this function in derived classes allows for runtime writing of Frommle classes
+                //The  default just gets the internal pointer to the payload
+                frptr=frptr_;
+        }
 
     private:
         //we can store a pointer to anything which is derived from a Frommle base class

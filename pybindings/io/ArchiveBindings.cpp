@@ -70,22 +70,22 @@ namespace frommle{
 
 
         ///@brief Variablewrapper which is needed to allow dynamic python overloading
-        class VariableDynWrapper:public VariableDyn,public p::wrapper<VariableDyn> {
-        public:
-            VariableDynWrapper():VariableDyn(){}
-            VariableDynWrapper(const std::string name):VariableDyn(name){}
-
-            void setValue(std::shared_ptr<const core::Frommle> ptr){
-                if (p::override setf = this->get_override("__setitem__")) {
-                    setf(p::slice(),ptr);
-
-                }else{
-                    //tap into the virtual resolution of the base
-                    VariableDyn::setValue(ptr);
-                }
-            }
-
-        };
+//        class VariableDynWrapper:public VariableDyn,public p::wrapper<VariableDyn> {
+//        public:
+//            VariableDynWrapper():VariableDyn(){}
+//            VariableDynWrapper(const std::string name):VariableDyn(name){}
+//
+//            void setValue(std::shared_ptr<const core::Frommle> ptr){
+//                if (p::override setf = this->get_override("__setitem__")) {
+//                    setf(p::slice(),ptr);
+//
+//                }else{
+//                    //tap into the virtual resolution of the base
+//                    VariableDyn::setValue(ptr);
+//                }
+//            }
+//
+//        };
 
         ///@brief Variablewrapper which is needed to allow dynamic python overloading
         template<class T>
@@ -273,10 +273,15 @@ namespace frommle{
 
             register_group<double,int>::reg();
 
-            p::class_<VariableDynWrapper,p::bases<core::TreeNodeItem>,boost::noncopyable>("Variable")
-            .def(p::init<std::string>());
+//            p::class_<VariableDynWrapper,p::bases<core::TreeNodeItem>,boost::noncopyable>("Variable")
+//            .def(p::init<std::string>());
 
-            p::register_ptr_to_python< std::shared_ptr<VariableDyn> >();                   
+            p::class_<VariableDyn,p::bases<core::TreeNodeItem>>("Variable")
+                    .def(p::init<std::string>())
+                    .def<void(VariableDyn::*)(std::shared_ptr<const core::Frommle>)>("setValue",&VariableDyn::setValue)
+                    .def<void(VariableDyn::*)(std::shared_ptr<const core::Frommle>)const>("getValue",&VariableDyn::getValue);
+
+            p::register_ptr_to_python< std::shared_ptr<VariableDyn> >();
             
             register_var<double>::reg("Variable_float64");
             register_var<int>::reg("Variable_int");

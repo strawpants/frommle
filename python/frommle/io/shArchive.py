@@ -31,9 +31,9 @@ class formats(Enum):
 
 class SHGVar(Variable):
     shg=None
-    def __init__(self,shg=None,name=None):
+    def __init__(self,shg=None,name="shg"):
         if name:
-            Variable.__init__(name)
+            Variable.__init__(self,name)
         else:
             Variable.__init__(self)
         
