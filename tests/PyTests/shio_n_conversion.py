@@ -78,8 +78,9 @@ class SHIO(unittest.TestCase):
         with shopen(fileout,mode='r',format=formats.standard) as sharin:
             shgarload.load(sharin)
 
-
-        self.assertEqual("test","test")
+        print(shgar.mat)
+        print(shgarload.mat)
+        # self.assertEqual(shgar.gp ","test")
 
 if __name__ == '__main__':
     logInfo()

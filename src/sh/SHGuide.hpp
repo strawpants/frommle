@@ -133,10 +133,12 @@ namespace frommle{
         public:
             using trig=trigenum;
             using Element=nmtEl;
-            SHGuideBase()=default;
+            SHGuideBase():GuideBase("shg",typehash("SHGuideBase"),0){}
             int nmax()const{return nmax_;}
             int nmin()const{return nmin_;}
-            SHGuideBase(const std::string & name, const typehash & type,const size_t sz,const int nmax,const int nmin):GuideBase(name,type,sz),nmax_(nmax),nmin_(nmin){}
+            SHGuideBase(const std::string & name, const size_t sz,const int nmax,const int nmin):GuideBase(name,sz),nmax_(nmax),nmin_(nmin){
+                rehash();
+            }
             size_t idxfromEl(const Element el)const;
             //helper function to make C++ interface consistent
             inline size_t idx(const Element el)const{return idxfromEl(el);}
@@ -149,53 +151,15 @@ namespace frommle{
             using iterator=InjectGuideIterator<SHGuideBase,Element>::iterator;
             using InjectGuideIterator<SHGuideBase,Element>::begin;
             using InjectGuideIterator<SHGuideBase,Element>::end;
-//            using InjectGuideIterator<SHGuideBase>::cbegin;
-//            using InjectGuideIterator<SHGuideBase>::cend;
-//            //nested class which acts as an iterator
-//            class const_iterator:public Guideiterator<SHGuideBaseent>{
-//            public:
-//                const_iterator():Guideiterator(Element(-1,-1,trig::C)){}
-//                const_iterator(const SHGuideBase * shg):Guideiterator(shg->operator[](0)),gptr_(shg),sz_(shg->size()),idx_(0){}
-//
-//                const_iterator operator++(int){
-//                    const_iterator retval(*this);
-//                    ++(*this);
-//                    return retval;
-//                }
-//                const_iterator & operator++(){
-//                    ++idx_;
-//                    if (idx_==sz_){
-//                        //stops iteration
-//                        elVal=Element(-1,-1,trig::C);
-//                    }else {
-//                        elVal = gptr_->operator[](idx_);
-//                    }
-//                    return *this;
-//                }
-
-//            private:
-//                const SHGuideBase* gptr_=nullptr;
-//                size_t sz_=0;
-//                size_t idx_=0;
-//            };
-//            const_iterator begin()const{
-//                if (not itbegin_) {
-//                    itbegin=std::make_shared<const_iterator>(this);
-//                }
-//                return *itbegin_;}
-//            }
-//            const_iterator end()const{
-//            if (not itbegin_) {
-//                itbegin = std::make_shared<const_iterator>(this);
-//            }
-//            //return iterator shifted to one passed the end
-//            return itbegin_+size();
-//        }
-
-        void save(io::Group &ar)const{
-            auto var = ar.getVariable(name());
-            var->setValue(this->getPtr());
-        }
+            void createFrom(const std::shared_ptr<core::Frommle> & frptr) override{
+                auto shptr=dynamic_cast<SHGuideBase*>(frptr.get());
+                if( not shptr){
+                    THROWINPUTEXCEPTION("Frommle pointer cannot be cast to a SHGuide");
+                }
+                nmax_=shptr->nmax_;
+                nmin_=shptr->nmin_;
+                rehash();
+            }
         protected:
             int nmax_=-1;
             int nmin_=-1;
@@ -218,7 +182,8 @@ namespace frommle{
             SHtmnGuide(const int nmax,const std::string name="shg");
             size_t idx(const int n, const int m, const trig t)const;
             Element operator[](const size_t idx)const;
-
+        private:
+            void rehash();
 
         };
 
@@ -238,7 +203,8 @@ namespace frommle{
                 nmax_=gin.nmax_;
                 return *this;
             }
-            SHnmtGuide(const typehash & hashval){
+            void createFrom(typehash hashval) override {
+
                 //initiate from a typehase string
                 std::regex reg("SHnmtGuide.*");
                 if ( !std::regex_match(std::string(hashval),reg)){
@@ -247,6 +213,8 @@ namespace frommle{
                 //extract nmax from the hash
                 nmax_=std::stoi(hashval.split()[1]);
                 // note nmin_ remains 0
+                //recreate the hash
+                rehash();
 
             }
             size_t idx(const int n, const int m, const trig t)const;
@@ -254,13 +222,9 @@ namespace frommle{
             inline static size_t i_from_nmt(const int n, const int m, const SHGuideBase::trig t){
                 return 2*((n*(n+1))/2+m)+t;
             }
-        
+        private:
+            void rehash();
 
-            void load(io::Group &ar){
-                auto var = ar.getVariable(name());
-                //construct a new guide just based upon the hash in the attributes
-                *this=SHnmtGuide(var->hash());
-            }
         };
 
 

@@ -111,6 +111,23 @@ namespace frommle{
                 }
             }
 
+            void getValue(core::Hyperslab<T> & hslab)const{
+                //we need to use python sliceig
+
+                if (p::override getf = this->get_override("__getitem__")) {
+
+                    if(hslab.ndim() ==1){
+                        p::slice slc=py::slice_from_hslab<T>(hslab);
+                        hslab=getf(slc);
+                    }else{
+                        //use a list of slices
+                        p::list slc=py::slices_from_hslab<T>(hslab);
+                        hslab=getf(slc);
+                    }
+                }else{
+                    Variable<T>::getValue(hslab);
+                }
+            }
 //            void default_setValue(const core::Hyperslab<T> & hslab){
 //                Variable<T>::setValue(hslab);
 //            }
@@ -269,6 +286,14 @@ namespace frommle{
             //LOGINFO<< p::extract<int>(slice.start()) <<std::endl;
         //}
 
+        std::shared_ptr<core::Frommle> getFrValue(const VariableDyn &var){
+            return var.getValue();
+        }
+
+        void setFrValue(VariableDyn &var, std::shared_ptr<const core::Frommle> & frptr){
+            var.setValue(frptr);
+        }
+
         void registerArchives(){
 
             register_group<double,int>::reg();
@@ -278,8 +303,8 @@ namespace frommle{
 
             p::class_<VariableDyn,p::bases<core::TreeNodeItem>>("Variable")
                     .def(p::init<std::string>())
-                    .def<void(VariableDyn::*)(std::shared_ptr<const core::Frommle>)>("setValue",&VariableDyn::setValue)
-                    .def<void(VariableDyn::*)(std::shared_ptr<const core::Frommle>)const>("getValue",&VariableDyn::getValue);
+                    .def(p::init<std::shared_ptr<core::Frommle>>())
+                    .add_property("value",&getFrValue,&setFrValue);
 
             p::register_ptr_to_python< std::shared_ptr<VariableDyn> >();
             

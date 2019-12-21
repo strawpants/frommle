@@ -110,6 +110,7 @@ class GArrayDyn : public Frommle {
 public:
     using gp_t=guides::GuidePackDyn<n>;
     using gp_tptr=std::shared_ptr<guides::GuidePackDyn < n>>;
+    using tvec=std::vector<T>;
     //template<class ... Guides>
     //GArrayDyn(Guides && ... Args):gp_(std::make_shared<gp_t>(std::move(Args)...)),
     //data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
@@ -118,18 +119,18 @@ public:
     ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
     template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
     GArrayDyn(GP guidepack) : Frommle("GArray"),gp_(std::make_shared<GP>(std::move(guidepack))),
-                              data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
-                              ar_(data_.get(), gp_->extent()) {}
+                              data_(std::make_shared<tvec>(gp_->num_elements())),
+                              ar_(data_->data(), gp_->extent()) {}
 
     template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
     GArrayDyn(GP guidepack,std::string name) : Frommle(name),gp_(std::make_shared<GP>(std::move(guidepack))),
-                              data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
-                              ar_(data_.get(), gp_->extent()) {}
+                              data_(std::make_shared<tvec>(gp_->num_elements())),
+                              ar_(data_->data(), gp_->extent()) {}
                               
     //specialized constructor which casts a generic GuidePackPtr to an appropritate GuidePackDyn
     GArrayDyn(const guides::GuidePackPtr & guidepack) :Frommle("GArray"),gp_(std::dynamic_pointer_cast<guides::GuidePackDyn<n>>(guidepack)),
-                              data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
-                              ar_(data_.get(), gp_->extent()) {}
+                                  data_(std::make_shared<tvec>(gp_->num_elements())),
+                                  ar_(data_->data(), gp_->extent()) {}
 
     ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
 //            template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value_type, int>::type = 0>
@@ -144,7 +145,7 @@ public:
 //            }
 
     //note although empty, we always need to construct the multi_array_ref using a non-default constructor
-    GArrayDyn() :Frommle("GArray"),gp_(std::make_shared<gp_t>()), ar_(data_.get(), gp_->extent()) {}
+    GArrayDyn() :Frommle("GArray"),gp_(std::make_shared<gp_t>()), ar_(data_->data(), gp_->extent()) {}
 
     static const int ndim = n;
     using arr=boost::multi_array_ref<T, ndim>;
@@ -230,10 +231,11 @@ public:
     void load(io::Group &ar){
         //load guidepack
         gp_->load(ar);
-
-        auto var = ar.getVariable(name());
+        //resize internal array to modified guidepack
+        resize();
+        auto mar = ar.getVariable(name());
         //possibly resize/allocate internal array
-
+        mar->getValue(Hyperslab<T>(mat()));
 
     }
 private:
@@ -242,10 +244,10 @@ private:
     class GArrayDyn;
         ///@brief resize data and internal array to a possibly update guidepack
         void resize(){
-            auto sz=0;
+//            auto sz=
         }
     gp_tptr gp_{};
-    std::shared_ptr<T[]> data_{};
+    std::shared_ptr<tvec> data_{};
 protected:
     arr ar_{{}};
 };
@@ -267,7 +269,7 @@ GArrayDyn<T, GP::ndim> GArrayDyn<T, n>::reshape(const GP &gpin) const {
     //create a renewed multi_array_ref (ugly hack with placement new)
     using arrnew=typename GArrayDyn<T, GP::ndim>::arr;
     gaout.ar_.~arrnew();
-    new(&(gaout.ar_)) arrnew(gaout.data_.get(), gaout.gpp()->extent());
+    new(&(gaout.ar_)) arrnew(gaout.data_.data(), gaout.gpp()->extent());
 
     return gaout;
 

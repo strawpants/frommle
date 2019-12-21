@@ -44,15 +44,19 @@ namespace frommle{
             std::string name()const{return name_;}
             void setName(std::string name){name_=name;}
 
+            ///@brief sets up the current object from just a typehash. Overload this function when this functionality is needed
+            virtual void createFrom(core::typehash hash){
+                THROWNOTIMPLEMENTED("This object cannot  be created from a typehash, implement createFrom in the derived class.");
+            }
+            virtual void createFrom(const std::shared_ptr<Frommle> & frptr){
+                THROWNOTIMPLEMENTED("This object cannot  be created from a shared_ptr<Frommle>, implement createFrom in the derived class.");
+            }
+            virtual void save(io::Group & grp)const;
+            virtual void load(io::Group & group);
 
-            virtual void save(io::Group & grp)const{
-                THROWNOTIMPLEMENTED("This object cannot (yet) be saved to an archive");
-            }
-            virtual void load(io::Group & group){
-                THROWNOTIMPLEMENTED("This object cannot (yet) be loaded from an archive");
-            }
             //add 1D index_range and index_gen types here?
-            virtual typehash hash() const { return type_; }
+            typehash hash() const { return type_; }
+            typehash & hash(){ return type_; }
             std::string hashstr()const{return std::string(hash());}
 
             template<class T=const Frommle>
@@ -66,7 +70,15 @@ namespace frommle{
                 return std::static_pointer_cast<T>(shared_from_this());
 
             }
+
+            bool operator == (Frommle & other)const{return type_==other.type_;}
+
+            bool operator != (Frommle & other)const{return type_!=other.type_;}
+
         protected:
+            virtual void rehash(){};
+            void sethash(typehash th){type_=th;}
+        private:
             std::string name_="Frommle";
             typehash type_{"Frommle_t"};
         };

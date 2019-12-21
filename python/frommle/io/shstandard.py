@@ -17,7 +17,8 @@
 
 import numpy as np
 from frommle.sh import SHnmtGuide,trig
-from frommle.io.shArchive import SHArchive,SHGVar
+from frommle.io.shArchive import SHArchive
+from frommle.io import Variable
 from frommle.io.numpyVariable import np_float64Var
 
 # from frommle.sh.shxarray import newshxarray
@@ -25,7 +26,7 @@ from frommle.io.numpyVariable import np_float64Var
 from frommle.core.time import decyear2datetime,datetime2decyear
 
 class SHStandardArchive(SHArchive):
-    def __init__(self,filen,mode='r',nmax=None):
+    def __init__(self,filen,mode='r',nmax=-1):
         super().__init__(filen,mode,nmax)
 
     def fload_impl(self):
@@ -81,7 +82,7 @@ class SHStandardArchive(SHArchive):
             #set variables and assign ndarray's to them
 
             self["cnm"]=np_float64Var(cnm)
-            self["shg"]=SHGVar(shg)
+            self["shg"]=Variable(shg)
             if witherrors:
                 self["sigcnm"]=np_float64Var(sigcnm)
 
@@ -89,7 +90,7 @@ class SHStandardArchive(SHArchive):
 
         cnm=self["cnm"][:]
         sigcnm=self["sigcnm"][:]
-        shg=self["shg"][:]
+        shg=self["shg"].value
 
         tstamps=[0.0,0.0,0.0]
         for i,tag in enumerate(["tstart","tcent","tend"]):

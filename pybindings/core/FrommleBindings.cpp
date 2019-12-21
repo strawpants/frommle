@@ -85,7 +85,7 @@ namespace frommle {
                     .add_property("name", &Frommle::name, &Frommle::setName)
                     .def("save",&Frommle::save,&FrommleWrapper::save_default)
                     .def("load",&Frommle::load,&FrommleWrapper::load_default)
-                    .def("hash",&Frommle::hash)
+                    .add_property<typehash(Frommle::*)()const>("hash",&Frommle::hash)
                     .def("__str__",&Frommle::hashstr);
 
             p::register_ptr_to_python< std::shared_ptr<Frommle> >();

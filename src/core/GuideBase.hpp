@@ -56,12 +56,12 @@ class GuideBase:public core::Frommle {
     public:
         using typehash=core::typehash;
         GuideBase():Frommle("GuideBase") {};
-
         GuideBase(const core::typehash &type, const size_t &sz) :Frommle("GuideBase",type), size_(sz) {}
         GuideBase(const std::string & name, const core::typehash &type, const size_t &sz) : Frommle(name,type), size_(sz){}
 
         GuideBase(const core::typehash &type) : Frommle("GuideBase",type) {}
         GuideBase(const std::string & name,const core::typehash &type):Frommle(name,type){}
+        GuideBase(const std::string & name,size_t sz):Frommle(name),size_(sz){}
         virtual ~GuideBase() {
         }
         using Element=std::string;
@@ -71,13 +71,13 @@ class GuideBase:public core::Frommle {
         
         size_t size() const { return size_; }
 
-        virtual bool operator==(const GuideBase &in) const {
-            return type_ == in.type_;
-        }
-
-        bool operator!=(const GuideBase &in) const {
-            return not this->operator==(in);
-        }
+//        virtual bool operator==(const GuideBase &in) const {
+//            return type_ == in.type_;
+//        }
+//
+//        bool operator!=(const GuideBase &in) const {
+//            return not this->operator==(in);
+//        }
 
 //        std::string name()const{return name_;}
 //        void setName(const std::string &name){
@@ -96,7 +96,7 @@ class GuideBase:public core::Frommle {
             //LOGINFO << fmt << std::endl;
             std::vector<Element> desc(size_);
             for(size_t i=0;i<size_;++i){
-                sprintf(el,fmt,type_.name().c_str(),i);
+                sprintf(el,fmt,hash().name().c_str(),i);
                 desc[i]=el;  
             }
             return desc;
@@ -117,35 +117,11 @@ class GuideBase:public core::Frommle {
             }
         }
     protected:
-        using core::Frommle::type_;
+//        using core::Frommle::type_;
         size_t size_ = 0;
 //        std::string name_="Guide";
         std::vector<Element> descripcache_{}; 
     };
-
-
-    //!@brief templated abstract forward iterator (both usable as const and non-const version, set Element to e.g int const versus just int) class for use in Guides
-//    template<class Element>
-//    class Guideiterator{
-//    public:
-//        //iterator traits
-//        using iterator_category = std::forward_iterator_tag;
-//        using value_type = Element;
-//        using difference_type = std::ptrdiff_t;
-//        using pointer = Element*;
-//        using reference = Element&;
-////        explicit Guideiterator(Element el, Element elstop):elVal(el),elStop(elstop){}
-//        explicit Guideiterator(Element * el):elVal(el){}
-//        virtual Guideiterator& operator++()=0;
-//        bool operator==(Guideiterator & other) const {return elVal == other.elVal;}
-//        bool operator!=(Guideiterator & other) const {return !(*this == other);}
-//        Element & operator*() {return *elVal;}
-//        ~Guideiterator(){}
-//        Guideiterator(){}
-//    protected:
-//        Element* elVal=nullptr;
-//    private:
-//    };
 
 
         template<class GD>

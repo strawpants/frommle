@@ -21,10 +21,9 @@
 #include <memory>
 #include <cassert>
 #include "core/TreeNode.hpp"
-//#include <boost/serialization/split_free.hpp>
-#include "core/VisitorTools.hpp"
 #include "core/Hyperslab.hpp"
 #include "core/GuideBase.hpp"
+#include "core/VisitorTools.hpp"
 #ifndef FROMMLE_GROUPBASE_HPP
 #define FROMMLE_GROUPBASE_HPP
 //fowrward declare classes contained within the variant class below
@@ -158,9 +157,10 @@ namespace frommle{
         VariableDyn():TreeNodeItem(){}
         VariableDyn(std::string name):TreeNodeItem(name){}
         VariableDyn(std::string name, core::Attributes && attr):TreeNodeItem(name,std::move(attr)){}
+        VariableDyn(std::shared_ptr<core::Frommle> frobj ):TreeNodeItem(frobj->name()),frptr_(frobj){}
         VariableDyn(core::TreeNodeRef && in):TreeNodeItem(std::move(in)){}
 
-        VariableDyn(core::Frommle * frptr):TreeNodeItem(frptr->name()),frptr_(frptr){}
+//        VariableDyn(core::Frommle * frptr):TreeNodeItem(frptr->name()),frptr_(frptr){}
 
 //        template<class T,typename std::enable_if< std::is_base_of<core::Frommle,T>::value_type,int>::type =0 >
 //        VariableDyn(std::shared_ptr<T> payload):TreeNodeItem(payload->name()),frptr_(payload){}
@@ -177,11 +177,13 @@ namespace frommle{
         template<class T>
         void setValue(const core::Hyperslab<T> & hslab);
 
+        template<class T>
+        void getValue(core::Hyperslab<T> hslab)const;
         ///@brief setValue of frommle object at once
         virtual void setValue(std::shared_ptr<const core::Frommle> frptr){
             //overloading this function in derived classes allows for runtime writing of Frommle classes
             //The  default just sets the internal pointer to the payload
-            frptr_=frptr;
+            frptr_=std::const_pointer_cast<core::Frommle>(frptr);
         }
 
         core::typehash hash() const {
@@ -193,15 +195,37 @@ namespace frommle{
             }
         }
 //        ///@brief getValue of frommle object at once
-        virtual void getValue(std::shared_ptr<const core::Frommle> frptr)const{
-                //overloading this function in derived classes allows for runtime writing of Frommle classes
-                //The  default just gets the internal pointer to the payload
-                frptr=frptr_;
+        void getValue(std::shared_ptr<core::Frommle> frptr)const{
+                //otherwise we need to be a bit more delicate and adapt the input
+                if (frptr_ ){
+                    frptr->createFrom(frptr_);
+                }else{
+                    //try reconstructing the frommle derived object from a typehash attribute
+                    //This only works when the derived types of frptr have createFrom implemented
+                    frptr->createFrom(attr().get<core::typehash>("frhash"));
+
+                }
+
+
+
         }
+
+
+        std::shared_ptr<core::Frommle> getValue()const{
+            if (frptr_){
+                return frptr_;
+            }else{
+                THROWINPUTEXCEPTION("No value in VariableDyn is set");
+
+            }
+
+        }
+
+
 
     private:
         //we can store a pointer to anything which is derived from a Frommle base class
-        std::shared_ptr<const core::Frommle> frptr_{};
+        std::shared_ptr<core::Frommle> frptr_{};
 
     };
 
@@ -225,7 +249,7 @@ namespace frommle{
         virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{THROWMETHODEXCEPTION("getValue not implemented");}
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
         virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
-        virtual void getValue(core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab reading not supported");}
+        virtual void getValue(core::Hyperslab<T> & hslab)const{THROWMETHODEXCEPTION("hyperslab reading not supported");}
 
         ///@brief iterator which loops over the values in this variable
         class iterator{
@@ -322,6 +346,20 @@ namespace frommle{
 
         }
 
+        ///@brief forwards setrValue call to underlying variable specialization
+        template<class T>
+        void VariableDyn::getValue(core::Hyperslab<T> hslab)const{
+            const VariableDyn* ptr=this;
+            const Variable<T> * varptr=dynamic_cast<const Variable<T>*>(ptr);
+
+            if(varptr){
+                varptr->getValue(hslab);
+            }else{
+                THROWINPUTEXCEPTION("Cannot dynamically downcast VariableDyn to requested type");
+            }
+
+
+        }
     }
 
 }

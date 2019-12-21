@@ -238,6 +238,52 @@ namespace frommle{
         };
 
         template<class T>
+        struct ndarray_to_hslab{
+        public:
+            ndarray_to_hslab(){
+                p::converter::registry::push_back(&convertible, &construct,p::type_id<core::Hyperslab<T>>());
+            }
+
+            static void* convertible(PyObject * py_obj){
+                auto ndar = p::extract<np::ndarray>(py_obj);
+                //check if a type holds a ndarray
+                if ( not ndar.check() ){
+                    return 0;
+                }
+                return py_obj;
+            }
+
+            static void construct(PyObject *py_obj, p::converter::rvalue_from_python_stage1_data *data) {
+
+
+                np::ndarray ndar = static_cast<np::ndarray>(p::extract<np::ndarray>(py_obj)).astype(np_dtype<T>::get());
+
+
+                //setup memory for C++ class
+                typedef p::converter::rvalue_from_python_storage<core::Hyperslab<T>> storage_t;
+                storage_t *the_storage = reinterpret_cast<storage_t *>( data );
+                void *memory_chunk = the_storage->storage.bytes;
+
+                //obtain the slices from the input array
+                size_t nd=ndar.get_nd();
+
+                auto slices=std::vector<core::slice>();
+                for(int i=0;i<nd;++i){
+                    slices.push_back(core::slice(0,ndar.shape(i),ndar.strides(i)/sizeof(T)));
+                }
+
+                new(memory_chunk) core::Hyperslab<T>(slices);
+
+                core::Hyperslab<T> * hslabptr=static_cast<core::Hyperslab<T>*>(memory_chunk);
+                //set the data (hslab does not! own the data)
+                hslabptr->setdata(ndar.get_data());
+
+                data->convertible = memory_chunk;
+            }
+        };
+
+
+        template<class T>
         p::slice slice_from_hslab(const core::Hyperslab<T>  & hslab,size_t idx=0){
             return p::slice(hslab.offset()[idx],hslab.shape()[idx],hslab.stride()[idx]);
         }

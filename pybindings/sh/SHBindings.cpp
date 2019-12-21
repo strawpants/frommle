@@ -104,7 +104,8 @@ void pyexport_sh()
             //.def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i");
 
     //export subclass SHnmtGuide
-    p::class_<SHnmtGuide,p::bases<SHGuideBase> >("SHnmtGuide").def(p::init<int,p::optional<std::string>>())
+    p::class_<SHnmtGuide,p::bases<SHGuideBase> >("SHnmtGuide")
+            .def(p::init<int,p::optional<std::string>>())
             .def("i_from_nmt",&SHnmtGuide::i_from_nmt).staticmethod("i_from_nmt");
 
 
