@@ -23,12 +23,12 @@
 namespace frommle {
     namespace guides {
 
-        SHnmHalfGuide::SHnmHalfGuide():GuideBase("SHnmHalfGuide",0),nmax_(-1){
+        SHnmHalfGuide::SHnmHalfGuide():GuideBase("SHnmHalfGuide"),nmax_(-1){
             rehash();
         }
-        SHnmHalfGuide::SHnmHalfGuide(const int nmax):GuideBase("SHnmHalfGuide",SHnmHalfGuide::i_from_nm(nmax,nmax,nmax)+1),nmax_(nmax){}
+        SHnmHalfGuide::SHnmHalfGuide(const int nmax):GuideBase("SHnmHalfGuide"),nmax_(nmax){}
 
-        SHtmnGuide::SHtmnGuide(const int nmax,const std::string  name) :SHGuideBase(name,2*(SHnmHalfGuide::i_from_nm(nmax,nmax,nmax)+1),nmax,0){
+        SHtmnGuide::SHtmnGuide(const int nmax,const std::string  name) :SHGuideBase(name,nmax,0){
 
         }
 
@@ -54,7 +54,7 @@ namespace frommle {
 
 //implementation for SHnmtGuide
 
-        SHnmtGuide::SHnmtGuide(const int nmax,const std::string  name) :SHGuideBase(name,SHnmtGuide::i_from_nmt(nmax,nmax,trig::S)+1,nmax,0){
+        SHnmtGuide::SHnmtGuide(const int nmax,const std::string  name) :SHGuideBase(name,nmax,0){
             rehash();
 
         }

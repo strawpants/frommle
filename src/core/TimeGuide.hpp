@@ -56,12 +56,10 @@ namespace frommle {
 
             void push_back(const Tp in){
                 TimeVec_.push_back(in);
-                ++size_;
             }
 
             void push_back(Tp && in){
                 TimeVec_.push_back(in);
-                ++size_;
             }
 
             using const_iterator=typename ElementContainer::const_iterator;
@@ -73,6 +71,7 @@ namespace frommle {
             iterator end() { return TimeVec_.end(); }
             Element & operator[](const size_t idx){return TimeVec_.at(idx);}
             const Element & operator[](const size_t idx)const{return TimeVec_.at(idx);}
+            size_t size()const override{return TimeVec_.size();}
 		private:
 			std::vector<Tp> TimeVec_ = {};
 		};

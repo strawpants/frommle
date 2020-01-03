@@ -26,7 +26,6 @@ namespace frommle{
         template<class T>
         void OGRGuide<T>::push_back(T &&geometry) {
             geoms_.push_back(std::make_shared<T>(std::move(geometry)));
-            ++size_;
         }
 
         ///@brief create a boost rtree index of the geometry using the packing algorithm
@@ -62,7 +61,6 @@ namespace frommle{
             if (OGRERR_NONE != OGRGeometryFactory::createFromWkt(WKT.c_str(),&SpatialRef_,geomptr)){
                 THROWINPUTEXCEPTION("Failed to create OGR geometry");
             }
-            ++size_;
             geoms_.push_back(std::make_shared<T>(static_cast<T&>(**geomptr)));
             OGRGeometryFactory::destroyGeometry(*geomptr);
             delete geomptr;
@@ -71,7 +69,6 @@ namespace frommle{
         template<class T>
         void OGRGuide<T>::push_back(const T &geometry) {
             geoms_.push_back(std::make_shared<T>(geometry));
-            ++size_;
         }
 
 

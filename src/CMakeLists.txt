@@ -7,8 +7,8 @@ LIST(APPEND COREHEADERS core/Attributes.hpp)
 LIST(APPEND COREHEADERS core/typehash.hpp)
 LIST(APPEND COREOBJS core/typehash.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp core/frommle.cpp)
 
-LIST(APPEND COREHEADERS core/UserSettings.hpp core/Hyperslab.hpp core/GuideAppender.hpp )
-LIST(APPEND COREOBJS core/UserSettings.cpp core/GArrayDiag.hpp)
+LIST(APPEND COREHEADERS core/UserSettings.hpp  core/GArrayDiag.hpp core/Hyperslab.hpp core/GuideAppender.hpp )
+LIST(APPEND COREOBJS core/UserSettings.cpp core/Hyperslab.cpp)
 
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
 LIST(APPEND COREOBJS core/TreeNode.cpp)

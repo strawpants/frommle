@@ -72,6 +72,7 @@ namespace frommle{
 
             const_iterator  begin()const{return const_iterator(this);}
             const_iterator  end()const{return const_iterator();}
+            size_t size()const override{return nlon_*nlat_;}
         private:
             //bounding box(envelope)
             geometry::bbox bbox_;

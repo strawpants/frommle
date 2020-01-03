@@ -269,14 +269,14 @@ namespace frommle{
 
                 auto slices=std::vector<core::slice>();
                 for(int i=0;i<nd;++i){
-                    slices.push_back(core::slice(0,ndar.shape(i),ndar.strides(i)/sizeof(T)));
+                    slices.push_back(core::make_slice(0,ndar.shape(i),ndar.strides(i)/sizeof(T)));
                 }
 
                 new(memory_chunk) core::Hyperslab<T>(slices);
 
                 core::Hyperslab<T> * hslabptr=static_cast<core::Hyperslab<T>*>(memory_chunk);
                 //set the data (hslab does not! own the data)
-                hslabptr->setdata(ndar.get_data());
+//                hslabptr->setdata(reinterpret_cast<T*>(ndar.get_data()));
 
                 data->convertible = memory_chunk;
             }
@@ -321,7 +321,7 @@ namespace frommle{
         template<class T>
         void register_hslab(){
             p::to_python_converter<core::Hyperslab<T>, hslab_to_ndarray <T>> ();
-
+            ndarray_to_hslab<T>();
         }
 
 //    void register_numpy_converters();

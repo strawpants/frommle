@@ -56,12 +56,9 @@ class GuideBase:public core::Frommle {
     public:
         using typehash=core::typehash;
         GuideBase():Frommle("GuideBase") {};
-        GuideBase(const core::typehash &type, const size_t &sz) :Frommle("GuideBase",type), size_(sz) {}
-        GuideBase(const std::string & name, const core::typehash &type, const size_t &sz) : Frommle(name,type), size_(sz){}
-
         GuideBase(const core::typehash &type) : Frommle("GuideBase",type) {}
         GuideBase(const std::string & name,const core::typehash &type):Frommle(name,type){}
-        GuideBase(const std::string & name,size_t sz):Frommle(name),size_(sz){}
+        GuideBase(const std::string & name):Frommle(name){}
         virtual ~GuideBase() {
         }
         using Element=std::string;
@@ -69,7 +66,7 @@ class GuideBase:public core::Frommle {
         template<class G>
         explicit   operator MaskedGuide<G>();
         
-        size_t size() const { return size_; }
+        virtual  size_t size() const { return descripcache_.size(); }
 
 //        virtual bool operator==(const GuideBase &in) const {
 //            return type_ == in.type_;
@@ -90,12 +87,13 @@ class GuideBase:public core::Frommle {
         virtual std::vector<Element> descriptor()const{
             //default implementation jsut makes a description based ont he typehash
             //allocate space in the vector
+            size_t sz=size();
             char fmt[12];
             char el[50];
-            sprintf(fmt,"%%s_idx%%0%dd",static_cast<int>(std::log10(size_))+1);
+            sprintf(fmt,"%%s_idx%%0%dd",static_cast<int>(std::log10(sz))+1);
             //LOGINFO << fmt << std::endl;
-            std::vector<Element> desc(size_);
-            for(size_t i=0;i<size_;++i){
+            std::vector<Element> desc(sz);
+            for(size_t i=0;i<sz;++i){
                 sprintf(el,fmt,hash().name().c_str(),i);
                 desc[i]=el;  
             }
@@ -118,7 +116,7 @@ class GuideBase:public core::Frommle {
         }
     protected:
 //        using core::Frommle::type_;
-        size_t size_ = 0;
+//        size_t size_ = 0;
 //        std::string name_="Guide";
         std::vector<Element> descripcache_{}; 
     };
@@ -236,47 +234,47 @@ class GuideBase:public core::Frommle {
 
 
     ///@brief this masked guide wraps another guide while masking part of it
-    template<class G>
-class MaskedGuide:public GuideBase{
-public:
-    //create iterators to iterate over the contained guide while skipping masked values
-    using Element=typename G::Element;
-    using GuideBase::size_;
-    void mask(const ptrdiff_t idx=-1){
-        if (idx!=-1){
-            valid_[idx]=0;
-            --size_;
-        }else{
-            //mask everything
-            std::fill(valid_.begin(),valid_.end(),0);
-            size_=0;
-        }
-    }
-    void unmask(const ptrdiff_t idx=-1){
-        if (idx!=-1){
-            valid_[idx]=1;
-            ++size_;
-        }else{
-            //mask everything
-            std::fill(valid_.begin(),valid_.end(),1);
-            size_=valid_.size();
-        }
-    }
-
-    MaskedGuide(const G & in):guide_(&in),valid_(in.size(),1){
-
-    }
-//    void togglemask(const ptrdiff_t idx =-1){}
-    MaskedGuide & operator=(const G & gin){
-        *this=MaskedGuide(gin);
-        return *this;
-    }
-    bool isMasked()const{return true;}
-private:
-    const G* guide_=nullptr;
-    std::vector<int> valid_{};
-
-};
+//    template<class G>
+//class MaskedGuide:public GuideBase{
+//public:
+//    //create iterators to iterate over the contained guide while skipping masked values
+//    using Element=typename G::Element;
+////    using GuideBase::size_;
+//    void mask(const ptrdiff_t idx=-1){
+//        if (idx!=-1){
+//            valid_[idx]=0;
+//            --size_;
+//        }else{
+//            //mask everything
+//            std::fill(valid_.begin(),valid_.end(),0);
+//            size_=0;
+//        }
+//    }
+//    void unmask(const ptrdiff_t idx=-1){
+//        if (idx!=-1){
+//            valid_[idx]=1;
+//            ++size_;
+//        }else{
+//            //mask everything
+//            std::fill(valid_.begin(),valid_.end(),1);
+//            size_=valid_.size();
+//        }
+//    }
+//
+//    MaskedGuide(const G & in):guide_(&in),valid_(in.size(),1){
+//
+//    }
+////    void togglemask(const ptrdiff_t idx =-1){}
+//    MaskedGuide & operator=(const G & gin){
+//        *this=MaskedGuide(gin);
+//        return *this;
+//    }
+//    bool isMasked()const{return true;}
+//private:
+//    const G* guide_=nullptr;
+//    std::vector<int> valid_{};
+//
+//};
 
 
 ///@brief guide which has a length of 1 (used to track dimensions which are to be reduced)
@@ -290,10 +288,10 @@ class SingleGuide: public GuideBase{
         size_t idx_=0;
 };
 
-template<class G>
-GuideBase::operator MaskedGuide<G>(){
-            return MaskedGuide<G>(static_cast<const G&>(*this));
-}
+//template<class G>
+//GuideBase::operator MaskedGuide<G>(){
+//            return MaskedGuide<G>(static_cast<const G&>(*this));
+//}
 
 
 }

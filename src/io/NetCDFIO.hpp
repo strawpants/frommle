@@ -196,8 +196,7 @@ namespace frommle {
                 NetCDFCheckerror(nc_inq_dimlen(ncparent_->id(),did,&extents[did]));
             }
 
-            hslab=core::Hyperslab<T>(extents);
-
+            hslab=core::HyperSlab<T>(extents);
             NetCDFCheckerror(nc_get_var(ncparent_->id(), id_, hslab.data()));
         }
 

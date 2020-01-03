@@ -43,7 +43,6 @@ namespace frommle {
             dy_ = dlat;
             nlon_ = (east - west) / dlon + reg_;
             nlat_ = (north - south) / dlat + reg_;
-            size_ = nlon_ * nlat_;
             bbox_.MinX = west;
             bbox_.MinY = south;
             bbox_.MaxX = bbox_.MinX + dx_ * (nlon_ - reg_);

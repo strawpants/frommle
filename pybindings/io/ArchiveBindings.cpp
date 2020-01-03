@@ -118,11 +118,14 @@ namespace frommle{
 
                     if(hslab.ndim() ==1){
                         p::slice slc=py::slice_from_hslab<T>(hslab);
-                        hslab=getf(slc);
+                        core::Hyperslab<T> hslabtmp=getf(slc);
+//                        hslab.copyFrom(hslabtmp);
+
                     }else{
                         //use a list of slices
                         p::list slc=py::slices_from_hslab<T>(hslab);
-                        hslab=getf(slc);
+                        core::Hyperslab<T> hslabtmp=getf(slc);
+//                        hslab.copyFrom(hslabtmp);
                     }
                 }else{
                     Variable<T>::getValue(hslab);

@@ -34,8 +34,8 @@ namespace frommle{
             using Element=unsigned long long int;
 
             IndexGuide():GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(0)){}
-            IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize),nsize){}
-            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize),nsize){}
+            IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize)),size_(nsize){}
+            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize)),size_(nsize){}
             Element operator[](const size_t idx)const{return idx;}
             using const_iterator=InjectGuideIterator<IndexGuide,Element>::const_iterator;
             using InjectGuideIterator<IndexGuide,Element>::begin;
@@ -67,6 +67,9 @@ namespace frommle{
 //                Ar[gname].template as<io::Variable<size_t>>().setValue(core::Hyperslab<size_t>(irange));
 
             }
+            size_t size()const override{return size_;}
+        private:
+            size_t size_=0;
         };
 
 

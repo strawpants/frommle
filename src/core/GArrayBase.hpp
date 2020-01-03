@@ -234,7 +234,6 @@ public:
         //resize internal array to modified guidepack
         resize();
         auto mar = ar.getVariable(name());
-        //possibly resize/allocate internal array
         mar->getValue(Hyperslab<T>(mat()));
 
     }
@@ -244,7 +243,12 @@ private:
     class GArrayDyn;
         ///@brief resize data and internal array to a possibly update guidepack
         void resize(){
-//            auto sz=
+            auto sz=gp_->num_elements();
+            data_->resize(gp_->num_elements());
+            //also recreate the multi_array_ref (since no assignment operator is provided we need to use
+            // placement new, in combination with an explicit desctruction of the old array)
+            ar_.~arr();
+            new(&ar_) arr(data_->data(), gp_->extent());
         }
     gp_tptr gp_{};
     std::shared_ptr<tvec> data_{};

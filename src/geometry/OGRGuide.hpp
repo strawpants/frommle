@@ -87,6 +87,7 @@ namespace frommle{
             //using GuideBase::operator MaskedGuide<OGRGuide>;
             void load(io::Group & Ar);
             void save(io::Group & Ar)const;
+            size_t size()const override{return geoms_.size();}
         private:
 //            friend io::Group;
 //            friend class io::serialize;
