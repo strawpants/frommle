@@ -29,49 +29,20 @@ class formats(Enum):
     GSMv6=3
     unknown=4
 
-# class SHGVar(Variable):
-#     shg=None
-#     def __init__(self,shg=None,name="shg"):
-#         if name:
-#             Variable.__init__(self,name)
-#         else:
-#             Variable.__init__(self)
-#
-#         if shg:
-#             self.attr["frhash"]=shg.hash
-#             self.shg=shg
-#
-#     def __getitem__(self,slc):
-#         if type(slc) == slice:
-#             selectall = slc == slice(None)
-#         else:
-#             raise RuntimeError("cannot get item without slicing")
-#
-#         if selectall:
-#             return self.shg
-#         else:
-#             return self.shg.__array__()[slc]
-#
-#     def __setitem__(self,slc,value):
-#         selectall=False
-#         if type(slc) == slice:
-#             selectall = slc == slice(None)
-#         if not selectall:
-#             raise RuntimeError("Only calls with full slicing is allowed (e.g. shvar[:]= ..)")
-#         self.shg=value
-#         self.attr["frhash"]=value.hash
-
-
 class SHArchive(Group):
     """base type to read SH datasets from various text filetypes """
     loaded=False
     #Varnames holds valid variable names with variable classes which may be overloaded/extended in derived classes
     vars={"shg":Variable,"cnm":np_float64Var,"sigcnm":np_float64Var}
     shg_c=SHnmtGuide
-    def __init__(self,filename,mode='r',nmax=0):
+    def __init__(self,filename,mode='r',nmax=-1):
         #important: initialize Group class as well
         Group.__init__(self,filename)
         self.setAmode(mode)
+        if nmax == -1:
+            nmax=0
+        else:
+            self.attr["nmax"]=nmax
         #also setup the variables (don't fill them with data yet)
         for varname,varclass in self.vars.items():
             if varname == "shg":

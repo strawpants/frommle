@@ -25,30 +25,13 @@
 
 namespace frommle {
 
+	namespace core {
 
-/*!
- * \brief Abstract base class for describing a unit and with possibly some defining parameters
- *
- */
-class PhysQuantityBase {
-public:
-	virtual ~PhysQuantityBase() {
+		class PhysQuantity {
+		private:
+			std::string alias = "";
+		};
+
 	}
-	virtual std::string format() const=0;
-	/*!
-	 * Compares 2 Units
-	 * @param Physical quantity to compare with
-	 * @return true or false
-	 */
-	virtual bool operator ==(const PhysQuantityBase & in) const {
-		return false;
-	}
-private:
-	std::string type_=0;
-protected:
-
-};
-
 }
-
 #endif /* SRC_CPP_UNITBASE_HPP_*/

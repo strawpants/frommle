@@ -93,7 +93,7 @@ namespace frommle{
         public:
             VariableWrapper():Variable<T>(){}
             VariableWrapper(std::string name):Variable<T>(name){}
-            void setValue(const core::Hyperslab<T> & hslab){
+            void setValue(const core::HyperSlabBase<T> & hslab) override{
                 //we need to use python sliceig
 
                 if (p::override setf = this->get_override("__setitem__")) {
@@ -111,21 +111,20 @@ namespace frommle{
                 }
             }
 
-            void getValue(core::Hyperslab<T> & hslab)const{
+            void getValue(core::HyperSlabBase<T> & hslab)const{
                 //we need to use python sliceig
 
                 if (p::override getf = this->get_override("__getitem__")) {
 
                     if(hslab.ndim() ==1){
                         p::slice slc=py::slice_from_hslab<T>(hslab);
-                        core::Hyperslab<T> hslabtmp=getf(slc);
-//                        hslab.copyFrom(hslabtmp);
-
+                        core::HyperSlabRef<T> hslabtmp=getf(slc);
+                        hslab.useData(hslabtmp);
                     }else{
                         //use a list of slices
                         p::list slc=py::slices_from_hslab<T>(hslab);
-                        core::Hyperslab<T> hslabtmp=getf(slc);
-//                        hslab.copyFrom(hslabtmp);
+                        core::HyperSlabRef<T> hslabtmp=getf(slc);
+                        hslab.useData(hslabtmp);
                     }
                 }else{
                     Variable<T>::getValue(hslab);
@@ -172,7 +171,7 @@ namespace frommle{
                     return res;
                 }else{
                     //use an hslab
-                    core::Hyperslab<T> hslab = py::hslab_from_slice<T>(slice);
+                    core::HyperSlab<T> hslab = py::hslab_from_slice<T>(slice);
                     Variable<T>::getValue(hslab);
                     return py::hslab_to_ndarray<T>::convert(hslab);
 

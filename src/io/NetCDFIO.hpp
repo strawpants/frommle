@@ -116,9 +116,9 @@ namespace frommle {
 
 //            virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{}
 //            virtual void setValue(const singlePtr & val,const ptrdiff_t idx){}
-            virtual void setValue(const core::Hyperslab<T> &hslab);
+            void setValue(const core::HyperSlabBase<T> &hslab) override;
 
-            virtual void getValue(core::Hyperslab<T> &hslab);
+            void getValue(core::HyperSlabBase<T> &hslab)const override;
 
 //            virtual void getValue(singlePtr & in,const ptrdiff_t idx)const;
             int ndim() { return ndim_; }
@@ -181,7 +181,7 @@ namespace frommle {
         }
 
         template<class T>
-        void NetCDFVariable<T>::setValue(const core::Hyperslab<T> &hslab) {
+        void NetCDFVariable<T>::setValue(const core::HyperSlabBase<T> &hslab) {
             setUpVariable(hslab.extents());
             NetCDFCheckerror(nc_put_var(ncparent_->id(), id_, hslab.data()));
 
@@ -189,15 +189,31 @@ namespace frommle {
         }
 
         template<class T>
-        void NetCDFVariable<T>::getValue(core::Hyperslab<T> &hslab) {
+        void NetCDFVariable<T>::getValue(core::HyperSlabBase<T> &hslab)const {
 
             std::vector<size_t> extents(ndim_,0);
             for(auto &did:dimids){
                 NetCDFCheckerror(nc_inq_dimlen(ncparent_->id(),did,&extents[did]));
             }
 
-            hslab=core::HyperSlab<T>(extents);
-            NetCDFCheckerror(nc_get_var(ncparent_->id(), id_, hslab.data()));
+            //let's check if the hyperslab has already data
+            if (!hslab.data()){
+                //create new hyperslab (with data allocated internally)
+                hslab=core::HyperSlab<T>(extents);
+            }else{
+                //currently  we need to check whether the internal extents are the same as the extents from the hyperslab
+                if (hslab.ndim() != ndim_){
+                    THROWINPUTEXCEPTION("hyperslab dimension does not agree with netcdf variable");
+                }
+                for(int i=0;i<ndim_;++i){
+                    if(extents[i] != hslab.shape(i)){
+                        THROWINPUTEXCEPTION("Shape of requested hyperslab does not agree with shape of the netcdf variable");
+
+                    }
+                }
+            }
+
+            NetCDFCheckerror(nc_get_vars(ncparent_->id(), id_, hslab.offset().data(),hslab.shape().data(),hslab.stride().data(), hslab.data()));
         }
 
 

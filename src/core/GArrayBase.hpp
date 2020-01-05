@@ -110,7 +110,7 @@ class GArrayDyn : public Frommle {
 public:
     using gp_t=guides::GuidePackDyn<n>;
     using gp_tptr=std::shared_ptr<guides::GuidePackDyn < n>>;
-    using tvec=std::vector<T>;
+    using tvec=T[];
     //template<class ... Guides>
     //GArrayDyn(Guides && ... Args):gp_(std::make_shared<gp_t>(std::move(Args)...)),
     //data_(std::shared_ptr<T[]>(new T[gp_->num_elements()])),
@@ -119,18 +119,18 @@ public:
     ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
     template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
     GArrayDyn(GP guidepack) : Frommle("GArray"),gp_(std::make_shared<GP>(std::move(guidepack))),
-                              data_(std::make_shared<tvec>(gp_->num_elements())),
-                              ar_(data_->data(), gp_->extent()) {}
+                              data_(std::shared_ptr<tvec>(new T[gp_->num_elements()])),
+                              ar_(data_.get(), gp_->extent()) {}
 
     template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int> ::type = 0>
     GArrayDyn(GP guidepack,std::string name) : Frommle(name),gp_(std::make_shared<GP>(std::move(guidepack))),
-                              data_(std::make_shared<tvec>(gp_->num_elements())),
-                              ar_(data_->data(), gp_->extent()) {}
+                              data_(std::shared_ptr<tvec>(new T[gp_->num_elements()])),
+                              ar_(data_.get(), gp_->extent()) {}
                               
     //specialized constructor which casts a generic GuidePackPtr to an appropritate GuidePackDyn
     GArrayDyn(const guides::GuidePackPtr & guidepack) :Frommle("GArray"),gp_(std::dynamic_pointer_cast<guides::GuidePackDyn<n>>(guidepack)),
-                                  data_(std::make_shared<tvec>(gp_->num_elements())),
-                                  ar_(data_->data(), gp_->extent()) {}
+                                  data_(std::shared_ptr<tvec>(new T[gp_->num_elements()])),
+                                  ar_(data_.get(), gp_->extent()) {}
 
     ///@brief only allow this constructor when we  are considering complete guidepacks with the correct dimensions as input arguments
 //            template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value_type, int>::type = 0>
@@ -145,7 +145,7 @@ public:
 //            }
 
     //note although empty, we always need to construct the multi_array_ref using a non-default constructor
-    GArrayDyn() :Frommle("GArray"),gp_(std::make_shared<gp_t>()), ar_(data_->data(), gp_->extent()) {}
+    GArrayDyn() :Frommle("GArray"),gp_(std::make_shared<gp_t>()), ar_(data_.get(), gp_->extent()) {}
 
     static const int ndim = n;
     using arr=boost::multi_array_ref<T, ndim>;
@@ -225,16 +225,19 @@ public:
 
         //save matrix data
         auto mar=ar.getVariable(name());
-        mar->setValue(Hyperslab<T>(mat()));
+        mar->setValue(HyperSlabConstRef<T>(mat()));
     }
 
     void load(io::Group &ar){
         //load guidepack
         gp_->load(ar);
-        //resize internal array to modified guidepack
-        resize();
+        //allocate new memory so it fits the new guidepack
+        realloc();
         auto mar = ar.getVariable(name());
-        mar->getValue(Hyperslab<T>(mat()));
+        HyperSlab<T> hslab(mat(),data_);
+        mar->getValue(hslab);
+        //we may need to reassign the internal multi_array_ref so it uses the correct data
+        reassign();
 
     }
 private:
@@ -242,13 +245,19 @@ private:
     friend
     class GArrayDyn;
         ///@brief resize data and internal array to a possibly update guidepack
-        void resize(){
-            auto sz=gp_->num_elements();
-            data_->resize(gp_->num_elements());
-            //also recreate the multi_array_ref (since no assignment operator is provided we need to use
-            // placement new, in combination with an explicit desctruction of the old array)
+        void reset(const std::shared_ptr<tvec> & data){
+            data_=data;
+            reassign();
+        }
+        void realloc(){
+            data_.reset(new T[gp_->num_elements()]);
+            //also make sure the internal multi_arrary_ref uses this newly allocated data
+            reassign();
+        }
+        ///@brief reassign internal multi_array_ref
+        void reassign(){
             ar_.~arr();
-            new(&ar_) arr(data_->data(), gp_->extent());
+            new(&ar_) arr(data_.get(), gp_->extent());
         }
     gp_tptr gp_{};
     std::shared_ptr<tvec> data_{};

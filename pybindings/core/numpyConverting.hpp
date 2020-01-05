@@ -35,6 +35,10 @@ using namespace frommle;
 namespace frommle{
 
     namespace py{
+        template<class T>
+        void nullDeleter(T* p) {
+            LOGINFO << "Deleting" <<  std::endl;
+        };
 
         ///@brief convert an element to a numpy dtype (specialize for each non built in type)
         
@@ -225,12 +229,15 @@ namespace frommle{
         ///@brief hyperslab <-> ndarray converter (dimension is dynamic)
         template<typename T>
         struct hslab_to_ndarray{
-            using HS=core::Hyperslab<T>;
+            using HS=core::HyperSlabBase<T>;
             static PyObject* convert (const HS & hslab){
                 return p::incref(get(hslab).ptr());
             }
             static np::ndarray get(const HS & hslab){
                 np::dtype dtype = np_dtype<T>::get();
+                if (! hslab.data()){
+                    THROWINPUTEXCEPTION("Cannot convert hslab to ndarray without data assignment");
+                }
                 //note: that we're removing the constness of the data because we want to allow modifications from python
                 return np::from_data(const_cast<T *>(hslab.data()),dtype,hslab.shape(),hslab.bytestride(),p::object());
 
@@ -241,7 +248,7 @@ namespace frommle{
         struct ndarray_to_hslab{
         public:
             ndarray_to_hslab(){
-                p::converter::registry::push_back(&convertible, &construct,p::type_id<core::Hyperslab<T>>());
+                p::converter::registry::push_back(&convertible, &construct,p::type_id<core::HyperSlabRef<T>>());
             }
 
             static void* convertible(PyObject * py_obj){
@@ -260,7 +267,7 @@ namespace frommle{
 
 
                 //setup memory for C++ class
-                typedef p::converter::rvalue_from_python_storage<core::Hyperslab<T>> storage_t;
+                typedef p::converter::rvalue_from_python_storage<core::HyperSlabRef<T>> storage_t;
                 storage_t *the_storage = reinterpret_cast<storage_t *>( data );
                 void *memory_chunk = the_storage->storage.bytes;
 
@@ -272,11 +279,26 @@ namespace frommle{
                     slices.push_back(core::make_slice(0,ndar.shape(i),ndar.strides(i)/sizeof(T)));
                 }
 
-                new(memory_chunk) core::Hyperslab<T>(slices);
+                //we want to create a shared_ptr to the data which is owned by python so we need to extract the
+                // owner of the data and apply an aliased shared_ptr contructor so the content of the shared_ptr does
+                //  not get deleted when the shared pointer is destructed
+//                p::incref(ndar.ptr());
+//                p::incref(ndar.get_base().ptr());
 
-                core::Hyperslab<T> * hslabptr=static_cast<core::Hyperslab<T>*>(memory_chunk);
-                //set the data (hslab does not! own the data)
-//                hslabptr->setdata(reinterpret_cast<T*>(ndar.get_data()));
+//                std::shared_ptr<int> owner=std::make_shared<int>(1);
+
+//                std::shared_ptr<T[]> sharedData(reinterpret_cast<T*>(ndar.get_data()),&nullDeleter<T>);
+//                new(memory_chunk) core::HyperSlab<T>(slices,sharedData);
+
+                new(memory_chunk) core::HyperSlabRef<T>(slices,reinterpret_cast<T*>(ndar.get_data()));
+
+                //                core::HyperSlabRef<T> * hslabptr=static_cast<core::HyperSlabRef<T>*>(memory_chunk);
+//                hslabptr->setData(reinterpret_cast<T *>(ndar.get_data()));
+//
+//                std::shared_ptr<PyObject> owner(p::incref(ndar.get_base().ptr()));
+//                //use aliased shared_ptr constructor
+//                std::shared_ptr<T[]> sharedData(owner,reinterpret_cast<T*>(ndar.get_data()));
+//                core::HyperSlab<T> hslab(slices,sharedData);
 
                 data->convertible = memory_chunk;
             }
@@ -284,7 +306,7 @@ namespace frommle{
 
 
         template<class T>
-        p::slice slice_from_hslab(const core::Hyperslab<T>  & hslab,size_t idx=0){
+        p::slice slice_from_hslab(const core::HyperSlabBase<T>  & hslab,size_t idx=0){
             return p::slice(hslab.offset()[idx],hslab.shape()[idx],hslab.stride()[idx]);
         }
 
@@ -293,24 +315,24 @@ namespace frommle{
 
 
         template<class T>
-        core::Hyperslab<T> hslab_from_slice(const p::slice & slc){
+        core::HyperSlab<T> hslab_from_slice(const p::slice & slc){
 
-            return core::Hyperslab<T>(convPyslice(slc));
+            return core::HyperSlab<T>(convPyslice(slc));
         }
 
         template<class T>
-        core::Hyperslab<T> hslab_from_slices(const p::tuple & slc){
+        core::HyperSlab<T> hslab_from_slices(const p::tuple & slc){
             int ndim=p::len(slc);
             std::vector<core::slice> slices(ndim);
             for(int i=0;i<ndim;++i){
                 slices[i]=convPyslice(p::extract<p::slice>(slc[i]));
             }
-            return core::Hyperslab<T>(slices);
+            return core::HyperSlab<T>(slices);
         }
 
 
         template<class T>
-        p::list slices_from_hslab(const core::Hyperslab<T>  & hslab){
+        p::list slices_from_hslab(const core::HyperSlabBase<T>  & hslab){
             p::list slices;
             for(int i=0;i<hslab.ndim();++i){
                 slices.append(slice_from_hslab(hslab,i));
@@ -320,7 +342,7 @@ namespace frommle{
 
         template<class T>
         void register_hslab(){
-            p::to_python_converter<core::Hyperslab<T>, hslab_to_ndarray <T>> ();
+            p::to_python_converter<core::HyperSlabBase<T>, hslab_to_ndarray <T>> ();
             ndarray_to_hslab<T>();
         }
 

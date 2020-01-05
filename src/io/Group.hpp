@@ -175,10 +175,10 @@ namespace frommle{
         }
 
         template<class T>
-        void setValue(const core::Hyperslab<T> & hslab);
+        void setValue(const core::HyperSlabBase<T> & hslab);
 
         template<class T>
-        void getValue(core::Hyperslab<T> hslab)const;
+        void getValue(core::HyperSlabBase<T> & hslab)const;
         ///@brief setValue of frommle object at once
         virtual void setValue(std::shared_ptr<const core::Frommle> frptr){
             //overloading this function in derived classes allows for runtime writing of Frommle classes
@@ -248,8 +248,8 @@ namespace frommle{
 
         virtual void getValue(singlePtr & in,const ptrdiff_t idx)const{THROWMETHODEXCEPTION("getValue not implemented");}
         virtual void setValue(const singlePtr & val,const ptrdiff_t idx){THROWMETHODEXCEPTION("setValue not implemented");}
-        virtual void setValue(const core::Hyperslab<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
-        virtual void getValue(core::Hyperslab<T> & hslab)const{THROWMETHODEXCEPTION("hyperslab reading not supported");}
+        virtual void setValue(const core::HyperSlabBase<T> & hslab){THROWMETHODEXCEPTION("hyperslab writing not supported");}
+        virtual void getValue(core::HyperSlabBase<T> & hslab)const{THROWMETHODEXCEPTION("hyperslab reading not supported");}
 
         ///@brief iterator which loops over the values in this variable
         class iterator{
@@ -333,7 +333,7 @@ namespace frommle{
 
         ///@brief forwards setrValue call to underlying variable specialization
         template<class T>
-        void VariableDyn::setValue(const core::Hyperslab<T> & hslab){
+        void VariableDyn::setValue(const core::HyperSlabBase<T> & hslab){
             VariableDyn* ptr=this;
             Variable<T> * varptr=dynamic_cast<Variable<T>*>(ptr);
 
@@ -348,7 +348,7 @@ namespace frommle{
 
         ///@brief forwards setrValue call to underlying variable specialization
         template<class T>
-        void VariableDyn::getValue(core::Hyperslab<T> hslab)const{
+        void VariableDyn::getValue(core::HyperSlabBase<T> & hslab)const{
             const VariableDyn* ptr=this;
             const Variable<T> * varptr=dynamic_cast<const Variable<T>*>(ptr);
 

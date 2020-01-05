@@ -81,7 +81,7 @@ namespace frommle {
             static PyObject* tryget(Attributes & attr,const std::string & key){
                     
                     try{
-                        LOGINFO << "tryincast " << typeid(T).name() << std::endl;
+//                        LOGINFO << "tryincast " << typeid(T).name() << std::endl;
                         return p::incref(p::object(attr.get<T>(key)).ptr());
                     }catch (boost::bad_any_cast & exc){
                         //OK tjust try the next possiblity

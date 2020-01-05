@@ -125,39 +125,3 @@ class SHStandardArchive(SHArchive):
                         #print out line
                         fid.write("%5d %5d %14.10e %14.10e\n"%(n,m,*lineval[0:2]))
 
-
-# def write_shstandard(file,idx, shcoef,sherr=None,meta=None):
-#     """Write a dataset of spherical harmonic coeficients to a 'standard' sh file"""
-#
-#     #find the  maximum degree
-#     nmax=max(idx,key=operator.itemgetter(0))[0]
-#     # import pdb;pdb.set_trace()
-#     #file order is  according to SHnmtGuide
-#     shg=SHnmtGuide(nmax)
-#     idxsorted=sorted(enumerate(idx),key=lambda val:shg.idx(val[1]))
-#
-#     tstamps=[0.0,0.0,0.0]
-#     if meta:
-#         for i,tag in enumerate(["tstart","tcent","tend"]):
-#             if tag in meta:
-#                 tstamps[i]=datetime2decyear(meta[tag])
-#
-#     #create an index vector which is used to fix the
-#     with open(file,'wt') as fid:
-#         fid.write("META   %d %f %f %f\n"%(nmax,tstamps[0],tstamps[1],tstamps[2]))
-#
-#         if sherr:
-#             lineval=[0.0,0.0,0.0,0.0]
-#             for i,(n,m,t) in idxsorted:
-#                 lineval[t]=shcoef[i]
-#                 lineval[2+t]=sherr[i]
-#                 if t == trig.s:
-#                     #print out line
-#                     fid.write("%d %d %e %e %e %e\n"%(n,m,*lineval))
-#         else:
-#             lineval=[0.0,0.0]
-#             for i,(n,m,t) in idxsorted:
-#                 lineval[t]=shcoef[i]
-#                 if t == trig.s:
-#                     #print out line
-#                     fid.write("%d %d %e %e\n"%(n,m,*lineval[0:2]))

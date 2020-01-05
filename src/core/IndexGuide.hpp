@@ -42,15 +42,9 @@ namespace frommle{
             using InjectGuideIterator<IndexGuide,Element>::end;
             size_t idx(const Element & el)const {return el;}
             void load(io::Group & Ar){
-                std::string gname=name();
-                if (gname.empty()){
-                    gname=std::string(hash());
-                }
-                auto & gvar=Ar.template getVariable<size_t>(gname);
-                //set the size of the current index
-                core::Hyperslab<size_t> hslab{};
-                gvar.getValue(hslab);
-                size_=hslab.data()[1]+1;
+                auto gvar=Ar.getVariable(name());
+                auto spl=gvar->hash().split();
+                size_=std::stoi(spl[0]);
 
             }
 

@@ -5,6 +5,7 @@ LIST(APPEND COREHEADERS core/frommle.hpp core/GuideBase.hpp core/TimeGuide.hpp c
 
 LIST(APPEND COREHEADERS core/Attributes.hpp)
 LIST(APPEND COREHEADERS core/typehash.hpp)
+LIST(APPEND COREHEADERS core/PhysQuantGuide.hpp)
 LIST(APPEND COREOBJS core/typehash.cpp core/GOperatorBase.cpp core/GuidePack.cpp core/TimeGuide.cpp core/frommle.cpp)
 
 LIST(APPEND COREHEADERS core/UserSettings.hpp  core/GArrayDiag.hpp core/Hyperslab.hpp core/GuideAppender.hpp )
