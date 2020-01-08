@@ -65,7 +65,7 @@ namespace frommle{
             size_t i=0;
             for(const auto & tnm:*shg){
                 std::tie(n,m,t)=tnm;
-                diag_.diagonal()[i]=kernel_[n];
+                diag_.eig().diagonal()[i]=kernel_[n];
 
                 ++i;
             }

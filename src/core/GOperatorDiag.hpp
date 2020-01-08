@@ -39,18 +39,15 @@ namespace frommle{
             using GOp::gpo_;
             using typename GOp::gpo_t;
             using GOp::operator();
-            using eigd=typename Eigen::DiagonalMatrix<T,Eigen::Dynamic,Eigen::Dynamic>;
-//            using garr=GArrayDiagDyn<T>;
-//            using eigd=typename garr::eigd;
+            using garr=GArrayDiag<T>;
+            using eigd=typename garr::eigd;
             GOperatorDiag(){}
-            GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(std::move(gpo)),diag_(gpo_->at(0)->size()){
+            GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(std::move(gpo)),diag_(*gpo_){}
 
-            }
-
-            GOperatorDiag( std::shared_ptr<guides::GuidePackDyn<1>> gpo, eigd diag ):GOp(gpo),diag_(diag){}
+            GOperatorDiag( std::shared_ptr<guides::GuidePackDyn<1>> gpo, eigd diag ):GOp(gpo),diag_(*gpo_){}
 
             GOperatorDiag inverse()const{
-                return GOperatorDiag(gpo_,diag_.inverse());
+                return GOperatorDiag(gpo_,diag_.eig().inverse());
                 
             }
 
@@ -73,18 +70,22 @@ namespace frommle{
 //                return gout;
 //            }
 
-            virtual void fwdOp(const GArrayDyn<T,2> & gin, GArrayDyn<T,2> & gout) {
+            void fwdOp(const GArrayBase<T,2> & gin, GArrayBase<T,2> & gout) override {
 
                     //some sanity checks
-                    if (diag_.diagonal().size() != gin.gp()[0]->size()){
+                    if (diag_.eig().diagonal().size() != gin.gp()[0]->size()){
                         THROWINPUTEXCEPTION("Stored diagonal size does not agree with input");
                     }
 
                     if (*(gout.gp()[0]) != *(gin.gp()[0])){
                         THROWINPUTEXCEPTION("Input and output dimension size does not agree");
                     }
+
+                    auto ginptr=gin.template as<const GArrayDense<T,2>*>();
+
+                    auto goutptr=gout.template as<GArrayDense<T,2>*>();
                     //let the eigen library do the math (multiple desne matrix with diagonal matrix)
-                    gout.eig()=diag_*gin.eig();
+                    goutptr->eig()=diag_.eig()*ginptr->eig();
                     
                     //Eigen::DiagonalMatrix<double,-1> dia(3);
                     //dia.diagonal()[0]=1;
@@ -106,11 +107,11 @@ namespace frommle{
 //            garr & diag(){return diag_;}
 //            const garr & diag()const{return diag_;}
 
-            eigd & eig(){return diag_;}
-            const eigd & eig()const{return diag_;}
+            eigd & eig(){return diag_.eig();}
+            const eigd & eig()const{return diag_.eig();}
 //            GOperatorDiag inverse()const{return GOperatorDiag(*gpo_,eig_.inverse());}
         protected:
-            eigd diag_{};
+            garr diag_{};
         };
 
 

@@ -46,6 +46,7 @@ namespace frommle{
 		template<class T, class ... Types>
 		class GauxMembers<T,Types...>:public virtual GauxMembers<Types...>{
 			public:
+
 				using next=GauxMembers<Types...>;
 				using next::append;
 				virtual GuidePackPtr append(const T& Guide)const=0;

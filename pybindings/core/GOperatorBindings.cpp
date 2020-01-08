@@ -38,12 +38,18 @@ namespace frommle{
         class GOperatorWrapper: public GOperatorDyn<T,ndim_o,ndim_i>,public p::wrapper<GOperatorDyn<T,ndim_o,ndim_i>>{
         public:
         
-        void fwdOp(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)    {
-        auto fwdop=this->get_override("__call__");
-            //auto self=p::object(p::ptr(this)); 
+        void fwdOp(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> & gout)  override  {
+        if( auto fwdop=this->get_override("__call__")) {
             //call the python __call__ method of this class
-            gout=p::call<GArrayDyn<T,ndim_o+1>>(fwdop.ptr(),gin); 
-        
+            auto gtmp=fwdop(gin);
+//            auto shp=p::extrac
+            auto goutptr= gout.template as<GArrayDense<T,ndim_o+1>*>();
+
+        }else{
+
+//            GOperatorDyn<T,ndim_o,ndim_i>::fwdOp(gin,gout);
+
+        }
     }
        
 
@@ -57,7 +63,7 @@ namespace frommle{
             static void reg(const std::string & basename){
                 
 
-                GArrayDyn<T,2>  (Gop::*adjointf)(const guides::GuidePackDyn<1> & )=&Gop::jacobian;
+                std::shared_ptr<GArrayBase<T,2>>  (Gop::*adjointf)(const guides::GuidePackDyn<1> & )=&Gop::jacobian;
 
                 p::class_<GOperatorWrapper<T,no,ni>,p::bases<GOperatorBase>,boost::noncopyable>(std::string(basename).append(std::to_string(no)).append("d_to_").append(std::to_string(ni)).append("d").c_str())
                     .def("jacobian",adjointf);

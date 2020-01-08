@@ -20,7 +20,7 @@ from frommle.io.shio import shopen,formats
 from frommle.sh import SHnmtGuide
 from frommle.core import logInfo
 from frommle.core import TreeNode
-from frommle.core import makeGArray
+from frommle.core.garray import makeGArray
 from datetime import datetime
 import gzip
 import io

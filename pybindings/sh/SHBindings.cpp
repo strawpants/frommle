@@ -112,7 +112,7 @@ void pyexport_sh()
 
     p::def("nmax_from_sz",&nmax_from_sz);
 
-    p::class_<Legendre_nm<double>,p::bases<core::GArrayDyn<double,1>>>("Legendre_nm",p::init<int>())
+    p::class_<Legendre_nm<double>,p::bases<core::GArrayDense<double,1>>>("Legendre_nm",p::init<int>())
             .def("set",&sh::Legendre_nm_d::set,p::return_value_policy<p::copy_non_const_reference>());
 //            .def("indxnm", &sh::Legendre_nm_d::indxnm);
 

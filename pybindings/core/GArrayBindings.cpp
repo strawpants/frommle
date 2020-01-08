@@ -22,8 +22,8 @@
  */
 
 #include <boost/python.hpp>
-#include "core/GArrayBase.hpp"
-//#include <boost/core/noncopyable.hpp>
+#include "core/GArrayDense.hpp"
+#include <boost/core/noncopyable.hpp>
 #include <boost/python/copy_non_const_reference.hpp>
 #include <boost/python/return_internal_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
@@ -37,7 +37,7 @@ namespace frommle{
         ///@biref converts a Guided array to an xarray DataArray
         template<class T, int n>
         struct garr_to_xarDataArray{
-            static PyObject *convert(GArrayDyn<T,n> const  & garin) {
+            static PyObject *convert(GArrayDense<T,n> const  & garin) {
                 //create a list of dimension names
                 p::list dims;
                 p::dict coords;
@@ -61,32 +61,40 @@ namespace frommle{
 
         template<class T, int n>
         struct register_dyngar{
-            using dyngar=GArrayDyn<T,n>;
-            static void reg(const std::string & basename){
+            using gbase=GArrayBase<T,n>;
+            using gdense=GArrayDense<T,n>;
+            static void reg(const std::string & tname){
 
-                typename dyngar::arr & (dyngar::*matf)()=&dyngar::mat;
+//                typename dense::arr & (dense::*matf)()=&dense::mat;
+                const typename gbase::gp_ptr_t & (gbase::*gpfc)()const=&gbase::gpp;
 
-                const typename dyngar::gp_tptr & (dyngar::*gpfc)()const=&dyngar::gpp;
+                //register base array
+                p::class_<gbase,p::bases<Frommle>,boost::noncopyable>(
+                        std::string("GArrayBase_").append(tname).append("_").append(std::to_string(n)).c_str(), p::no_init)
+                        .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>());
+//                        .def< const typename gbase::g_ptr_t & (gbase*::)()const>("gp",&gbase::gpp,p::return_value_policy<p::copy_const_reference>());
 
-                p::class_<dyngar,p::bases<Frommle>>(std::string(basename).append("_").append(std::to_string(n)).c_str())
-            .def(p::init<const guides::GuidePackDyn<n> &>())
-            .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>())
-            .add_property("mat",&register_dyngar::getndarray)
-            .def("DataArray",&garr_to_xarDataArray<T,n>::convert);
-            
+                //register densearray
+                p::class_<gdense,p::bases<gbase>>(std::string("GArray_").append(tname).append("_").append(std::to_string(n)).c_str())
+                 .def(p::init<const guides::GuidePackDyn<n> &>())
+                        .add_property("mat",&register_dyngar::getndarray)
+                        .def("DataArray",&garr_to_xarDataArray<T,n>::convert);
+
             //also register a shared_ptr
-            p::register_ptr_to_python< std::shared_ptr<GArrayDyn<T,n>>>();
+            p::register_ptr_to_python< std::shared_ptr<GArrayDense<T,n>>>();
             
-            p::def(std::string("make").append(basename).c_str(),&register_dyngar<T,n>::makegarr);
-            register_dyngar<T,n-1>::reg(basename);
+            p::def(std::string("makeGArray_").append(tname).c_str(),&register_dyngar<T,n>::makedense);
+            register_dyngar<T,n-1>::reg(tname);
             }
 
-        static  std::shared_ptr<GArrayDyn<T,n>> makegarr(const guides::GuidePackDyn<n> & gpin,const std::string name){
-            return std::make_shared<GArrayDyn<T,n>>(gpin,name);
+        static  std::shared_ptr<GArrayDense<T,n>> makedense(const guides::GuidePackDyn<n> & gpin,const std::string name){
+            return std::make_shared<GArrayDense<T,n>>(gpin,name);
         }
-        static np::ndarray getndarray(const dyngar & garr){
+
+
+        static np::ndarray getndarray(const gdense & garr){
                 return py::marrayref_to_ndarray<T,n>::get(garr.mat());
-            }
+        }
 //        static void setndarray(dyngar & garr,PyObject * pyob){
 //                //check if it is a ndarray
 //
@@ -116,7 +124,7 @@ namespace frommle{
 
         template<class T>
         struct register_dyngar<T,-1>{
-            static void reg(const std::string & basename){
+            static void reg(const std::string & tname){
                 //does nothing (stops recursion)
             }
         };
@@ -127,9 +135,8 @@ namespace frommle{
             
 
             //register dynamic versions
-            register_dyngar<double,6>::reg("GArray_float64");
-            register_dyngar<size_t,6>::reg("GArray_uint64");
-
+            register_dyngar<double,6>::reg("float64");
+            register_dyngar<size_t,6>::reg("uint64");
         }
 
 

@@ -28,39 +28,36 @@
 #define FROMMLE_GARRAYDIAGONAL_HPP
 namespace frommle{
     namespace core{
+        ///@brief contains a diagonal array
         template<class T>
-        class GArrayDiagDyn{
+        class GArrayDiag:public GArrayBase<T,2>{
         public:
-            using gp_t=guides::GuidePackDyn<1>;
-            using gp_tptr=std::shared_ptr<guides::GuidePackDyn <1>>;
-
             using eigd=typename Eigen::DiagonalMatrix<T,Eigen::Dynamic,Eigen::Dynamic>;
             using arr=boost::multi_array_ref<T, 1>;
-            GArrayDiagDyn() : gp_(std::make_shared<gp_t>()), eig_(){}
+            using GArrayBase<T,2>::gpp;
+            using GArrayBase<T,2>::gp;
+            using typename GArrayBase<T,2>::gp_ptr_t;
 
+            GArrayDiag():GArrayBase<T,2>(){}
+
+            ///@brief constructor which uses the same guide for both dimensions (it copies the internal guide)
             template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<1>, GP>::value, int> ::type = 0>
-            GArrayDiagDyn(GP guidepack):gp_(std::make_shared<GP>(std::move(guidepack))),
-                eig_(gp_->at(0)->size()){
-            }
+            GArrayDiag(GP guidepack):GArrayBase<T,2>(guidepack.append(guidepack.gv(0))),eig_(gpp()->at(0)->size()){}
 
+            GArrayDiag(gp_ptr_t guidepackptr): GArrayBase<T,2>(guidepackptr){}
+
+            //returns the diagonal
             eigd & eig(){return eig_;}
             const eigd & eig()const{return eig_;}
 
-            arr mat(){return arr(eig_.data(),gp_->extent());}
-
-            const gp_t &gp() const { return *gp_; }
-
-            gp_t &gp() { return *gp_; }
-
-            const gp_tptr &gpp() const { return gp_; }
-
-            gp_tptr &gpp() { return gp_; }
-
-
+            arr mat(){return arr(eig_.data(),gpp()->extent());}
+            GArrayBase<T,2> &operator=(const T scalar)override{
+               eig_.diagonal().array()=scalar;
+               return *this;
+            }
         private:
-            gp_tptr gp_{};
+            //internal data is contained within an eigen matrix
             eigd eig_{};
-
         };
 
 

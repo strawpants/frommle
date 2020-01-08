@@ -25,7 +25,7 @@
 #include <vector>
 #include <assert.h>
 #include "sh/SHGuide.hpp"
-#include "core/GArrayBase.hpp"
+#include "core/GArrayDense.hpp"
 //#include <boost/multiprecision/float128.hpp>
 //#include "core/GuideAppender_impl.hpp"
 #ifndef FROMMLE_SHLEGE_HPP
@@ -34,10 +34,10 @@ using namespace frommle::guides;
 namespace frommle{
     namespace sh{
         template<class ftype>
-    class Legendre_nm:public frommle::core::GArray<ftype,guides::GuidePack<guides::SHnmHalfGuide>>{
+    class Legendre_nm:public frommle::core::GArrayDense_spec<ftype,guides::GuidePack<guides::SHnmHalfGuide>>{
         public:
             using shg_t=guides::SHnmHalfGuide;
-            using Garr=frommle::core::GArray<ftype,guides::GuidePack<shg_t>>;
+            using Garr=frommle::core::GArrayDense_spec<ftype,guides::GuidePack<shg_t>>;
             using Garr::mat;
             inline const shg_t & shg()const{return *(Garr::template g<0>());}
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life

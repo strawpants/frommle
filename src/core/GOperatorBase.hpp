@@ -21,7 +21,8 @@
 #include <string>
 #include <cassert>
 #include <tuple>
-#include "GArrayBase.hpp"
+#include "GArrayDense.hpp"
+#include "GArrayDiag.hpp"
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
 
@@ -59,11 +60,11 @@ namespace core {
     public:
         static const int ndim_o=no;
         static const int ndim_i=ni;
-        using gin_t=GArrayDyn<T,ni>;
-        using ginplus_t=GArrayDyn<T,ni+1>;
+        using gin_t=GArrayBase<T,ni>;
+        using ginplus_t=GArrayBase<T,ni+1>;
 
-        using gout_t=GArrayDyn<T,no>;
-        using goutplus_t=GArrayDyn<T,no+1>;
+        using gout_t=GArrayBase<T,no>;
+        using goutplus_t=GArrayBase<T,no+1>;
         using gpo_t=guides::GuidePackDyn<ndim_o>;
         using gpo_ptr_t=std::shared_ptr<gpo_t>;
 
@@ -77,7 +78,7 @@ namespace core {
 
         GOperatorDyn(gpo_ptr_t gpo):gpo_(gpo){}
 
-        virtual void fwdOp(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout)=0;
+        virtual void fwdOp(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> & gout)=0;
 
         
         virtual std::shared_ptr<GOperatorDyn> inv()const{
@@ -87,26 +88,24 @@ namespace core {
         }
         
         ///@brief takes an array with extended dimension as input and applies the forward operator
-        inline void operator()(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> & gout){fwdOp(gin,gout);}
+        inline void operator()(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> & gout){fwdOp(gin,gout);}
 //        {
 //
 //            THROWNOTIMPLEMENTED("Default forward operator with extended dimension is currently not implemented");
 //        }
 
         ///@brief takes an array with extended dimension as input and applies the forward operator
-        GArrayDyn<T,ndim_o+1> operator()(const GArrayDyn<T,ndim_i+1> & gin){
+        std::shared_ptr<GArrayBase<T,ndim_o+1>> operator()(const GArrayBase<T,ndim_i+1> & gin){
             if (!gpo_){
                 THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
             }
-//            auto gptmp=*(gpo_->append(gin.gp()[ndim_i]));
-//            LOGINFO << gptmp[0]->size() << " "<< gptmp[1]->size() <<std::endl;
-            GArrayDyn<T,ndim_o+1> gout(gpo_->append(gin.gpp()->gv(ndim_i)));
-            this->operator()(gin,gout);
+            auto gout=std::make_shared<GArrayDense<T,ndim_o+1>> (gpo_->append(gin.gpp()->gv(ndim_i)));
+            this->operator()(gin,*gout);
             return gout;
         }
 
         ///@brief takes an array as input and applies the forward operator
-        void operator()(const GArrayDyn<T,ndim_i> & gin, GArrayDyn<T,ndim_o> & gout){
+        void operator()(const GArrayBase<T,ndim_i> & gin, GArrayBase<T,ndim_o> & gout){
             //expand the dimension so the common virtual operator can be called (but refer to the same data)
             guides::IndexGuide iguide(1);
             auto gpi=std::dynamic_pointer_cast<guides::GuidePackDyn<ndim_i+1>>(gin.gp().append(iguide));
@@ -117,40 +116,40 @@ namespace core {
         }
 
         ///@brief version which allocates a new matrix
-        GArrayDyn<T,ndim_o> operator()(const GArrayDyn<T,ndim_i> & gin) {
+        std::shared_ptr<GArrayBase<T,ndim_o>> operator()(const GArrayBase<T,ndim_i> & gin) {
             if (!gpo_){
                 THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
             }
 
-            GArrayDyn<T,ndim_o> gout(*gpo_);
+            auto gout =std::make_shared<GArrayBase<T,ndim_o>>(*gpo_);
             //forward call to virtual function so this function does not need to have this implemented
-            this->operator()(gin,gout);
+            this->operator()(gin,*gout);
             return gout;
         }
 
         ///@brief explicitly provides the Jacobian matrix of the linear operator
-        void jacobian(const guides::GuidePackDyn<ndim_i> &gpin, GArrayDyn<T, ndim_o + ndim_i> &gout){
+        void jacobian(const guides::GuidePackDyn<ndim_i> &gpin, GArrayBase<T, ndim_o + ndim_i> &gout){
             //just call the forward operator with an input of ones
             if (!isLinear()){
                 THROWMETHODEXCEPTION("Cannot compute linear jacobian from a non-linear operator without reference values");
             }
 
-            //create a identity matrix
-            GArrayDyn<T,ndim_i+1> gunit=GAconstruct<T>::eye(gpin);
+            //create a diagonal identity matrix
+            GArrayDense<T,ndim_i+1> gunit=createDenseGAr<T>::eye(gpin);
             //call the forward operator with the identity matrix
             fwdOp(gunit,gout);
         }
         
         ///@brief explicitly provides the jacobian matrix of a linear operator
-        GArrayDyn<T,ndim_o+ndim_i> jacobian(const guides::GuidePackDyn<ndim_i> & gpin){
+        virtual  std::shared_ptr<GArrayBase<T,ndim_o+ndim_i>> jacobian(const guides::GuidePackDyn<ndim_i> & gpin){
             //create new GArray and forward call
             
             if (!gpo_){
                 THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
             }
             auto tmpgpo=gpo_->append(gpin);
-            GArrayDyn<T,ndim_o+ndim_i> gout(*tmpgpo);
-            jacobian(gpin, gout);
+            auto gout=std::make_shared<GArrayDense<T,ndim_o+ndim_i>>(*tmpgpo);
+            jacobian(gpin, *gout);
             return gout;
         }
 

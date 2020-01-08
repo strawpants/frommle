@@ -16,7 +16,8 @@
 # Author Roelof Rietbroek (roelof@wobbly.earth), 2019
 
 
-from frommle.core import makeGArray_float64,makeGArray_uint64,makeGuidePack
+from frommle.core import makeGArray_float64,makeGArray_uint64
+from frommle.core.guidepack import makeGuidePack
 import numpy as np
 
 
