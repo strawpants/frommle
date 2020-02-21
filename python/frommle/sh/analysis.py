@@ -45,7 +45,7 @@ class ShAnalysis(Goperator):
     def __init__(self,geoGuide):
         pass
    
-   def __call__(self,shxin):
+    def __call__(self,shxin):
        """Propagate spherical harmonic datasets to spatial location"""
        pass
 

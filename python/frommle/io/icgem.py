@@ -126,7 +126,7 @@ class SHicgemArchive(SHArchive):
 
             shg=self.shg_c(nmax)
             sz=shg.size()
-            for ln in fid:
+            # for ln in fid:
 
             cnm=np.zeros([sz])
             sigcnm=np.zeros([sz])

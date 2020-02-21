@@ -28,37 +28,56 @@ import numpy as np
 import os
 
 def makeTestSh(shg):
-    """Make a test array from a Spherical harmonic guide"""
-    arr=np.zeros([shg.size()])
+    """Make a test garray from a Spherical harmonic guide"""
+    shgar=makeGArray(shg,name="cnm")
+    shgar.mat[:]=np.zeros([shg.size()])
     for i,(n,m,t) in enumerate(shg):
         if m==0 and t == 1:
             continue
-        arr[i]=n+m+t
-    return arr
+        shgar.mat[i]=n+m+t
+    return shgar
+
+
+def writeSH(shoarchive, gar):
+    """Sets up some attributes and writes a garray to an archive"""
+
+    shoarchive.attr["tstart"]=datetime(2000,1,1)
+    shoarchive.attr["tend"]=datetime(2002,6,30)
+    shoarchive.attr["tcent"]=(shoarchive.attr["tend"]-shoarchive.attr["tstart"])/2+shoarchive.attr["tstart"]
+    gar.save(shoarchive)
 
 class SHIO(unittest.TestCase):
     def test_standard(self):
         nmax=5
-        shgar=makeGArray(SHnmtGuide(nmax),name="cnm")
-        #put s perdictive set of values in the matrix
-        shgar.mat[:]=makeTestSh(shgar.gp()[0])
+        shgar=makeTestSh(SHnmtGuide(nmax))
+
         #write to file
         fileout='tmpout.sh.gz'
         with shopen(fileout,mode='w',format=formats.standard) as sharout:
-            sharout.attr["tstart"]=datetime(2000,1,1)
-            sharout.attr["tend"]=datetime(2002,6,30)
-            sharout.attr["tcent"]=(sharout.attr["tend"]-sharout.attr["tstart"])/2+sharout.attr["tstart"]
-            shgar.save(sharout)
+            writeSH(sharout,shgar)
 
         #read stuff in again
         shgarload=makeGArray(SHnmtGuide(),name="cnm")
         with shopen(fileout,mode='r',format=formats.standard) as sharin:
             shgarload.load(sharin)
 
-        for i,o in zip(shgar.mat,shgarload.mat):
-            self.assertEqual(i,o)
+        self.checkmat(shgar.mat,shgarload.mat)
 
         os.remove(fileout)
+
+    def test_GSM(self):
+        """Test the GSMv6 format"""
+        nmax=6
+        shgar=makeTestSh(SHnmtGuide(nmax))
+
+        #write to file
+        fileout='tmpout.sh.gz'
+        with shopen(fileout,mode='w',format=formats.GSMv6) as sharout:
+            writeSH(sharout,shgar)
+
+    def checkmat(self,mat1,mat2):
+        for i,o in zip(mat1,mat2):
+            self.assertEqual(i,o)
 
 if __name__ == '__main__':
     logInfo()
