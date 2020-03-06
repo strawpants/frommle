@@ -19,6 +19,7 @@
  */
 
 #include "numpyConverting.hpp"
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 namespace frommle{
 
@@ -48,7 +49,10 @@ namespace frommle{
     void register_numpy_converters(){
         
         //register vector <-> ndarray converters
-        register_vector<double>();
+//        register_vector<double>();
+        p::class_<std::vector<double> >("V_dbl").def(p::vector_indexing_suite<std::vector<size_t> >());
+        p::class_<std::vector<size_t> >("V_size_t").def(p::vector_indexing_suite<std::vector<size_t> >());
+//        register_vector<size_t>();
 
         register_mar<double,6>();
         register_mar<size_t,6>();

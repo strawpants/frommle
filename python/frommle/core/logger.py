@@ -17,7 +17,7 @@
 
 
 import logging
-from frommle.core import setcppInfoLevel,setcppDebugLevel,setcppWarningLevel
+from frommle.core import logInfo,logDebug,logWarning,logError
 # frommle wide logger
 logger=logging.getLogger("Frommle")
 
@@ -40,20 +40,20 @@ def debugging():
 def setInfoLevel():
     """Set logging level for both python and c++ to INFO severity"""
     logger.setLevel(logging.INFO)
-    setcppInfoLevel()
+    logInfo()
 
 def setDebugLevel():
     """Set logging level for both python and c++ to DEBUG severity"""
     logger.setLevel(logging.DEBUG)
-    setcppDebugLevel()
+    logDebug()
 
 
 def setWarningLevel():
     """Set logging level for both python and c++ to WARNING severity"""
     logger.setLevel(logging.WARNING)
-    setcppWarningLevel()
+    logWarning()
 
 def setErrorLevel():
     """Set logging level for both python and c++ to WARNING severity"""
     logger.setLevel(logging.ERROR)
-    setcppErrorLevel()
+    logError()

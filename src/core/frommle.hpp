@@ -51,6 +51,11 @@ namespace frommle{
             virtual void createFrom(const std::shared_ptr<Frommle> & frptr){
                 THROWNOTIMPLEMENTED("This object cannot  be created from a shared_ptr<Frommle>, implement createFrom in the derived class.");
             }
+
+            virtual std::vector<size_t> shape()const{
+                THROWNOTIMPLEMENTED("This frommle object provides no shape information");
+            }
+
             virtual void save(io::Group & grp)const;
             virtual void load(io::Group & group);
 

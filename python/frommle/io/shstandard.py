@@ -75,9 +75,9 @@ class SHStandardArchive(SHArchive):
 
 
                 if witherrors:
-                    sigcnm[idxc]=float(lnspl[2])
+                    sigcnm[idxc]=float(lnspl[4])
                     if m!=0:
-                        sigcnm[idxs]=float(lnspl[3])
+                        sigcnm[idxs]=float(lnspl[5])
 
             #set variables and assign ndarray's to them
 

@@ -71,7 +71,8 @@ namespace frommle{
                 //register base array
                 p::class_<gbase,p::bases<Frommle>,boost::noncopyable>(
                         std::string("GArrayBase_").append(tname).append("_").append(std::to_string(n)).c_str(), p::no_init)
-                        .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>());
+                        .add_property("gp",p::make_function(gpfc,p::return_value_policy<p::copy_const_reference>()));
+//                        .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>());
 //                        .def< const typename gbase::g_ptr_t & (gbase*::)()const>("gp",&gbase::gpp,p::return_value_policy<p::copy_const_reference>());
 
                 //register densearray

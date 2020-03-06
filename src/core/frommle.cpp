@@ -33,6 +33,8 @@ namespace frommle{
             auto var = ar.getVariable(name());
             var->setValue(this->getPtr());
         }
+
+        ///@breif try bulk loading the object (overload this for a specialized approach)
         void Frommle::load(io::Group &ar){
             auto var = ar.getVariable(name());
             //try loading the entire object at once

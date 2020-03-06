@@ -57,7 +57,7 @@ namespace frommle{
 
             if(writable()){
                 //write global attributes
-                CFConventions::SetGlobalAttr(*this);
+                CF::setFileAttr(*this);
             }
 
 
@@ -173,7 +173,7 @@ namespace frommle{
             if(writable()){
                 //createGroup
                 NetCDFCheckerror(nc_def_grp	(ncparent_->id(), name().c_str(),&id_));
-                CFConventions::SetGroupAttr(*this);
+//                CF::setGroupAttr(*this);
             }
 
 

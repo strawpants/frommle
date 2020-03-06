@@ -130,36 +130,17 @@ namespace frommle{
                     Variable<T>::getValue(hslab);
                 }
             }
-//            void default_setValue(const core::Hyperslab<T> & hslab){
-//                Variable<T>::setValue(hslab);
-//            }
 
-//            static np::ndarray getitem(PyObject* varptr, const  p::slice & slice){
-//                auto res=p::call_method<np::ndarray>(varptr,"__getitem__",slice);
-//                return res;
-//            }
+            std::vector<size_t> shape()const override {
 
-//            //let's overload this function so a derived type in python can use it's __getitem__ function instead of getValue
-//            void getValue(core::Hyperslab<T> & hslab) {
-//                if (p::override getf = this->get_override("__getitem__")) {
-//                    //sucess: use this function and convert requested hyperslab to a tuple of python slices
-//                        if(hslab.ndim() ==1){
-//                            p::slice slc=py::slice_from_hslab<T>(hslab);
-//                            np::ndarray ndout=getf(slc);
-//                            hslab.setdata(reinterpret_cast<T*>(ndout.get_data()));
-//                        }else{
-//                            //use a list of slices
-//                            p::list slc=py::slices_from_hslab<T>(hslab);
-//                            np::ndarray ndout=getf(slc);
-//                            hslab.setdata(reinterpret_cast<T*>(ndout.get_data()));
-//                        }
-////                    //set data storage location
-//                }else{
-////                    //no python overload: just forward call to derived c++ type
-//                    Variable<T>::getValue(hslab);
-////
-//                }
-//            }
+                if (p::override shapef=this->get_override("shape")){
+                    return shapef();
+                }else{
+
+                    return Variable<T>::shape();
+
+                }
+            }
             ///@brief either use the python implmentation of the derived type or the getValue function of c++
 
 
@@ -220,17 +201,9 @@ namespace frommle{
         struct register_var{
                 static void reg(const std::string & basename){
                     PyObject* (VariableWrapper<T>::*geti1)(const p::slice &)=&VariableWrapper<T>::getitem;
-                    //PyObject* (VariableWrapper<T>::*geti2)(const p::tuple &)=&VariableWrapper<T>::getitem;
-
-                    //PyObject* (VariableWrapper<T>::*defgeti1)(const p::slice &)=&VariableWrapper<T>::getitem_default;
-                    //PyObject* (VariableWrapper<T>::*defgeti2)(const p::tuple &)=&VariableWrapper<T>::getitem_default;
-                    
                     p::class_<VariableWrapper<T>,p::bases<VariableDyn>,boost::noncopyable>(basename.c_str())
                             .def(p::init<std::string>())
-//                            .def("setValue",&Variable<T>::setValue,&VariableWrapper<T>::default_setValue)
-//                            .def("__getitem__",&VariableWrapper<T>::getitem);
                             .def("__getitem__",geti1);
-                            //.def("__getitem__",geti2);
 
                     p::register_ptr_to_python< std::shared_ptr<Variable<T>> >();
                     p::register_ptr_to_python< std::shared_ptr<VariableWrapper<T>> >();
@@ -306,6 +279,7 @@ namespace frommle{
             p::class_<VariableDyn,p::bases<core::TreeNodeItem>>("Variable")
                     .def(p::init<std::string>())
                     .def(p::init<std::shared_ptr<core::Frommle>>())
+                    .def("shape",&VariableDyn::shape)
                     .add_property("value",&getFrValue,&setFrValue);
 
             p::register_ptr_to_python< std::shared_ptr<VariableDyn> >();

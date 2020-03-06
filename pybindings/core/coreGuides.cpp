@@ -31,7 +31,8 @@ namespace frommle{
         void register_coreGuides(){
 
     //IndexGuide
-    p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>());
+    p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>())
+    .def("append",&IndexGuide::append);
     
     //TimeGuides
     //TO pinpoint boost python to the correct overload we need to define specific function pointers
@@ -40,6 +41,7 @@ namespace frommle{
 
     
     p::class_<DateGuide,p::bases<GuideBase>>("DateGuide")
+    .def(p::init<std::string>())
     .def("append",pbdg)
     .def("__getitem__",igetdt,p::return_value_policy<p::copy_const_reference>())
     .def("__iter__",p::iterator<const DateGuide>());
@@ -47,6 +49,7 @@ namespace frommle{
     void (PTimeGuide::*pbpt)(const ptime )=&PTimeGuide::push_back;
     const ptime & (PTimeGuide::*igetpt)(const size_t)const=&PTimeGuide::operator[];
     p::class_<PTimeGuide,p::bases<GuideBase>>("PTimeGuide")
+    .def(p::init<std::string>())
     .def("append",pbpt)
     .def("__getitem__",igetpt,p::return_value_policy<p::copy_const_reference>())
     .def("__iter__",p::iterator<const PTimeGuide>());

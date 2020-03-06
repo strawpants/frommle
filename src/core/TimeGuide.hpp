@@ -23,6 +23,7 @@
 #include <vector>
 #include "core/GuideBase.hpp"
 #include <boost/date_time.hpp>
+#include <io/Group.hpp>
 
 namespace frommle {
 	namespace guides {
@@ -40,13 +41,13 @@ namespace frommle {
 		public:
 		    using Element=Tp;
 		    using ElementContainer=std::vector<Tp>;
-			TimeGuide():GuideBase(typehash("TimeGuide")){}
-
-            TimeGuide(Tp && in):GuideBase(typehash("TimeGuide")){
+			TimeGuide():GuideBase("time",typehash("TimeGuide")){}
+            TimeGuide(std::string name):GuideBase(name,typehash("TimeGuide")){}
+            TimeGuide(Tp && in):GuideBase("time",typehash("TimeGuide")){
                 push_back(std::move(in));
             }
 
-            TimeGuide(const Tp in):GuideBase(typehash("TimeGuide")){
+            TimeGuide(const Tp in):GuideBase("time",typehash("TimeGuide")){
                 push_back(in);
             }
 
@@ -61,6 +62,9 @@ namespace frommle {
             void push_back(Tp && in){
                 TimeVec_.push_back(in);
             }
+
+            void load(io::Group & Ar)override;
+            void save(io::Group & Ar)const override;
 
             using const_iterator=typename ElementContainer::const_iterator;
             using iterator=typename ElementContainer::iterator;
@@ -77,15 +81,37 @@ namespace frommle {
 		};
 
 
-        /*!brief
-         * Create a Time dimension from a date/time range
-         * @tparam T
-         * @tparam D
-         * @param from
-         * @param to
-         * @param step
-         * @return
-         */
+        template <class Tp>
+        void TimeGuide<Tp>::load(io::Group & Ar){
+
+           //retrieve the variable which holds the time info
+            auto &tvar=Ar.template getVariable<Tp>(name());
+            for (auto t:tvar ){
+                this->push_back(*t);
+            }
+        }
+
+        template <class Tp>
+        void TimeGuide<Tp>::save(io::Group & Ar)const{
+//            //create a new variable holding the geometry
+            Ar[name()]=io::Variable<Tp>();
+            auto tvar= dynamic_cast<io::Variable<Tp>*>(Ar[name()].get());
+            for (auto const & t:TimeVec_){
+                tvar->setValue(t,-1);
+            }
+
+        }
+
+
+/*!brief
+ * Create a Time dimension from a date/time range
+ * @tparam T
+ * @tparam D
+ * @param from
+ * @param to
+ * @param step
+ * @return
+ */
         template<class T,class D>
         TimeGuide<T> make_trange(const T from, const T to,const D step){
             auto tg = TimeGuide<T>(from);

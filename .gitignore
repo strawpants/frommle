@@ -8,3 +8,4 @@ docsrc/Doxyfile
 python/setup.py
 build
 compile_commands.json
+.ipynb_checkpoints

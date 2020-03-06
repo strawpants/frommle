@@ -14,14 +14,14 @@ from datetime import datetime
 import math
 
 class icgemLineParser():
-    def __init__(self,nmax,epoch):
+    def __init__(self,nmax,epoch=None):
         self.epoch=epoch
         self.nmax=nmax
         self.t0=None
         self.diyr=365.25
         self.regex=re.compile('(^gfc .*)|(^gfct .*)|(^trnd .*)|(^acos .*)|(^asin .*)')
     def __call__(self,ln):
-        """Parse a icgem line and return an update to the coefficient"""
+        """Parse an icgem line and return an update to the coefficient"""
         if not self.regex.match(ln):
             return None,None,None,None,None,None,None
 
@@ -51,7 +51,7 @@ class icgemLineParser():
 
         if not self.epoch:
             #quick return if no time variable component is requested
-            return None,None,None,None,None,None
+            return None,None,None,None,None,None,None
 
         if lnspl[0] =='trnd':
             #add a linear trend
@@ -94,7 +94,7 @@ class SHicgemArchive(SHArchive):
             try:
                 nmaxsupp=int(hdr["max_degree"])
                 self.attr["nmaxfile"]=nmaxsupp
-                if "nmax" in self.attr:
+                if not "nmax" in self.attr:
                     self.attr["nmax"]=nmaxsupp
                 nmax=self.attr["nmax"]
 
@@ -129,20 +129,33 @@ class SHicgemArchive(SHArchive):
             # for ln in fid:
 
             cnm=np.zeros([sz])
-            sigcnm=np.zeros([sz])
+            varcnm=np.zeros([sz])
+
+
+            if self.attr["format"] == "icgem":
+                lParser=icgemLineParser(nmax)
+            else:
+                raise RuntimeError("The icgem format '%s' is currently unsupported"%(self.attr["format"]))
+
+            #continue parsing the lines
+            for ln in fid:
+                cnmtype,n,m,c,s,sc,ss=lParser(ln)
+                if n <= nmax:
+                    idxc=shg.idx((n,m,trig.c))
+                    idxs=shg.idx((n,m,trig.s))
+
+                    cnm[idxc]+=c
+                    varcnm[idxc]+=sc*sc
+                    if m> 0:
+                        cnm[idxs]+=s
+                        varcnm[idxs]+=ss*ss
+
 
             self["cnm"]=np_float64Var(cnm)
             self["shg"]=Variable(shg)
 
-            if self.attr["format"] == "icgem":
-                lParser=icgemLineParser(nmax,epoch)
-            else:
-                raise RuntimeError("The icgem format '%s' is currently unsupported"%(self.attr["format"]))
 
-            witherrors=False
-
-            if witherrors:
-                self["sigcnm"]=np_float64Var(sigcnm)
+            self["sigcnm"]=np_float64Var(np.sqrt(varcnm))
 
 
 
@@ -270,7 +283,7 @@ class SHicgemArchive(SHArchive):
     #             self["sigcnm"]=np_float64Var(sigcnm)
 
     def fsave_impl(self):
-        pass
+        raise NotImplementedError("cannot (currently) save to ICGEM format")
         # cnm=self["cnm"][:]
         # sigcnm=self["sigcnm"][:]
         # shg=self["shg"].value

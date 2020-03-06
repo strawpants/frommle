@@ -186,6 +186,14 @@ namespace frommle{
             frptr_=std::const_pointer_cast<core::Frommle>(frptr);
         }
 
+        virtual std::vector<size_t> shape()const{
+            //default forwards the request to the internal frommle pointer
+            if (frptr_){
+                return frptr_->shape();
+            }else {
+                THROWNOTIMPLEMENTED("This Variable type is empty or does not provide shape information");
+            }
+        }
         core::typehash hash() const {
             if( frptr_){
                 return frptr_->hash();
@@ -235,7 +243,7 @@ namespace frommle{
     public:
         using single=T;
         using singlePtr=std::shared_ptr<single>;
-        virtual int ndim(){return 1;}
+        virtual int ndim()const{return 1;}
         Variable(core::TreeNodeRef && in):VariableDyn(std::move(in)){}
         Variable():VariableDyn(){}
         Variable(std::string name):VariableDyn(name){}

@@ -25,7 +25,7 @@
 #include <netcdf.h>
 #include <boost/multi_array.hpp>
 #include <string>
-#include "io/CFConventions.hpp"
+#include "io/Conventions.hpp"
 #ifndef FROMMLE_NETCDFARCHIVE_HPP
 #define FROMMLE_NETCDFARCHIVE_HPP
 
@@ -121,7 +121,7 @@ namespace frommle {
             void getValue(core::HyperSlabBase<T> &hslab)const override;
 
 //            virtual void getValue(singlePtr & in,const ptrdiff_t idx)const;
-            int ndim() { return ndim_; }
+            int ndim()const { return ndim_; }
 
             void setAttr(const std::string &name, const std::string &value);
 
@@ -258,7 +258,7 @@ namespace frommle {
                         nc_def_var(ncparent_->id(), name().c_str(), NetCDFtype<T>::type(), ndim_, dimids.data(),
                                    &id_));
                 //also setup attributes
-                CFConventions::SetDataAttr(*this);
+//                CF::setVarAttr(*this);
 
             }
 

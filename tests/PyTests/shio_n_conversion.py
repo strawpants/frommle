@@ -17,9 +17,8 @@
 
 import unittest
 from frommle.io.shio import shopen,formats
-from frommle.sh import SHnmtGuide
+from frommle.sh import SHnmtGuide,trig
 from frommle.core import logInfo
-from frommle.core import TreeNode
 from frommle.core.garray import makeGArray
 from datetime import datetime
 import gzip
@@ -66,14 +65,53 @@ class SHIO(unittest.TestCase):
         os.remove(fileout)
 
     def test_GSM(self):
-        """Test the GSMv6 format"""
-        nmax=6
-        shgar=makeTestSh(SHnmtGuide(nmax))
+        """Test the GSMv6 format (reading only)"""
+        gsmfile='../data/GSM-2_2008001-2008031_GRAC_UTCSR_BA01_0600.gz'
+        #read from file
+        cnmload=makeGArray(SHnmtGuide(),name="cnm")
+        with shopen(gsmfile,mode='r',format=formats.GSMv6) as sharin:
+            cnmload.load(sharin)
 
-        #write to file
-        fileout='tmpout.sh.gz'
-        with shopen(fileout,mode='w',format=formats.GSMv6) as sharout:
-            writeSH(sharout,shgar)
+        #check maximum degree
+        shg=cnmload.gp[0]
+        self.assertEqual(shg.nmax,60)
+
+        #also check a few handchecked values
+        valdat=[(shg.idx((13, 1,trig.c)),-.514368595279E-07),
+                (shg.idx((13,1,trig.s)),0.386779437418E-07),
+                (shg.idx((60,60,trig.c)), 0.378141240210E-08),
+                (shg.idx((60,60,trig.s)), 0.206527643361E-10)
+                ]
+
+        for idx,val in valdat:
+            self.assertEqual(val,cnmload.mat[idx])
+
+    def test_icgem(self):
+        """Test reading SH data from the icgem format"""
+        icgemfile="../data/ITSG-Grace2018_n60_2010-04.gfc.gz"
+
+        #read from file
+        cnmload=makeGArray(SHnmtGuide(),name="cnm")
+        with shopen(icgemfile,mode='r',format=formats.icgem) as sharin:
+            cnmload.load(sharin)
+
+        #check maximum degree
+        shg=cnmload.gp[0]
+        self.assertEqual(shg.nmax,60)
+
+        #also check a few handchecked value
+        # gfc    13   11 -4.452325661643e-08 -4.845607967346e-09  1.163458670286e-12  1.151077435222e-12
+        # gfc    60   60  3.784696252231e-09  2.318360408875e-11  6.406286577683e-12  6.277124447653e-12
+        valdat=[(shg.idx((13, 11,trig.c)),-4.452325661643e-08),
+                (shg.idx((13,11,trig.s)),0-4.845607967346e-09),
+                (shg.idx((60,60,trig.c)), 3.784696252231e-09),
+                (shg.idx((60,60,trig.s)), 2.318360408875e-11)
+                ]
+
+        for idx,val in valdat:
+            self.assertEqual(val,cnmload.mat[idx])
+
+
 
     def checkmat(self,mat1,mat2):
         for i,o in zip(mat1,mat2):

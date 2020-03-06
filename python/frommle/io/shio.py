@@ -18,7 +18,8 @@
 import re
 import gzip as gz
 from frommle.io.shstandard import SHStandardArchive
-from frommle.io.GSM import
+from frommle.io.GSM import SHGSMv6Archive
+from frommle.io.icgem import SHicgemArchive
 
 # from frommle.io.shstandard import read_shstandard,write_shstandard
 # from frommle.io.icgem import read_icgem
@@ -79,7 +80,7 @@ def shopen(filen,mode='r',format=formats.unknown):
         raise RuntimeError("Don't know how to open this format")
 
     # archives={formats.icgem:icgemArchive,formats.standard:SHStandardArchive,formats.GSMv6:GSMV6Archive}
-    archives={formats.standard:SHStandardArchive,formats.GSMv6:}
+    archives={formats.standard:SHStandardArchive,formats.GSMv6:SHGSMv6Archive,formats.icgem:SHicgemArchive}
 
     return archives[format](filen,mode)
 

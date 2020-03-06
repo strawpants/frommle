@@ -328,6 +328,7 @@ namespace frommle{
         template<class T>
         class HyperSlab:public HyperSlabBase<T>{
         public:
+//            using dvec=T*;
             using dvec=T[];
             using dshared=std::shared_ptr<dvec>;
             using ivec=typename HyperSlabBase<T>::ivec;
@@ -385,7 +386,7 @@ namespace frommle{
             dshared data_{};
             ///@brief allocate data within this hyperslab
             void allocate(){
-                data_=std::make_shared<dvec>(sizeAlloc());
+                data_=dshared(new T[sizeAlloc()]);
             }
         };
 

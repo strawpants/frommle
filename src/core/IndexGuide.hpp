@@ -27,7 +27,7 @@ namespace frommle{
     namespace guides{
 
         /*!brief
-         * A guide which keeps track on (permuted) indices
+         * A guide which keeps track on indices (future extension will be to allow for permutations)
          */
         class IndexGuide:public GuideBase, public InjectGuideIterator<IndexGuide,unsigned long long int>{
         public:
@@ -41,6 +41,9 @@ namespace frommle{
             using InjectGuideIterator<IndexGuide,Element>::begin;
             using InjectGuideIterator<IndexGuide,Element>::end;
             size_t idx(const Element & el)const {return el;}
+            void append(){
+                ++size_;
+            }
             void load(io::Group & Ar){
                 auto gvar=Ar.getVariable(name());
                 auto spl=gvar->hash().split();

@@ -17,7 +17,7 @@
 import unittest
 
 import os
-from frommle.earthmodels.Earthmodel import  SNREI
+# from frommle.earthmodels.Earthmodel import  SNREI
 import numpy as np
 import math
 import io 
@@ -49,18 +49,27 @@ def getStokes(filename):
     )
 
 
-class testSurfaceLoading(unittest.TestCase):
-    def test_eqh2Stokes(self):
-        loadlovef=os.path.join(os.environ['RLFTLBX_DATA'],'love','PREM.love')
-        loadlovef=findresource('PREM.love',table='love',scheme='earthmodels')
-        nmax=5
-        #feed an elastic Earth model some love numbers
-        snrei=SNREI(loadlovef,nmax)
-        
-        #retrieve the stokes2eqqh operator
-        s2eqh=snrei.stokes2eqh();
-        self.assertEqual("test","test")
-        
+# class testSurfaceLoading(unittest.TestCase):
+#     def test_eqh2Stokes(self):
+#         loadlovef=os.path.join(os.environ['RLFTLBX_DATA'],'love','PREM.love')
+#         loadlovef=findresource('PREM.love',table='love',scheme='earthmodels')
+#         nmax=5
+#         #feed an elastic Earth model some love numbers
+#         snrei=SNREI(loadlovef,nmax)
+#
+#         #retrieve the stokes2eqqh operator
+#         s2eqh=snrei.stokes2eqh();
+#         self.assertEqual("test","test")
 
+from geoslurp.db import geoslurpConnect
+from geoslurp.discover.gravity import queryStatic,queryGRACE
+from frommle.io import GSMConcatArchive
+import os
 
-
+class testHybridAr(unittest.TestCase):
+    def test_shhybrid(self):
+        pgcon=geoslurpConnect()
+        gsmfiles=[x.gsm for x in queryGRACE(pgcon,"gracel2_gfz_rl06")]
+        GSMArchive=GSMConcatArchive(gsmfiles[0:10])
+        tguide=GSMArchive["tstart"]
+        print(tguide)

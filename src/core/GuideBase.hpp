@@ -67,7 +67,7 @@ class GuideBase:public core::Frommle {
         explicit   operator MaskedGuide<G>();
         
         virtual  size_t size() const { return descripcache_.size(); }
-
+        inline std::vector<size_t> shape()const override{return std::vector<size_t>{size()};}
 //        virtual bool operator==(const GuideBase &in) const {
 //            return type_ == in.type_;
 //        }

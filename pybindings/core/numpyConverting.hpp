@@ -69,6 +69,7 @@ namespace frommle{
             static constexpr bool isobject(){return false;}
         };
 
+
         template<>
         struct np_dtype<long long int>{
             static np::dtype get(){
@@ -95,54 +96,55 @@ namespace frommle{
         };
 
 
-        template<class T>
-        struct vec_to_ndarray{
-            static PyObject* convert( std::vector<T> const & invec){
-                p::tuple shape = p::make_tuple(invec.size());
-                np::dtype dtype = np_dtype<T>::get();
-                np::ndarray py_array=np::from_data(const_cast<T *>(invec.data()),dtype,shape,p::make_tuple(sizeof(T)),p::object());
-                return p::incref(py_array.ptr());
-            }
-        };
-
-        template<class T>
-        struct ndarray_to_vec {
-        public:
-                ndarray_to_vec(){
-                p::converter::registry::push_back(&convertible, &construct,p::type_id<std::vector<T>>());
-            }
-
-            static void* convertible(PyObject * py_obj){
-                np::ndarray ndar = p::extract<np::ndarray>(py_obj);
-                //cehck if a type holds a one dimensional array (i.e. vector)
-                if ( ndar.get_nd() != 1 ){
-                    return 0;
-                }
-                return py_obj;
-            }
-
-            static void construct(PyObject *py_obj, p::converter::rvalue_from_python_stage1_data *data) {
-
-                //setup memory for C++ class
-                typedef p::converter::rvalue_from_python_storage<std::vector<T>> storage_t;
-                storage_t *the_storage = reinterpret_cast<storage_t *>( data );
-                void *memory_chunk = the_storage->storage.bytes;
-
-                np::ndarray ndar = static_cast<np::ndarray>(p::extract<np::ndarray>(py_obj)).astype(np_dtype<T>::get());
-                size_t sz= ndar.shape(0);
-                new(memory_chunk) std::vector<T>(sz);
-                std::vector<T> * vecptr=static_cast<std::vector<T>*>(memory_chunk);
-                auto dstart=reinterpret_cast<T const *>(ndar.get_data());
-                //copy data
-                std::copy(dstart,dstart+sz,vecptr->begin());
-
-//                for(size_t i=0;i<sz;++i){
-//                    (*vecptr)[i]=*dstart;
-//                    ++dstart;
+//        template<class T>
+//        struct vec_to_ndarray{
+//            static PyObject* convert(const std::vector<T> & invec){
+//                p::tuple shape = p::make_tuple(invec.size());
+//                np::dtype dtype = np_dtype<T>::get();
+//                np::ndarray py_array=np::from_data(const_cast<T *>(invec.data()),dtype,shape,p::make_tuple(sizeof(T)),p::object());
+//                return p::incref(py_array.ptr());
+//            }
+//
+//        };
+//
+//        template<class T>
+//        struct ndarray_to_vec {
+//        public:
+//                ndarray_to_vec(){
+//                p::converter::registry::push_back(&convertible, &construct,p::type_id<std::vector<T>>());
+//            }
+//
+//            static void* convertible(PyObject * py_obj){
+//                np::ndarray ndar = p::extract<np::ndarray>(py_obj);
+//                //cehck if a type holds a one dimensional array (i.e. vector)
+//                if ( ndar.get_nd() != 1 ){
+//                    return 0;
 //                }
-                data->convertible = memory_chunk;
-            }
-        };
+//                return py_obj;
+//            }
+//
+//            static void construct(PyObject *py_obj, p::converter::rvalue_from_python_stage1_data *data) {
+//
+//                //setup memory for C++ class
+//                typedef p::converter::rvalue_from_python_storage<std::vector<T>> storage_t;
+//                storage_t *the_storage = reinterpret_cast<storage_t *>( data );
+//                void *memory_chunk = the_storage->storage.bytes;
+//
+//                np::ndarray ndar = static_cast<np::ndarray>(p::extract<np::ndarray>(py_obj)).astype(np_dtype<T>::get());
+//                size_t sz= ndar.shape(0);
+//                new(memory_chunk) std::vector<T>(sz);
+//                std::vector<T> * vecptr=static_cast<std::vector<T>*>(memory_chunk);
+//                auto dstart=reinterpret_cast<T const *>(ndar.get_data());
+//                //copy data
+//                std::copy(dstart,dstart+sz,vecptr->begin());
+//
+////                for(size_t i=0;i<sz;++i){
+////                    (*vecptr)[i]=*dstart;
+////                    ++dstart;
+////                }
+//                data->convertible = memory_chunk;
+//            }
+//        };
         template<typename T, size_t ndim>
         struct marrayref_to_ndarray{
             using bma=boost::multi_array_ref<T,ndim>;
@@ -207,14 +209,14 @@ namespace frommle{
         };
 
         
-    template<class T>
-    struct register_vector{
-        register_vector(){
-            p::to_python_converter< std::vector<T> , vec_to_ndarray <T>> ();
-            ndarray_to_vec<T>();
-            
-        }
-    };
+//    template<class T>
+//    struct register_vector{
+//        register_vector(){
+//            p::to_python_converter< std::vector<T> , vec_to_ndarray <T>> ();
+//            ndarray_to_vec<T>();
+//
+//        }
+//    };
     //template<class G>
     //np::ndarray guide_to_ndarray(const G & gd){
         //using Element=typename G::Element;

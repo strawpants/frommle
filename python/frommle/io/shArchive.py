@@ -56,8 +56,14 @@ class SHArchive(Group):
         return self
     def __exit__(self, type, value, traceback):
         """This save the existing data to a file when the  archive is in write mode"""
+        self.sync()
+
+    def sync(self):
         if self.writable():
             self.fsave_impl()
+
+    def __del__(self):
+        self.sync()
 
     def fid(self):
         """Opens the text file (and possibly pass through a gzip filter) and returns a file descriptor"""

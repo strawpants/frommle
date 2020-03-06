@@ -1,4 +1,4 @@
-/*! \file CFConventions.cpp
+/*! \file Conventions.cpp
  \brief 
  \copyright Roelof Rietbroek 2019
  \license
@@ -20,7 +20,7 @@
  Created by Roelof Rietbroek,  2019
 
  */
-#include "io/CFConventions.hpp"
+#include "io/Conventions.hpp"
 
 namespace frommle{
     namespace io{
