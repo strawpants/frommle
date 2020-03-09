@@ -22,7 +22,7 @@ LIST(APPEND SHOBJS sh/Legendre_nm.cpp sh/Legendre.cpp sh/SHGuide.cpp)
 LIST(APPEND GEOSPATHEADERS geometry/GeoGrid.hpp geometry/OGRGuide.hpp geometry/OGR2boost.hpp geometry/OGRiteratorBase.hpp geometry/GuideMakerTools.hpp geometry/geomOperator.hpp)
 LIST(APPEND GEOSPATOBJS geometry/GeoGrid.cpp geometry/GuideMakerTools.cpp geometry/OGRGuide.cpp)
 
-LIST(APPEND IOHEADERS io/getpass.hpp io/OGRArchive.hpp  io/Group.hpp  io/OGRIOArchives.hpp io/LineBuffer.hpp io/NetCDFIO.hpp io/Conventions.hpp)
+LIST(APPEND IOHEADERS io/getpass.hpp io/OGRArchive.hpp  io/Group.hpp io/Variable.hpp io/OGRIOArchives.hpp io/LineBuffer.hpp io/NetCDFIO.hpp io/Conventions.hpp)
 LIST(APPEND IOOBJS io/getpass.cpp io/OGRArchive.cpp io/Group.cpp io/OGRIOArchives.cpp io/LineBuffer.cpp io/NetCDFIO.cpp io/Conventions.cpp)
 
 

@@ -19,6 +19,8 @@
  */
 #include "core/GuideBase.hpp"
 #include "io/Group.hpp"
+#include "io/Variable.hpp"
+
 #include <boost/range.hpp>
 #ifndef FROMMLE_INDEXGUIDE_HPP
 #define FROMMLE_INDEXGUIDE_HPP

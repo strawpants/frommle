@@ -23,7 +23,8 @@
 #include <vector>
 #include "core/GuideBase.hpp"
 #include <boost/date_time.hpp>
-#include <io/Group.hpp>
+#include "io/Group.hpp"
+#include "io/Variable.hpp"
 
 namespace frommle {
 	namespace guides {

@@ -24,21 +24,24 @@
 
 #include "core/frommle.hpp"
 #include "io/Group.hpp"
+#include "io/Variable.hpp"
 
 namespace frommle{
     namespace core{
 
         ///@brief try bulk saving the object (overload this for a specialized approach)
         void Frommle::save(io::Group &ar)const{
-            auto var = ar.getVariable(name());
+            auto var = ar.createVariable(name());
             var->setValue(this->getPtr());
         }
 
-        ///@breif try bulk loading the object (overload this for a specialized approach)
+        ///@brief try bulk load the object (overload this for a specialized approach)
         void Frommle::load(io::Group &ar){
             auto var = ar.getVariable(name());
-            //try loading the entire object at once
-            var->getValue(this->getPtr());
+            if (not var.getValue(this->getPtr())){
+                THROWNOTIMPLEMENTED("This Frommle object cannot be loaded in bulk from this Archive. Specialize Frommle::load or add Bulk-enabled variables tot eh Archive");
+            }
+
         }
     }
 
