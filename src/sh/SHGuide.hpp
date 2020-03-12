@@ -128,16 +128,21 @@ namespace frommle{
             using iterator=InjectGuideIterator<SHGuideBase,Element>::iterator;
             using InjectGuideIterator<SHGuideBase,Element>::begin;
             using InjectGuideIterator<SHGuideBase,Element>::end;
-            void createFrom(const std::shared_ptr<core::Frommle> & frptr) override{
-                auto shptr=dynamic_cast<SHGuideBase*>(frptr.get());
-                if( not shptr){
-                    THROWINPUTEXCEPTION("Frommle pointer cannot be cast to a SHGuide");
-                }
-                nmax_=shptr->nmax_;
-                nmin_=shptr->nmin_;
-                size_=size();
-                rehash();
+            using GuideBase::load;
+            void load(const std::shared_ptr<Frommle> &frptr)override{
+                core::loadFromFrommlePtr<SHGuideBase>(frptr,shared_from_this());
             }
+
+            //            void createFrom(const std::shared_ptr<core::Frommle> & frptr) override{
+//                auto shptr=dynamic_cast<SHGuideBase*>(frptr.get());
+//                if( not shptr){
+//                    THROWINPUTEXCEPTION("Frommle pointer cannot be cast to a SHGuide");
+//                }
+//                nmax_=shptr->nmax_;
+//                nmin_=shptr->nmin_;
+//                size_=size();
+//                rehash();
+//            }
             size_t size()const override{
                 if (nmax_==-1){
                     return 0;
@@ -187,21 +192,21 @@ namespace frommle{
                 nmax_=gin.nmax_;
                 return *this;
             }
-            void createFrom(typehash hashval) override {
-
-                //initiate from a typehase string
-                std::regex reg("SHnmtGuide.*");
-                if ( !std::regex_match(std::string(hashval),reg)){
-                   THROWINPUTEXCEPTION("SHGuide type not matching"); 
-                }
-                //extract nmax from the hash
-                nmax_=std::stoi(hashval.split()[1]);
-                size_=size();
-                // note nmin_ remains 0
-                //recreate the hash
-                rehash();
-
-            }
+//            void createFrom(typehash hashval) override {
+//
+//                //initiate from a typehase string
+//                std::regex reg("SHnmtGuide.*");
+//                if ( !std::regex_match(std::string(hashval),reg)){
+//                   THROWINPUTEXCEPTION("SHGuide type not matching");
+//                }
+//                //extract nmax from the hash
+//                nmax_=std::stoi(hashval.split()[1]);
+//                size_=size();
+//                // note nmin_ remains 0
+//                //recreate the hash
+//                rehash();
+//
+//            }
             size_t idx(const int n, const int m, const trig t)const;
             Element operator[](const size_t idx)const;
             inline static size_t i_from_nmt(const int n, const int m, const SHGuideBase::trig t){

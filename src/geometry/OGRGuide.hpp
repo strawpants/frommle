@@ -23,6 +23,7 @@
 #include <vector>
 #include <ogr_geometry.h>
 #include <io/Group.hpp>
+#include "io/Variable.hpp"
 #include "geometry/OGR2boost.hpp"
 #include "core/Logging.hpp"
 #include <boost/geometry.hpp>

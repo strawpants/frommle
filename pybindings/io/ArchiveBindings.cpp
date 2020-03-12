@@ -41,12 +41,12 @@ namespace frommle{
             GroupWrapper():Group(){}
             GroupWrapper(std::string name):Group(name){}
 
-            std::shared_ptr<VariableDyn> getVariable(const std::string &name) {
+            std::shared_ptr<VariableBase> getVariable(const std::string &name)const override {
 
                 //quyick return if a variable with the name already exists
                 auto idx = findidx(name);
                 if (idx != -1) {
-                    return this->operator[](idx).ptr<VariableDyn>();
+                    return this->operator[](idx).ptr<VariableBase>();
                 }
 
 
@@ -60,7 +60,7 @@ namespace frommle{
             }
        
             
-            std::shared_ptr<VariableDyn> default_getVariable(const std::string & name) {
+            std::shared_ptr<VariableBase> default_getVariable(const std::string & name) {
                 return this->Group::getVariable(name);
             }
 
@@ -201,7 +201,7 @@ namespace frommle{
         struct register_var{
                 static void reg(const std::string & basename){
                     PyObject* (VariableWrapper<T>::*geti1)(const p::slice &)=&VariableWrapper<T>::getitem;
-                    p::class_<VariableWrapper<T>,p::bases<VariableDyn>,boost::noncopyable>(basename.c_str())
+                    p::class_<VariableWrapper<T>,p::bases<VariableBase>,boost::noncopyable>(basename.c_str())
                             .def(p::init<std::string>())
                             .def("__getitem__",geti1);
 
@@ -261,11 +261,11 @@ namespace frommle{
             //LOGINFO<< p::extract<int>(slice.start()) <<std::endl;
         //}
 
-        std::shared_ptr<core::Frommle> getFrValue(const VariableDyn &var){
-            return var.getValue();
+        std::shared_ptr<core::Frommle> getFrValue(const VariableFrommle &var){
+            return var.getPtr();
         }
 
-        void setFrValue(VariableDyn &var, std::shared_ptr<const core::Frommle> & frptr){
+        void setFrValue(VariableFrommle &var, std::shared_ptr< core::Frommle> frptr){
             var.setValue(frptr);
         }
 
@@ -275,14 +275,16 @@ namespace frommle{
 
 //            p::class_<VariableDynWrapper,p::bases<core::TreeNodeItem>,boost::noncopyable>("Variable")
 //            .def(p::init<std::string>());
+            p::class_<VariableBase,p::bases<core::TreeNodeItem>>("VariableBase",p::no_init)
+                    .def("shape",&VariableBase::shape);
 
-            p::class_<VariableDyn,p::bases<core::TreeNodeItem>>("Variable")
+            p::class_<VariableFrommle,p::bases<VariableBase>>("Variable")
                     .def(p::init<std::string>())
                     .def(p::init<std::shared_ptr<core::Frommle>>())
-                    .def("shape",&VariableDyn::shape)
                     .add_property("value",&getFrValue,&setFrValue);
 
-            p::register_ptr_to_python< std::shared_ptr<VariableDyn> >();
+            p::register_ptr_to_python< std::shared_ptr<VariableBase > >();
+            p::register_ptr_to_python< std::shared_ptr<VariableFrommle> >();
             
             register_var<double>::reg("Variable_float64");
             register_var<int>::reg("Variable_int");

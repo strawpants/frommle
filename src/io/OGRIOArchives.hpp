@@ -24,6 +24,7 @@
 #include <string>
 //#include "geometry/OGRiteratorBase.hpp"
 #include "io/Group.hpp"
+#include "io/Variable.hpp"
 #ifndef FROMMLE_OGRIOARCHIVES_HPP
 #define FROMMLE_OGRIOARCHIVES_HPP
 namespace frommle{

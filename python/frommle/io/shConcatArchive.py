@@ -18,22 +18,41 @@
 
 from frommle.io.fileConcatArchive import FileConcatArchive, AttrCoordMapper,CoordMapper
 from frommle.io import SHGSMv6Archive
-from frommle.core import PTimeGuide
+from frommle.core import PTimeGuide,makeGArray
 
 class TcentCoordMapper(CoordMapper):
     def __init__(self):
-        self.coord=PTimeGuide()
+        self.coord=PTimeGuide("tcent")
     def append(self,grp):
         #compute the center time
         tcent=grp.attr["tstart"]+(grp.attr["tend"]-grp.attr["tstart"])/2
         self.coord.append(tcent)
 
-#create a new class which maps a a collection of GSM files
-GSMConcatArchive=type("GSMConcatArchive",(FileConcatArchive,),
-                      {"ArClass":SHGSMv6Archive,
-                       "coordMapping":{"tstart":AttrCoordMapper("tstart",PTimeGuide),"tcent":TcentCoordMapper()},
-                       "extendVars":["cnm"],
-                       "noExtendVars":["shg"]})
+# #create a new class which maps a a collection of GSM files
+# GSMConcatArchive=type("GSMConcatArchive",(FileConcatArchive,),
+#                       {"ArClass":SHGSMv6Archive,
+#                        "coordMapping":{"tstart":AttrCoordMapper("tstart",PTimeGuide),"tcent":TcentCoordMapper()},
+#                        "extendVars":["cnm"],
+#                        "noExtendVars":["shg"]})
 
+
+class GSMConcatArchive(FileConcatArchive):
+    ArClass=SHGSMv6Archive
+    coordMapping={"tstart":AttrCoordMapper("tstart",PTimeGuide),"tcent":TcentCoordMapper()}
+    extendVars=["cnm"]
+    noExtendVars=["shg"]
+    def __init__(self, filelist,mode='r'):
+        super().__init__(filelist,mode)
+
+
+    def cnmArr(self):
+        """returns a dense GArray with the Cnm coefficients from the archive"""
+        return self.getGArr("cnm",["shg","tcent"])
+
+    def getGArr(self,name,guides):
+        gp=[ self[gname].value for gname in guides]
+        garout=makeGArray(*gp,name=name)
+        garout.load(self)
+        return garout
 
 

@@ -32,16 +32,14 @@ namespace frommle{
         ///@brief try bulk saving the object (overload this for a specialized approach)
         void Frommle::save(io::Group &ar)const{
             auto var = ar.createVariable(name());
-            var->setValue(this->getPtr());
+//            var->setValue(this->getPtr());
         }
 
         ///@brief try bulk load the object (overload this for a specialized approach)
         void Frommle::load(io::Group &ar){
             auto var = ar.getVariable(name());
-            if (not var.getValue(this->getPtr())){
-                THROWNOTIMPLEMENTED("This Frommle object cannot be loaded in bulk from this Archive. Specialize Frommle::load or add Bulk-enabled variables tot eh Archive");
-            }
-
+            auto ptr=getPtr();
+            var->getValue(ptr);
         }
     }
 

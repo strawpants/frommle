@@ -40,10 +40,13 @@ namespace frommle{
         void getValue(core::HyperSlabBase<T> & hslab)const;
 
         ///@brief getValue of frommle object at once
-        virtual bool getValue(std::shared_ptr<core::Frommle> frptr)const{
-            return false;
+        virtual void getValue(std::shared_ptr<core::Frommle> & frptr)const{
+            THROWNOTIMPLEMENTED("GetValue const std::shared_ptr is not implemented");
        }
 
+       virtual std::vector<size_t> shape()const {
+           THROWNOTIMPLEMENTED("This Variable type does not provide shape information");
+       }
         constexpr bool readable()const{
             return static_cast<Group*>(getParent())->readable();
         }
@@ -67,10 +70,10 @@ namespace frommle{
             VariableFrommle(core::TreeNodeRef && in):VariableBase(std::move(in)){}
 
             ///@brief setValue of frommle object at once
-            virtual void setValue(std::shared_ptr<const core::Frommle> frptr){
+            virtual void setValue(std::shared_ptr<core::Frommle> frptr){
                 //overloading this function in derived classes allows for runtime writing of Frommle classes
                 //The  default just sets the internal pointer to the payload
-                frptr_=std::const_pointer_cast<core::Frommle>(frptr);
+                frptr_=frptr;
             }
 
             virtual std::vector<size_t> shape()const{
@@ -89,18 +92,19 @@ namespace frommle{
                     return attr().get<core::typehash>("frhash");
                 }
             }
+
         ///@brief getValue of frommle object at once
-            bool getValue(std::shared_ptr<core::Frommle> frptr)const override{
+           void getValue(std::shared_ptr<core::Frommle> & frptr)const override{
                 //otherwise we need to be a bit more delicate and adapt the input
                 if (frptr_ ){
-                    frptr->createFrom(frptr_);
+                    frptr->load(frptr_);
                 }else{
+                    THROWINPUTEXCEPTION("This variable has no frommle pointer set");
                     //try reconstructing the frommle derived object from a typehash attribute
                     //This only works when the derived types of frptr have createFrom implemented
-                    frptr->createFrom(attr().get<core::typehash>("frhash"));
+//                    frptr->createFrom(attr().get<core::typehash>("frhash"));
 
                 }
-                return true;
             }
 
 

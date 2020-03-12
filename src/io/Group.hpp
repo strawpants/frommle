@@ -83,6 +83,7 @@ namespace frommle{
             template<class T>
             Variable<T> & getVariable(const std::string & name);
 
+
             void setAmode(std::string mode){
                 attr().set("mode",mode);
                 if (mode == "r"){

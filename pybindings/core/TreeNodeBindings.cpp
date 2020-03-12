@@ -70,7 +70,9 @@ namespace frommle {
             static void reg(){
 
                 regothers(p::class_<Attributes>("Attributes")
-                    .def("__contains__",&Attributes::contains).def("__getitem__",&registerAttributes::tryget));
+                    .def("__contains__",&Attributes::contains)
+                    .def("__getitem__",&registerAttributes::tryget)
+                    .def("__len__",&Attributes::size));
             }
 
             static attGP & regothers(attGP & bpatt){

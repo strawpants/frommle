@@ -21,9 +21,6 @@ from frommle.core.guidepack import makeGuidePack
 import numpy as np
 
 
-def xarray_wrap(garrayin):
-    pass
-
 
 def makeGArray(*guides,**kwargs):
     if "dtype" in kwargs:
@@ -46,14 +43,4 @@ def makeGArray(*guides,**kwargs):
 
 
 
-#     """Dynamically construct a garray from various input guides"""
-#     ndim=len(guides)
-#     return type("GArray")
-#
-#     gp=GArray0()
-#
-#     for gd in guides:
-#         gp=gp.append(gd)
-#
-#     return gp
 

@@ -38,28 +38,29 @@ namespace frommle{
     namespace core{
         ///@brief Polymorphic base class which wraps all important frommle classes
     class Frommle:public std::enable_shared_from_this<Frommle> {
-        public:
-            Frommle(){};
-            Frommle(std::string name,typehash th=typehash("Frommle_t")):name_(name),type_(th){}
-            std::string name()const{return name_;}
-            void setName(std::string name){name_=name;}
+    public:
+        Frommle() {};
 
-            ///@brief sets up the current object from just a typehash. Overload this function when this functionality is needed
-            virtual void createFrom(core::typehash hash){
-                THROWNOTIMPLEMENTED("This object cannot  be created from a typehash, implement createFrom in the derived class.");
-            }
-            virtual void createFrom(const std::shared_ptr<Frommle> & frptr){
-                THROWNOTIMPLEMENTED("This object cannot  be created from a shared_ptr<Frommle>, implement createFrom in the derived class.");
-            }
+        Frommle(std::string name, typehash th = typehash("Frommle_t")) : name_(name), type_(th) {}
 
-            virtual std::vector<size_t> shape()const{
-                THROWNOTIMPLEMENTED("This frommle object provides no shape information");
-            }
+        std::string name() const { return name_; }
 
-            virtual void save(io::Group & grp)const;
-            virtual void load(io::Group & group);
+        void setName(std::string name) { name_ = name; }
 
-            //add 1D index_range and index_gen types here?
+
+        virtual std::vector<size_t> shape() const {
+            THROWNOTIMPLEMENTED("This frommle object provides no shape information");
+        }
+
+        virtual void save(io::Group &grp) const;
+
+        virtual void load(io::Group &group);
+
+        //directly load from another frommle shared pointer
+        virtual void load(const std::shared_ptr<Frommle> &frptr) {
+            THROWNOTIMPLEMENTED("This frommle object cannot be loaded directly from a shared_ptr<Frommle> please implement the virtual function void load(const std::shared_ptr<Frommle>&)");
+        }
+        //add 1D index_range and index_gen types here?
             typehash hash() const { return type_; }
             typehash & hash(){ return type_; }
             std::string hashstr()const{return std::string(hash());}
@@ -80,13 +81,47 @@ namespace frommle{
 
             bool operator != (Frommle & other)const{return type_!=other.type_;}
 
-        protected:
+//        virtual void createFrom(core::typehash hash)=0;
+//        virtual void loadFrom(const std::shared_ptr<Frommle> & frptr)=0;
+    protected:
+            ///@brief sets up the current object from just a typehash. Overload this function when this functionality is needed
             virtual void rehash(){};
             void sethash(typehash th){type_=th;}
         private:
             std::string name_="Frommle";
             typehash type_{"Frommle_t"};
         };
+
+
+
+
+    template<class T>
+    void loadFromFrommlePtr(std::shared_ptr<Frommle>  in, std::shared_ptr<Frommle> out){
+        auto inptr=std::dynamic_pointer_cast<T>(in);
+        auto outptr=std::dynamic_pointer_cast<T>(out);
+        *outptr=*inptr;
+    }
+
+//    template<class T>
+//    class FrommleExtend: public Frommle{
+//    public:
+//        FrommleExtend():Frommle(){}
+//        FrommleExtend(std::string name,typehash th=typehash("Frommle_t")):Frommle(name,th){}
+//
+//        void createFrom(const std::shared_ptr<Frommle> &frptr) override{
+//            auto inPtr=std::dynamic_pointer_cast<T>(frptr);
+//            T* thisPtr=dynamic_cast<T*>(this);
+//            *thisPtr=*inPtr;
+//        }
+//
+//        void createFrom(core::typehash hash) override{
+//            auto out=std::make_shared<T>(hash);
+//            *this=*out;
+//        }
+//    };
+//
+//
+
 
     }
 }

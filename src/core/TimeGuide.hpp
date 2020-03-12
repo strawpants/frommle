@@ -64,6 +64,7 @@ namespace frommle {
                 TimeVec_.push_back(in);
             }
 
+            void load(const std::shared_ptr<Frommle> &frptr)override;
             void load(io::Group & Ar)override;
             void save(io::Group & Ar)const override;
 
@@ -92,7 +93,12 @@ namespace frommle {
             }
         }
 
-        template <class Tp>
+        template<class Tp>
+        void TimeGuide<Tp>::load(const std::shared_ptr<Frommle> &frptr){
+            core::loadFromFrommlePtr<TimeGuide<Tp>>(frptr,shared_from_this());
+        }
+
+    template <class Tp>
         void TimeGuide<Tp>::save(io::Group & Ar)const{
 //            //create a new variable holding the geometry
             Ar[name()]=io::Variable<Tp>();

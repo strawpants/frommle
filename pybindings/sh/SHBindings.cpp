@@ -109,6 +109,7 @@ void pyexport_sh()
             .def("i_from_nmt",&SHnmtGuide::i_from_nmt).staticmethod("i_from_nmt");
 
 
+    p::register_ptr_to_python< std::shared_ptr<SHnmtGuide> >();
 
     p::def("nmax_from_sz",&nmax_from_sz);
 

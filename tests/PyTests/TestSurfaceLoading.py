@@ -71,5 +71,6 @@ class testHybridAr(unittest.TestCase):
         pgcon=geoslurpConnect()
         gsmfiles=[x.gsm for x in queryGRACE(pgcon,"gracel2_gfz_rl06")]
         GSMArchive=GSMConcatArchive(gsmfiles[0:10])
-        tguide=GSMArchive["tstart"]
+        cnm=GSMArchive.cnmArr()
+        # tguide=GSMArchive["tstart"]
         print(tguide)

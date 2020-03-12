@@ -19,6 +19,7 @@
  */
 
 #include "io/Group.hpp"
+#include "io/Variable.hpp"
 namespace frommle{
     namespace io{
         Group &Group::getGroup(const std::string &name) {
@@ -30,15 +31,26 @@ namespace frommle{
             return this->operator[](name).as<Group>();
         }
 
-        std::shared_ptr<VariableDyn> Group::getVariable(const std::string &name) {
+        std::shared_ptr<VariableBase> Group::getVariable(const std::string &name)const {
             auto idx=findidx(name);
             if (idx == -1){
+                THROWINPUTEXCEPTION("Variable not found in archive group"+name);
                 //create a new empty VariableDyn
-                this->operator[](name)=VariableDyn();
+//                this->operator[](name)=VariableBase();
             }
-            return std::static_pointer_cast<VariableDyn>(this->operator[](name).ptr());
+            return std::static_pointer_cast<VariableBase>(this->operator[](name).ptr());
         }
 
+
+       std::shared_ptr<VariableBase> Group::createVariable(const std::string &name){
+           auto idx=findidx(name);
+           if (idx == -1){
+               //create a new empty VariableBase
+                this->operator[](name)=VariableBase(name);
+           }//else return existing variable
+           return std::static_pointer_cast<VariableBase>(this->operator[](name).ptr());
+
+       }
 
         bool Group::readable() const {
             if (getParent()) {

@@ -37,7 +37,7 @@ namespace frommle {
     class FrommleWrapper:public Frommle,public p::wrapper<Frommle>{
     public:
 
-               void save(io::Group & grp)const{
+        void save(io::Group & grp)const{
             if(auto saveop=this->get_override("save")){
                 saveop(grp);
 
@@ -52,7 +52,6 @@ namespace frommle {
             Frommle::save(grp);
 
         }
-
 
         void load(io::Group & grp){
             if(auto loadop=this->get_override("load")){
@@ -70,9 +69,10 @@ namespace frommle {
 
         }
 
-
     };
 
+
+        void (Frommle::*loadf)(io::Group &g)=&Frommle::load;
 
         void registerFrommle() {
 
@@ -81,10 +81,11 @@ namespace frommle {
                     .def("__str__",&typehash::operator std::string )
                     .def("add",&typehash::add);
 
+
             p::class_<FrommleWrapper,boost::noncopyable>("Frommle")
                     .add_property("name", &Frommle::name, &Frommle::setName)
                     .def("save",&Frommle::save,&FrommleWrapper::save_default)
-                    .def("load",&Frommle::load,&FrommleWrapper::load_default)
+                    .def("load",loadf,&FrommleWrapper::load_default)
                     .add_property<typehash(Frommle::*)()const>("hash",&Frommle::hash)
                     .def("__str__",&Frommle::hashstr);
 
