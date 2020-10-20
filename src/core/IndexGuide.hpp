@@ -35,9 +35,9 @@ namespace frommle{
         public:
             using Element=unsigned long long int;
 
-            IndexGuide():GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(0)){}
-            IndexGuide(const size_t nsize):GuideBase("IndexGuide",typehash("IndexGuide").add(0).add(nsize)),size_(nsize){}
-            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name,typehash("IndexGuide").add(0).add(nsize)),size_(nsize){}
+            IndexGuide():GuideBase("IndexGuide"){}
+            IndexGuide(const size_t nsize):GuideBase("IndexGuide"),size_(nsize){}
+            IndexGuide(const std::string & name, const size_t nsize):GuideBase(name),size_(nsize){}
             Element operator[](const size_t idx)const{return idx;}
             using const_iterator=InjectGuideIterator<IndexGuide,Element>::const_iterator;
             using InjectGuideIterator<IndexGuide,Element>::begin;
@@ -46,6 +46,8 @@ namespace frommle{
             void append(){
                 ++size_;
             }
+
+            core::typehash hash()const override {return core::typehash("IndexGuide_t").add(0).add(size_);}
             void load(io::Group & Ar){
                 auto gvar=Ar.getVariable(name());
                 auto spl=gvar->hash().split();

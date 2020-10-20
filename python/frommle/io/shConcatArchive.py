@@ -17,37 +17,41 @@
 
 
 from frommle.io.fileConcatArchive import FileConcatArchive, AttrCoordMapper,CoordMapper
-from frommle.io import SHGSMv6Archive
-from frommle.core import PTimeGuide,makeGArray
+from frommle.io.GSM import SHGSMv6Archive
+from frommle.io.icgem import SHicgemArchive
+from frommle.io.shstandard import SHStandardArchive
+
+from frommle.core import TimeGuide,makeGArray
 
 class TcentCoordMapper(CoordMapper):
     def __init__(self):
-        self.coord=PTimeGuide("tcent")
+        self.coord=TimeGuide("time")
     def append(self,grp):
         #compute the center time
         tcent=grp.attr["tstart"]+(grp.attr["tend"]-grp.attr["tstart"])/2
         self.coord.append(tcent)
 
-# #create a new class which maps a a collection of GSM files
-# GSMConcatArchive=type("GSMConcatArchive",(FileConcatArchive,),
-#                       {"ArClass":SHGSMv6Archive,
-#                        "coordMapping":{"tstart":AttrCoordMapper("tstart",PTimeGuide),"tcent":TcentCoordMapper()},
-#                        "extendVars":["cnm"],
-#                        "noExtendVars":["shg"]})
 
-
-class GSMConcatArchive(FileConcatArchive):
-    ArClass=SHGSMv6Archive
-    coordMapping={"tstart":AttrCoordMapper("tstart",PTimeGuide),"tcent":TcentCoordMapper()}
+class SHConcatArchive(FileConcatArchive):
+    ArClass=None
+    coordMapping={"tstart":AttrCoordMapper("tstart",TimeGuide),"time":TcentCoordMapper()}
     extendVars=["cnm"]
     noExtendVars=["shg"]
-    def __init__(self, filelist,mode='r'):
-        super().__init__(filelist,mode)
+    def __init__(self, filelist,mode='r',type=None):
+        #set the Archive type 
+        if type  == "icgem":
+            self.ArClass=SHicgemArchive
+        elif type == "GSM":
+            self.ArClass=SHGSMv6Archive
+        else:
+            self.ArClass=SHStandardArchive
 
+        super().__init__(filelist,mode)
+        
 
     def cnmArr(self):
         """returns a dense GArray with the Cnm coefficients from the archive"""
-        return self.getGArr("cnm",["shg","tcent"])
+        return self.getGArr("cnm",["shg","time"])
 
     def getGArr(self,name,guides):
         gp=[ self[gname].value for gname in guides]

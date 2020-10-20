@@ -23,7 +23,7 @@
 
 #define BOOST_TEST_MODULE GOperatorTesting
 #include <boost/test/unit_test.hpp>
-#include "core/GOperatorTesting.cpp"
+//#include "core/GOperatorTesting.cpp"
 #include "core/IndexGuide.hpp"
 
 using namespace frommle::guides;

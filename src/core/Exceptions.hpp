@@ -65,9 +65,10 @@ namespace frommle{
     }
 }
 
-#define THROWIOEXCEPTION(x) throw frommle::core::IOException(HERE + x)
-#define THROWINPUTEXCEPTION(x) throw frommle::core::InputException(HERE + x)
-#define THROWMETHODEXCEPTION(x) throw frommle::core::MethodException(HERE + x)
-#define THROWNOTIMPLEMENTED(x) throw frommle::core::NotImplementedException(HERE + x)
+#define THROWIOEXCEPTION(x) throw frommle::core::IOException( std::string(HERE) + std::string(FUNCINFO) + std::string(x))
+#define THROWINPUTEXCEPTION(x) throw frommle::core::InputException( std::string(HERE)+ std::string(FUNCINFO)  + std::string(x))
+#define THROWMETHODEXCEPTION(x) throw frommle::core::MethodException(std::string(HERE)+ std::string(FUNCINFO)  + std::string(x))
+#define THROWNOTIMPLEMENTED(x) throw frommle::core::NotImplementedException(std::string(HERE) + std::string(FUNCINFO) + std::string(x))
+#define THROWINDEXCEPTION(x) throw frommle::core::IndexingException(std::string(HERE) + std::string(FUNCINFO) + std::string(x))
 
 #endif //FROMMLE_EXCEPTIONS_HPP

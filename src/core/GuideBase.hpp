@@ -30,9 +30,6 @@
 #include "core/frommle.hpp"
 namespace frommle {
 namespace guides {
-    template<class G>
-    class MaskedGuide;
-
 
 /*!
  * \brief Base class for describing  guided dimensions
@@ -55,18 +52,27 @@ namespace guides {
 class GuideBase:public core::Frommle {
     public:
         using typehash=core::typehash;
-        GuideBase():Frommle("GuideBase") {};
-        GuideBase(const core::typehash &type) : Frommle("GuideBase",type) {}
-        GuideBase(const std::string & name,const core::typehash &type):Frommle(name,type){}
-        GuideBase(const std::string & name):Frommle(name){}
+        GuideBase(std::string name="GuideBase"):Frommle(name){}
+        
         virtual ~GuideBase() {
         }
-        using Element=std::string;
-        //implict conversion to a maskedversion
-        template<class G>
-        explicit   operator MaskedGuide<G>();
-        
-        virtual  size_t size() const { return descripcache_.size(); }
+        using Element=ptrdiff_t;
+        using const_iterator=const size_t*;
+        size_t dummyit=0;
+        const_iterator begin()const {return &dummyit; }
+
+        const_iterator end()const {return &dummyit;}
+        typehash hash()const override{return typehash("Guide_t");}
+        //const_iterator begin()const {
+            ////although the function is marekd const we do allow the cache variable to be set dynamically 
+            //const_cast<GuideBase*>(this)->initdesc();
+            //return descripcache_.begin();}
+        //const_iterator end()const{
+            ////although the function is marekd const we do allow the cache variable to be set dynamically 
+            //const_cast<GuideBase*>(this)->initdesc();
+            //return descripcache_.end();}
+//
+        virtual  size_t size() const {return 0;}
         inline std::vector<size_t> shape()const override{return std::vector<size_t>{size()};}
 //        virtual bool operator==(const GuideBase &in) const {
 //            return type_ == in.type_;
@@ -80,45 +86,45 @@ class GuideBase:public core::Frommle {
 //        void setName(const std::string &name){
 //            name_=name;
 //        }
-        size_t idx(const Element & el )const{return 0;}
-        virtual bool isMasked()const{return false;};
-        virtual bool isPermuted()const{return false;};
+//        size_t idx(const Element & el )const{return 0;}
+//        virtual bool isMasked()const{return false;};
+//        virtual bool isPermuted()const{return false;};
         //static constexpr int ndim=1;
-        virtual std::vector<Element> descriptor()const{
-            //default implementation jsut makes a description based ont he typehash
-            //allocate space in the vector
-            size_t sz=size();
-            char fmt[12];
-            char el[50];
-            sprintf(fmt,"%%s_idx%%0%dd",static_cast<int>(std::log10(sz))+1);
-            //LOGINFO << fmt << std::endl;
-            std::vector<Element> desc(sz);
-            for(size_t i=0;i<sz;++i){
-                sprintf(el,fmt,hash().name().c_str(),i);
-                desc[i]=el;  
-            }
-            return desc;
-        }
-        using const_iterator=std::vector<Element>::const_iterator;
-        const_iterator begin()const {
-            //although the function is marekd const we do allow the cache variable to be set dynamically 
-            const_cast<GuideBase*>(this)->initdesc();
-            return descripcache_.begin();}
-        const_iterator end()const{
-            //although the function is marekd const we do allow the cache variable to be set dynamically 
-            const_cast<GuideBase*>(this)->initdesc();
-            return descripcache_.end();}
+        //virtual std::vector<Element> descriptor()const{
+            ////default implementation jsut makes a description based ont he typehash
+            ////allocate space in the vector
+            //size_t sz=size();
+            //char fmt[12];
+            //char el[50];
+            //sprintf(fmt,"%%s_idx%%0%dd",static_cast<int>(std::log10(sz))+1);
+            ////LOGINFO << fmt << std::endl;
+            //std::vector<Element> desc(sz);
+            //for(size_t i=0;i<sz;++i){
+                //sprintf(el,fmt,hash().name().c_str(),i);
+                //desc[i]=el;  
+            //}
+            //return desc;
+        //}
+        //using const_iterator=std::vector<Element>::const_iterator;
+        //const_iterator begin()const {
+            ////although the function is marekd const we do allow the cache variable to be set dynamically 
+            //const_cast<GuideBase*>(this)->initdesc();
+            //return descripcache_.begin();}
+        //const_iterator end()const{
+            ////although the function is marekd const we do allow the cache variable to be set dynamically 
+            //const_cast<GuideBase*>(this)->initdesc();
+            //return descripcache_.end();}
     private:
-        void initdesc(){
-            if(descripcache_.size() ==0 ){
-                descripcache_=descriptor();
-            }
-        }
+        //void initdesc(){
+            //if(descripcache_.size() ==0 ){
+                //descripcache_=descriptor();
+            //}
+        //}
     protected:
 //        using core::Frommle::type_;
 //        size_t size_ = 0;
 //        std::string name_="Guide";
-        std::vector<Element> descripcache_{}; 
+        //std::vector<Element> descripcache_{}; 
     };
 
 
@@ -233,49 +239,6 @@ class GuideBase:public core::Frommle {
     using constGuideBasePtr=std::shared_ptr<const GuideBase>;
 
 
-    ///@brief this masked guide wraps another guide while masking part of it
-//    template<class G>
-//class MaskedGuide:public GuideBase{
-//public:
-//    //create iterators to iterate over the contained guide while skipping masked values
-//    using Element=typename G::Element;
-////    using GuideBase::size_;
-//    void mask(const ptrdiff_t idx=-1){
-//        if (idx!=-1){
-//            valid_[idx]=0;
-//            --size_;
-//        }else{
-//            //mask everything
-//            std::fill(valid_.begin(),valid_.end(),0);
-//            size_=0;
-//        }
-//    }
-//    void unmask(const ptrdiff_t idx=-1){
-//        if (idx!=-1){
-//            valid_[idx]=1;
-//            ++size_;
-//        }else{
-//            //mask everything
-//            std::fill(valid_.begin(),valid_.end(),1);
-//            size_=valid_.size();
-//        }
-//    }
-//
-//    MaskedGuide(const G & in):guide_(&in),valid_(in.size(),1){
-//
-//    }
-////    void togglemask(const ptrdiff_t idx =-1){}
-//    MaskedGuide & operator=(const G & gin){
-//        *this=MaskedGuide(gin);
-//        return *this;
-//    }
-//    bool isMasked()const{return true;}
-//private:
-//    const G* guide_=nullptr;
-//    std::vector<int> valid_{};
-//
-//};
-
 
 ///@brief guide which has a length of 1 (used to track dimensions which are to be reduced)
 class SingleGuide: public GuideBase{
@@ -288,10 +251,6 @@ class SingleGuide: public GuideBase{
         size_t idx_=0;
 };
 
-//template<class G>
-//GuideBase::operator MaskedGuide<G>(){
-//            return MaskedGuide<G>(static_cast<const G&>(*this));
-//}
 
 
 }

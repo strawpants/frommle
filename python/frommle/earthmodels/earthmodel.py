@@ -16,9 +16,11 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
 
 
+from frommle.core.vector import makeVec 
 from frommle.earthmodels import LoadLove
 from frommle.earthmodels import WGS84,rho_water,rho_seawater,rho_earth
 from frommle.sh import shisoperator_float64
+
 import numpy as np
 
 class EarthModel():
@@ -51,18 +53,22 @@ class Snrei(EarthModel):
         #create the isotropic kernel
         scale=WGS84.a*rho_earth/(3*rhowater)
         kernel=np.array([scale*(2*n+1)/(1+self.lln.kdat[n]) for n in range(self.nmax+1)])
-        return shIsoOperator(kernel)
+        # return shisoperator_float64(makeVec(kernel))
+        return shisoperator_float64(makeVec(kernel),",stokes2eqh")
          
 
     def stokes2Geoid(self):
         """"Use Brun's Formula to convert from normalized Stokes coefficients to Geoid height"""
         kernel=WGS84.a*np.ones([self.nmax+1])
-        return shIsoOperator(kernel)
+        # return shisoperator_float64(makeVec(kernel))
+        return shisoperator_float64(makeVec(kernel),"stokes2N")
     
     def stokes2Uplift(self):
         kernel=WGS84.a*np.array([self.lln.hdat[n]/(1+self.lln.kdat[n]) for n in range(self.nmax+1)])
-        return shIsoOperator(kernel)
+        # return shisoperator_float64(makeVec(kernel))
+        return shisoperator_float64(makeVec(kernel),"stokes2U")
 
     def stokes2HorizDef(self):
         kernel=WGS84.a*np.array([self.lln.ldat[n]/(1+self.lln.kdat[n]) for n in range(nmax+1)])
-        return shIsoOperator(kernel)
+        # return shisoperator_float64(makeVec(kernel))
+        return shisoperator_float64(makeVec(kernel),"stokes2V")

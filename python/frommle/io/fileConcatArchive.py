@@ -15,7 +15,7 @@
 
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2020
 
-from frommle.core import PTimeGuide,IndexGuide
+from frommle.core import TimeGuide,IndexGuide
 from frommle.core.logger import logger
 from frommle.io import Group,Variable
 from frommle.io import np_float64Var

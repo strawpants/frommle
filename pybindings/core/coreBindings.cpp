@@ -34,6 +34,7 @@ void pyexport_core(){
     
     register_numpy_converters();
 
+    registerExceptions();
     //register to/from date converters
     register_datetime();
 

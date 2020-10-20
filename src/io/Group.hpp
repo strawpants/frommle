@@ -74,7 +74,9 @@ namespace frommle{
 
             bool readable()const;
             bool writable()const;
-            virtual Group & getGroup(const std::string &name);
+            virtual std::shared_ptr<Group>  getGroup(const std::string &name)const;
+            
+            virtual std::shared_ptr<Group>  createGroup(const std::string &name);
 
             virtual std::shared_ptr<VariableBase> getVariable(const std::string &name)const;
 

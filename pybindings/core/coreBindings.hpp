@@ -30,6 +30,7 @@ namespace frommle{
     }
 
     namespace core{
+        void registerExceptions();
         void registerFrommle();
 //        void registerHyperSlab();
         void registerTreeNodes();

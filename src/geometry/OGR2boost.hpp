@@ -72,6 +72,7 @@ namespace boost
         inline fg::OGRLineIter range_end(OGRLineString& ogrls) {
             auto it=fg::OGRLineIter(&ogrls);
             it+=it.size();
+            return it;
         }
 
         inline fg::const_OGRLineIter range_begin(const OGRLineString& ogrls) {
@@ -116,6 +117,7 @@ inline fg::OGRRingIter range_begin(OGRLinearRing& ogrls) {
 inline fg::OGRRingIter range_end(OGRLinearRing& ogrls) {
     auto it=fg::OGRRingIter(&ogrls);
     it+=it.size();
+    return it;
 }
 
 inline fg::const_OGRRingIter range_begin(const OGRLinearRing& ogrls) {

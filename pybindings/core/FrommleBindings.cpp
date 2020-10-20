@@ -36,7 +36,10 @@ namespace frommle {
 
     class FrommleWrapper:public Frommle,public p::wrapper<Frommle>{
     public:
-
+        FrommleWrapper(std::string name="frommle"):Frommle(name){}
+        core::typehash hash()const override{
+            return core::typehash("pyfrommle_t");
+        }
         void save(io::Group & grp)const{
             if(auto saveop=this->get_override("save")){
                 saveop(grp);
@@ -82,7 +85,7 @@ namespace frommle {
                     .def("add",&typehash::add);
 
 
-            p::class_<FrommleWrapper,boost::noncopyable>("Frommle")
+            p::class_<FrommleWrapper,boost::noncopyable>("Frommle",p::init<p::optional<std::string>>())
                     .add_property("name", &Frommle::name, &Frommle::setName)
                     .def("save",&Frommle::save,&FrommleWrapper::save_default)
                     .def("load",loadf,&FrommleWrapper::load_default)

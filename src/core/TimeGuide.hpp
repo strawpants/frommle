@@ -21,7 +21,7 @@
 #define SRC_CPP_TIMEDIMENSION_HPP_
 #include <chrono>
 #include <vector>
-#include "core/GuideBase.hpp"
+#include "core/IndexedGuide.hpp"
 #include <boost/date_time.hpp>
 #include "io/Group.hpp"
 #include "io/Variable.hpp"
@@ -32,55 +32,24 @@ namespace frommle {
         using gregdate=boost::gregorian::date;
         using ptime=boost::posix_time::ptime;
 
-/*! \brief Holds a vector of time stamps (possibly irregular)
- * The TimeDimension is essentially a vector with time stamps. Internally it stores a vector 
- * This can then be converted to different kinds of time formats
- */
+/*! \brief Holds a guide of time stamps (possibly irregular)
+*/
 
         template<class Tp>
-		class TimeGuide : public GuideBase {
-		public:
-		    using Element=Tp;
-		    using ElementContainer=std::vector<Tp>;
-			TimeGuide():GuideBase("time",typehash("TimeGuide")){}
-            TimeGuide(std::string name):GuideBase(name,typehash("TimeGuide")){}
-            TimeGuide(Tp && in):GuideBase("time",typehash("TimeGuide")){
-                push_back(std::move(in));
-            }
+        class TimeGuide:public IndexedGuide<Tp>{
+            public:
+                using IGd=IndexedGuide<Tp>;
+                using Element=Tp;
+                using IGd::name;
+                using IGd::shared_from_this;
+                TimeGuide(std::string name="time"):IGd(name){}
+                core::typehash hash()const override{return core::typehash("TimeGuide_t");}
+                    void load(const std::shared_ptr<core::Frommle> &frptr)override;
+                    void load(io::Group & Ar)override;
+                    void save(io::Group & Ar)const override;
 
-            TimeGuide(const Tp in):GuideBase("time",typehash("TimeGuide")){
-                push_back(in);
-            }
+        };
 
-            TimeGuide(std::vector<Tp> && inv){
-                TimeVec_=std::move(inv);
-            }
-
-            void push_back(const Tp in){
-                TimeVec_.push_back(in);
-            }
-
-            void push_back(Tp && in){
-                TimeVec_.push_back(in);
-            }
-
-            void load(const std::shared_ptr<Frommle> &frptr)override;
-            void load(io::Group & Ar)override;
-            void save(io::Group & Ar)const override;
-
-            using const_iterator=typename ElementContainer::const_iterator;
-            using iterator=typename ElementContainer::iterator;
-            const_iterator begin() const { return TimeVec_.cbegin(); }
-            const_iterator end() const { return TimeVec_.cend(); }
-
-            iterator begin() { return TimeVec_.begin(); }
-            iterator end() { return TimeVec_.end(); }
-            Element & operator[](const size_t idx){return TimeVec_.at(idx);}
-            const Element & operator[](const size_t idx)const{return TimeVec_.at(idx);}
-            size_t size()const override{return TimeVec_.size();}
-		private:
-			std::vector<Tp> TimeVec_ = {};
-		};
 
 
         template <class Tp>
@@ -94,7 +63,7 @@ namespace frommle {
         }
 
         template<class Tp>
-        void TimeGuide<Tp>::load(const std::shared_ptr<Frommle> &frptr){
+        void TimeGuide<Tp>::load(const std::shared_ptr<core::Frommle> &frptr){
             core::loadFromFrommlePtr<TimeGuide<Tp>>(frptr,shared_from_this());
         }
 
@@ -103,7 +72,7 @@ namespace frommle {
 //            //create a new variable holding the geometry
             Ar[name()]=io::Variable<Tp>();
             auto tvar= dynamic_cast<io::Variable<Tp>*>(Ar[name()].get());
-            for (auto const & t:TimeVec_){
+            for (auto const & t:*this){
                 tvar->setValue(t,-1);
             }
 
@@ -121,8 +90,8 @@ namespace frommle {
  */
         template<class T,class D>
         TimeGuide<T> make_trange(const T from, const T to,const D step){
-            auto tg = TimeGuide<T>(from);
-            auto t=from+step;
+            auto tg = TimeGuide<T>();
+            auto t=from;
             while (t < to){
                 tg.push_back(t);
                 t+=step;

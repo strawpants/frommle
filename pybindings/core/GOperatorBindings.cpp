@@ -25,6 +25,7 @@
 #include <boost/core/noncopyable.hpp>
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/return_value_policy.hpp>
+#include <boost/python/return_internal_reference.hpp>
 #include "core/GOperatorBase.hpp"
 #include "core/GOperatorDiag.hpp"
 
@@ -65,7 +66,7 @@ namespace frommle{
 
                 std::shared_ptr<GArrayBase<T,2>>  (Gop::*adjointf)(const guides::GuidePackDyn<1> & )=&Gop::jacobian;
 
-                p::class_<GOperatorWrapper<T,no,ni>,p::bases<GOperatorBase>,boost::noncopyable>(std::string(basename).append(std::to_string(no)).append("d_to_").append(std::to_string(ni)).append("d").c_str())
+                p::class_<GOperatorWrapper<T,no,ni>,p::bases<Frommle>,boost::noncopyable>(std::string(basename).append(std::to_string(no)).append("d_to_").append(std::to_string(ni)).append("d").c_str())
                     .def("jacobian",adjointf);
             }
     
@@ -74,13 +75,21 @@ namespace frommle{
     template<class T>
 struct register_GoperatorDiag{
     static void reg(const std::string & basename){
-        p::class_<GOperatorDiag<T>,p::bases<GOperatorDyn<T,1,1>>>(basename.c_str());
+                const GArrayDiag<T> & (GOperatorDiag<T>::*cgdiag)( )const=&GOperatorDiag<T>::gdiag;
+        
+                p::class_<GOperatorDiag<T>,p::bases<GOperatorDyn<T,1,1>>>(basename.c_str())
+            .def(p::self+p::self)
+            .def(p::self+=p::self)
+            .def(p::self-p::self)
+            .def(p::self-=p::self)
+            .def("gdiag",cgdiag,p::return_value_policy<p::copy_const_reference>());
+            //.def("mat",&GOperatorDiag<T>::mat,p::return_value_policy<p::copy_const_reference>());
     }
 };
 
     void registerGOperators(){
     ///Register the operator base class 
-        p::class_<GOperatorBase,p::bases<Frommle>>("GOperatorBase").def(p::init<p::optional<std::string>>());
+        //p::class_<GOperatorBase,p::bases<Frommle>>("GOperatorBase").def(p::init<p::optional<std::string>>());
 
         register_Goperator<double,1,1>::reg("GOperator_float64");
 

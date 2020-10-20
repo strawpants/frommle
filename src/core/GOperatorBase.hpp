@@ -30,6 +30,7 @@
 namespace frommle {
 namespace core {
 
+
 /*!
  * \brief Abstract base class for describing an operator mapping from one dimension in the other dimensions
  * This class allows the storing of complex functional operators
@@ -38,25 +39,10 @@ namespace core {
  * -# Implement the functional operator
  * -# Allow serialization: i.e. allows an operator to be stored in a file
  */
-    class GOperatorBase {
-    public:
-        virtual ~GOperatorBase() {
-        }
-//        GOperatorBase( ){}
-        GOperatorBase(const std::string & name= "Goperator" ):name_(name){}
-        inline std::string name()const{return name_;}
-        void setName(const std::string & name){
-            name_=name;
-        }
-    private:
-        std::string name_="GOperator";
-    protected:
-
-    };
 
 
     template<class T, int no,int ni>
-    class GOperatorDyn{
+    class GOperatorDyn : public Frommle{
     public:
         static const int ndim_o=no;
         static const int ndim_i=ni;
@@ -69,14 +55,14 @@ namespace core {
         using gpo_ptr_t=std::shared_ptr<gpo_t>;
 
         virtual bool isLinear()const{return false;};
-        GOperatorDyn(){}
+        GOperatorDyn(std::string name="gop"):Frommle(name){}
 
         ///@brief constructs an operator and registers the output guides directly
-        GOperatorDyn(guides::GuidePackDyn<ndim_o> && outGP):gpo_(std::make_shared<guides::GuidePackDyn<ndim_o>>(std::move(outGP))){
+        GOperatorDyn(guides::GuidePackDyn<ndim_o> && outGP,std::string name="gop"):Frommle(name),gpo_(std::make_shared<guides::GuidePackDyn<ndim_o>>(std::move(outGP))){
 
         }
 
-        GOperatorDyn(gpo_ptr_t gpo):gpo_(gpo){}
+        GOperatorDyn(gpo_ptr_t gpo,std::string name="gop"):Frommle(name),gpo_(gpo){}
 
         virtual void fwdOp(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> & gout)=0;
 
@@ -161,10 +147,13 @@ namespace core {
     const gpo_ptr_t &gpp() const { return gpo_; }
 
     gpo_ptr_t &gpp() { return gpo_; }
-
+    core::typehash hash()const override{return makehash();}
     protected:
         gpo_ptr_t gpo_{};
-
+    private:
+        static typehash makehash(){
+            return typehash(std::string("GOpDyn_")+std::to_string(no)+std::string("_")+std::to_string(ni));
+        }
     };
 
 ///@brief a non-polymorphic version which has the guides set during compile time

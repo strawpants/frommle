@@ -37,15 +37,14 @@ namespace frommle{
 
 
     //GuideBase
-    p::class_<GuideBase,p::bases<Frommle>>("GuideBase")
-//            .add_property("name",&GuideBase::name, &GuideBase::name)
+    p::class_<GuideBase,p::bases<Frommle>,boost::noncopyable>("GuideBase",p::no_init)
             .def("size",&GuideBase::size);
             //.add_static_property("ndim",p::make_getter(&GuideBase::ndim))
 //            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
 
     //we also want to be able to pass shared_pointers to and fromm python
-    p::register_ptr_to_python< constGuideBasePtr >();
-    p::register_ptr_to_python< GuideBasePtr >();
+    p::register_ptr_to_python< std::shared_ptr<const GuideBase>>();
+    p::register_ptr_to_python< std::shared_ptr<GuideBase>>();
 
     }
 

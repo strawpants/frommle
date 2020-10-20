@@ -27,6 +27,7 @@
 #include "core/TimeGuide.hpp"
 #include <boost/date_time.hpp>
 #include "core/IndexGuide.hpp"
+
 #include "core/MarrayEig.hpp"
 #include "core/UserSettings.hpp"
 #include <cstdio>
@@ -36,6 +37,10 @@
 
 using namespace frommle::core;
 namespace bg=boost::gregorian;
+
+
+
+
 BOOST_AUTO_TEST_CASE(Garray1n2n3d){
 
     auto TGuide=make_trange(bg::date(2002,12,1),bg::date(2003,3,30),bg::days(1));
@@ -236,3 +241,6 @@ BOOST_AUTO_TEST_CASE(TreeNodes){
 
 
 }
+
+
+

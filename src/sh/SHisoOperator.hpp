@@ -27,7 +27,7 @@ namespace frommle{
     namespace sh{
 
     ///@brief a class which holds an isotropic kernel (i.e. Green's function) in the spherical harmonic domain
-        template<class T>
+    template<class T>
     class SHisoOperator:public core::GOperatorDiag<T>{
     public:
         using GOpDiag=core::GOperatorDiag<T>;
@@ -36,32 +36,36 @@ namespace frommle{
         using typename GOpDiag::gpo_t;
         using typename GOpDiag::eigd;
         using typename GOpDiag::inverse;
-        SHisoOperator():GOpDiag(),kernel_(){}
-        SHisoOperator(const int nmax):GOpDiag(guides::GuidePackDyn<1>(guides::SHnmtGuide(nmax))),kernel_(nmax+1){}
-        SHisoOperator(std::vector<T> kernel):GOpDiag(guides::GuidePackDyn<1>(guides::SHnmtGuide(kernel.size()-1))),kernel_(kernel){
+        SHisoOperator(std::string name="shop"):GOpDiag(name){}
+        //SHisoOperator(const int nmax):GOpDiag(guides::GuidePackDyn<1>(guides::SHnmtGuide(nmax))),kernel_(nmax+1){}
+        SHisoOperator(std::vector<T> kernel, std::string name="shop"):GOpDiag(guides::GuidePackDyn<1>(guides::SHnmtGuide(kernel.size()-1)),name),kernel_(kernel){
+            expandkernel<guides::SHnmtGuide>();
         }
+
         template<class SHG>
-        SHisoOperator(std::vector<T> kernel, const SHG & guide):GOpDiag(guides::GuidePackDyn<1>(guide)),kernel_(kernel){
-            expandkernel();
+        SHisoOperator(std::vector<T> kernel, const SHG & guide, std::string name="shop"):GOpDiag(guides::GuidePackDyn<1>(guide),name),kernel_(kernel){
+            expandkernel<SHG>();
         }
 
-
+        //SHisoOperator(std::string name,std::vector<T> kernel):GOpDiag(guides::GuidePackDyn<1>(guides::SHnmtGuide(kernel.size()-1))),kernel_(kernel){
+        //}
+        core::typehash hash()const override{return core::typehash("SHisop_t");}
+        inline int nmax()const{return kernel_.size()-1;}
     private:
+
         ///@brief expand the degree dependent kernel in a full diagonal
+        template<class SHG>
         void expandkernel(){
 
-            if (! gpo_){
-                THROWINPUTEXCEPTION("Calling expand kernel without specifying a guide, don't know how to expand");
-            }
 
 
-            auto shg=gpo_->template as< guides::SHGuideBase >(0);
+            auto shg=gpo_->template as<SHG>(0);
             if (shg->nmax() > nmax()){
                 THROWINPUTEXCEPTION("Requested nmax is larger than supported by the kernel");
             }
 
             int n,m;
-            guides::SHGuideBase::trig t;
+            guides::trigenum t;
             size_t i=0;
             for(const auto & tnm:*shg){
                 std::tie(n,m,t)=tnm;
@@ -70,8 +74,6 @@ namespace frommle{
                 ++i;
             }
         }
-
-        inline int nmax()const{return kernel_.size()-1;}
         std::vector<T> kernel_{};
     };
 

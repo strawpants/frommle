@@ -24,7 +24,6 @@ if (PYTHON)
 
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-
         add_custom_command(OUTPUT ${TSTAMP} COMMAND ${PYTHON} ${SETUP_PY} develop
                 COMMAND ${CMAKE_COMMAND} -E touch ${TSTAMP} DEPENDS linkpython ${PYDEPS} ${FROMMLELIB} ${FROMMLEPYLIB} ${SETUP_PY}  )
     else ()

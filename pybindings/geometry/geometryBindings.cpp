@@ -26,6 +26,7 @@
 #include "../core/coreBindings.hpp"
 #include <ogr_geometry.h>
 #include "geometry/GuideMakerTools.hpp"
+#include "geometry/Vec3DGuide.hpp"
 
 namespace p = boost::python;
 
@@ -163,9 +164,22 @@ using OGRPointGuide=OGRGuide<OGRPoint>;
 void (OGRPointGuide::*pb1)(const OGRPoint &)=&OGRPointGuide::push_back;
 void (OGRPointGuide::*pb2)(const std::string &)=&OGRPointGuide::push_back;
 const std::shared_ptr<OGRPoint> & (OGRPointGuide::*iget)(const size_t)const=&OGRPointGuide::operator[];
+const xyz & (Vec3DGuide::*vec3dget)(const size_t)const=&Vec3DGuide::operator[];
 
 void pyexport_geometry()
 {
+
+   p::enum_<xyz>("xyz")
+      .value("x",xyz::x)
+      .value("y",xyz::y)
+      .value("z",xyz::z);
+
+   p::class_<Vec3DGuide,p::bases<GuideBase>>("Vec3DGuide",p::init<p::optional<std::string>>())
+      .def("idx",&Vec3DGuide::idx)
+      .def("__getitem__",vec3dget,p::return_value_policy<p::copy_const_reference>());
+
+
+
     //register to and from pyhton conversion for OGRPoint
 //    PyOGRPoint();
        p::class_<OGRPoint>("FrOGRPoint",p::init<double,double>())

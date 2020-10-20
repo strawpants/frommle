@@ -1,6 +1,6 @@
 /*! \file
  \brief 
- \copyright Roelof Rietbroek 2019
+ \copyright Roelof Rietbroek 2020
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or

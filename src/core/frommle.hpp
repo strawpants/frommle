@@ -39,9 +39,7 @@ namespace frommle{
         ///@brief Polymorphic base class which wraps all important frommle classes
     class Frommle:public std::enable_shared_from_this<Frommle> {
     public:
-        Frommle() {};
-
-        Frommle(std::string name, typehash th = typehash("Frommle_t")) : name_(name), type_(th) {}
+        Frommle(std::string name=std::string("frommle")) : name_(name) {}
 
         std::string name() const { return name_; }
 
@@ -61,8 +59,7 @@ namespace frommle{
             THROWNOTIMPLEMENTED("This frommle object cannot be loaded directly from a shared_ptr<Frommle> please implement the virtual function void load(const std::shared_ptr<Frommle>&)");
         }
         //add 1D index_range and index_gen types here?
-            typehash hash() const { return type_; }
-            typehash & hash(){ return type_; }
+            virtual typehash hash() const { return typehash("Frommle_t"); }
             std::string hashstr()const{return std::string(hash());}
 
             template<class T=const Frommle>
@@ -77,19 +74,15 @@ namespace frommle{
 
             }
 
-            bool operator == (Frommle & other)const{return type_==other.type_;}
+            bool operator == (Frommle & other)const{return hash()==other.hash();}
 
-            bool operator != (Frommle & other)const{return type_!=other.type_;}
+            bool operator != (Frommle & other)const{return hash()!=other.hash();}
 
 //        virtual void createFrom(core::typehash hash)=0;
 //        virtual void loadFrom(const std::shared_ptr<Frommle> & frptr)=0;
     protected:
-            ///@brief sets up the current object from just a typehash. Overload this function when this functionality is needed
-            virtual void rehash(){};
-            void sethash(typehash th){type_=th;}
         private:
             std::string name_="Frommle";
-            typehash type_{"Frommle_t"};
         };
 
 

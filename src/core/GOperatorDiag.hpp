@@ -41,11 +41,13 @@ namespace frommle{
             using GOp::operator();
             using garr=GArrayDiag<T>;
             using eigd=typename garr::eigd;
-            GOperatorDiag(){}
-            GOperatorDiag( guides::GuidePackDyn<1> gpo ):GOp(std::move(gpo)),diag_(*gpo_){}
+            GOperatorDiag(std::string name="diagop"):GOp(name){}
+            GOperatorDiag(guides::GuidePackDyn<1> gpo, std::string name="diagop"):GOp(std::move(gpo),name),diag_(*gpo_){}
 
-            GOperatorDiag( std::shared_ptr<guides::GuidePackDyn<1>> gpo, eigd diag ):GOp(gpo),diag_(*gpo_){}
+            GOperatorDiag( std::shared_ptr<guides::GuidePackDyn<1>> gpo, eigd diag,std::string name="diagop"):GOp(gpo,name),diag_(*gpo_){}
+            GOperatorDiag(garr diag ,std::string name="diagop"):GOp(diag.gp().strip(),name),diag_(diag){}
 
+            core::typehash hash()const override {return core::typehash("GOpDiag_t");} 
             GOperatorDiag inverse()const{
                 return GOperatorDiag(gpo_,diag_.eig().inverse());
                 
@@ -54,7 +56,7 @@ namespace frommle{
             ///@brief returns a new diagonal operator which chains the input throughanother diagonal operator before applying the operator itself
             GOperatorDiag operator()(const GOperatorDiag & pipethrough)const{
                    eigd outdiag(gpo_->at(0)->size());
-                   outdiag.diagonal().array()=diag_.diagonal().array()*pipethrough.diag_.diagonal().array();
+                   outdiag.diagonal().array()=diag_.eig().diagonal().array()*pipethrough.diag_.eig().diagonal().array();
                    return GOperatorDiag(pipethrough.gpp(),outdiag); 
             }
 //            GOperatorDiag(guides::GuidePackDyn<1> gpo, eigd diag ):GOp(gpo),diag_(diag){}
@@ -104,14 +106,51 @@ namespace frommle{
 
 
 
-//            garr & diag(){return diag_;}
-//            const garr & diag()const{return diag_;}
+            garr & gdiag(){return diag_;}
+            const garr & gdiag()const{return diag_;}
 
             eigd & eig(){return diag_.eig();}
             const eigd & eig()const{return diag_.eig();}
 //            GOperatorDiag inverse()const{return GOperatorDiag(*gpo_,eig_.inverse());}
+
+            ///@brief allow the addition of two diagonal operators into a new one
+            GOperatorDiag operator+(const GOperatorDiag & inadd)const{
+                checkBothGuides(inadd);
+                return GOperatorDiag(diag_+inadd.diag_);
+
+            }
+            
+            ///@brief allow the addition of a diagonal operator to the current one
+            GOperatorDiag & operator+=(const GOperatorDiag & inadd){
+                checkBothGuides(inadd);
+                diag_+=inadd.diag_;
+                return *this;
+
+            }
+
+            ///@brief allow the subtraction of two diagonal operators into a new one
+            GOperatorDiag operator-(const GOperatorDiag & insub)const{
+                checkBothGuides(insub);
+                return GOperatorDiag(diag_-insub.diag_);
+
+            }
+            
+            ///@brief allow the addition of a diagonal operator to the current one
+            GOperatorDiag & operator-=(const GOperatorDiag & insub){
+                checkBothGuides(insub);
+                diag_-=insub.diag_;
+                return *this;
+
+            }
         protected:
             garr diag_{};
+        private:
+            void checkBothGuides(const GOperatorDiag & in)const{
+                if (!(gpo_ and in.gpo_)){
+                    THROWINPUTEXCEPTION("One of the input Diagonal operators has an uninitialized diagonal");
+                }
+            }
+
         };
 
 

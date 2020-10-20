@@ -34,14 +34,13 @@ using namespace frommle::guides;
 namespace frommle{
     namespace sh{
         template<class ftype>
-    class Legendre_nm:public frommle::core::GArrayDense_spec<ftype,guides::GuidePack<guides::SHnmHalfGuide>>{
+    class Legendre_nm:public frommle::core::GArrayDense_spec<ftype,guides::GuidePack<guides::SHnmGuide>>{
         public:
-            using shg_t=guides::SHnmHalfGuide;
+            using shg_t=guides::SHnmGuide;
             using Garr=frommle::core::GArrayDense_spec<ftype,guides::GuidePack<shg_t>>;
             using Garr::mat;
             inline const shg_t & shg()const{return *(Garr::template g<0>());}
             //for future note: finding out that one need to insert'template' has costed multiple hours of my life
-//            inline std::shared_ptr<guides::SHnmHalfGuide> shg()const{return gp()->template as<guides::SHnmHalfGuide>(0);}
             Legendre_nm(const int nmax);
             Legendre_nm()=default;
             Legendre_nm & set(const ftype costheta);
@@ -72,9 +71,9 @@ namespace frommle{
         template<class T>
         class Ynm_cache{
             public:
-                using trig=SHGuideBase::trig;
-                using nmt=SHGuideBase::Element;
-                using nm=SHnmHalfGuide::Element;
+                using trig=trigenum;
+                using nmt=nmtEl;
+                using nm=nmEl;
                 Ynm_cache(int nmax):nmax_(nmax),sincosmlon(std::array<int,2>{nmax+1,2}),Pnm(nmax){
                 
                 }

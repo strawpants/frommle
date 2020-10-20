@@ -70,24 +70,6 @@ namespace frommle{
 
 
         ///@brief Variablewrapper which is needed to allow dynamic python overloading
-//        class VariableDynWrapper:public VariableDyn,public p::wrapper<VariableDyn> {
-//        public:
-//            VariableDynWrapper():VariableDyn(){}
-//            VariableDynWrapper(const std::string name):VariableDyn(name){}
-//
-//            void setValue(std::shared_ptr<const core::Frommle> ptr){
-//                if (p::override setf = this->get_override("__setitem__")) {
-//                    setf(p::slice(),ptr);
-//
-//                }else{
-//                    //tap into the virtual resolution of the base
-//                    VariableDyn::setValue(ptr);
-//                }
-//            }
-//
-//        };
-
-        ///@brief Variablewrapper which is needed to allow dynamic python overloading
         template<class T>
         class VariableWrapper:public Variable<T>,public p::wrapper<Variable<T>>{
         public:
@@ -160,41 +142,7 @@ namespace frommle{
 
             }
 
-            //std::shared_ptr<VariableWrapper> ptr(){
-
-            ///@brief extracts a ndarray from the variable with the specified type
-            //PyObject * getitem(const p::tuple & slicetuple){
-                    //if (p::override getf=this->get_override("__getitem__")){
-                        //auto res=getf(slicetuple);
-                        //return res;
-                    //}else{
-                        ////use an hslab
-                        //core::Hyperslab<T> hslab = py::hslab_from_slices<T>(slicetuple);
-                        //Variable<T>::getValue(hslab);
-                        //return py::hslab_to_ndarray<T>::convert(hslab);
-
-                    //}
-
-            //}
-
-            //PyObject * getitem_default(const p::slice &slice){
-                    ////use an hslab
-                    //core::Hyperslab<T> hslab = py::hslab_from_slice<T>(slice);
-                    //Variable<T>::getValue(hslab);
-                    //return py::hslab_to_ndarray<T>::convert(hslab);
-
-            //}
-            
-            //PyObject * getitem_default(const p::tuple &slicetuple){
-                    ////use an hslab
-                    //core::Hyperslab<T> hslab = py::hslab_from_slices<T>(slicetuple);
-                    //Variable<T>::getValue(hslab);
-                    //return py::hslab_to_ndarray<T>::convert(hslab);
-            //}
-                //return std::make_shared<VariableWrapper>();
-            //}
         private:
-            //PyObject * self{nullptr};
         };
 
         template<class T>
@@ -230,7 +178,7 @@ namespace frommle{
                         .def("writable",&Group::writable)
                         .def("setAmode",setamode1)
                         .def("setAmode",setamode2)
-                        .def("getGroup",&Group::getGroup,p::return_value_policy<p::reference_existing_object>())
+                        .def("getGroup",&Group::getGroup)
                 );
                 //also register pointer to group
                 p::register_ptr_to_python< std::shared_ptr<Group> >();
@@ -288,8 +236,8 @@ namespace frommle{
             
             register_var<double>::reg("Variable_float64");
             register_var<int>::reg("Variable_int");
-
-            //def("testslice",&testslice);
+            //python fallback to register array like Variables with generic objects 
+            register_var<PyObject>::reg("Variable_obj");
         }
     }
 }

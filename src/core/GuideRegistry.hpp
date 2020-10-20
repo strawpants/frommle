@@ -23,6 +23,7 @@
 #include "core/TimeGuide.hpp"
 #include "sh/SHGuide.hpp"
 #include "geometry/OGRGuide.hpp"
+#include "geometry/Vec3DGuide.hpp"
 
 #ifndef FROMMLE_GUIDEREGISTRY_HPP
 #define FROMMLE_GUIDEREGISTRY_HPP
@@ -37,7 +38,7 @@ namespace frommle{
         };
 
 
-        using GuideRegistry=GuideTlist<GuideBase,IndexGuide,DateGuide,SHnmHalfGuide,SHtmnGuide,SHnmtGuide,OGRPointGuide,OGRPolyGuide>;
+        using GuideRegistry=GuideTlist<GuideBase,DateGuide,PTimeGuide,SHnmtGuide,SHtmnGuide,SHnmGuide,SHGuide,Vec3DGuide,OGRPointGuide,OGRPolyGuide>;
 
 
      //some useful visitors to be applied to the boost variant of the registered guides
@@ -134,6 +135,7 @@ namespace frommle{
             explicit GVIterator(const GuideRegistry::Gvar * el ):el_(el){}
             GVIterator & operator++(){
                 ++el_;
+                return *this;
             }
             GVIterator operator++(int){
                 GVIterator retval(*this);

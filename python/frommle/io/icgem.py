@@ -74,7 +74,7 @@ class icgemLineParser():
 
 class SHicgemArchive(SHArchive):
     def __init__(self,filen,mode='r',nmax=-1):
-        super().__init__(filen,mode,nmax)
+        super().__init__(filen,mode=mode,nmax=nmax)
 
     def fload_impl(self):
         """Loads the data into variables"""
@@ -140,6 +140,8 @@ class SHicgemArchive(SHArchive):
             #continue parsing the lines
             for ln in fid:
                 cnmtype,n,m,c,s,sc,ss=lParser(ln)
+                if not cnmtype:
+                    continue
                 if n <= nmax:
                     idxc=shg.idx((n,m,trig.c))
                     idxs=shg.idx((n,m,trig.s))

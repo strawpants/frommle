@@ -96,6 +96,7 @@ namespace frommle {
             ///@brief the type traits remove this constructor when the input is not a guidepack
             template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int>::type = 0>
             GArrayBase(GP guidepack) : Frommle("GArray"), gp_(std::make_shared<GP>(std::move(guidepack))){}
+            
 
             template<class GP, typename std::enable_if<std::is_base_of<guides::GuidePackDyn<n>, GP>::value, int>::type = 0>
             GArrayBase(GP guidepack, std::string name) : Frommle(name), gp_(std::make_shared<GP>(std::move(guidepack))){}
@@ -108,8 +109,10 @@ namespace frommle {
             GArrayBase(gp_ptr_t guidepackptr): Frommle("GArray"),gp_(guidepackptr){}
 
             //note although empty, we always need to construct the multi_array_ref using a non-default constructor
-            GArrayBase() : Frommle("GArray"), gp_(std::make_shared<gp_t>()){}
-
+            GArrayBase(std::string name="GArray") : Frommle(name), gp_(std::make_shared<gp_t>()){}
+            //GArrayBase() : Frommle("GArray",core::typehash("GArBase_t")), gp_(std::make_shared<gp_t>()){}
+            core::typehash hash()const override{
+            return core::typehash("GArBase_t");}
             void save(io::Group &ar) const override {
                 //save guidepack
                 gp_->save(ar);

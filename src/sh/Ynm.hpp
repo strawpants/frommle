@@ -31,35 +31,54 @@ namespace frommle{
     using namespace geometry;
     namespace sh{
 
-template<class T,class SHG, class GEO>
-class Ynm{};
 
 
-//template specializations   
-using OGRPGuide=OGRGuide<OGRPoint>;
-template<class T,class SHG>
-class Ynm<T,SHG,OGRPGuide>:public GOperator<T, GuidePack<SHG>, GuidePack<OGRPGuide> > {
+template<class T>
+class Ynm<T>:public GOperatorDyn<T,1,1 > {
     public:
 
-        using GOpBase=GOperator<T,GuidePack<SHG>,GuidePack<OGRPGuide>>;
-        using GOpBase::ndim_o;
-        using GOpBase::ndim_i;
-        using GOpBase::gpout_t;
-        using GOpBase::gpin_t;
-        using GOpBase::gpo_;
-        using GOpBase::operator();
-
-        Ynm(const int nmax):GOpBase(GuidePack<SHG>(SHG(nmax))){
+        using GOpBase=GOperatorDyn<T,1,1>;
+        ///@brief constructor which uses the "standard SHGuide"
+        Ynm(const int nmax):GOpBase(GuidePack<SHGuide>(SHGuide(nmax))){
 
         }
 
 
-        void fwdOp(const GArrayDyn<T,ndim_i+1> & gin, GArrayDyn<T,ndim_o+1> &gout){
-                auto &shg=*(gout.gp().template  as<SHG>(0));
-                auto &geog=*(gin.gp().template as<OGRPGuide>(0));
+        void fwdOp(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> &gout){
+            //dynamically tryout guide casts
+            int returnCode=fwdOpSpec<SHGuide,OGRPointGuide>(gin,gout);
 
+            if( returnCode != 0){
+                THROWNOTINPUTEXCEPTION("Cannot aply forward operator for this combination of guides"); 
+            }
+            
+
+        
+        }
+
+
+
+
+
+
+    private:
+        ///@brief templated version of the forward operator 
+        template<SHG,OGRG>
+        int fwdOpSpec(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> & gout){
+
+                auto shg=gout.gp().template  dyn_as<SHG>(0);
+                if(! shg){
+                    //dynamic cast failed for the SHGuide
+                    return 1;
+                }
+                auto geog=gin.gp().template as<OGRG>(0);
+
+                if(! geog){
+                    //dynamic cast failed for the geometry guide
+                    return 2;
+                }
                 //initialize associated Legendre functionss
-                Ynm_cache<T> Ynm_c(shg.nmax());
+                Ynm_cache<T> Ynm_c(shg->nmax());
 
                 T ynm;
 
@@ -72,15 +91,15 @@ class Ynm<T,SHG,OGRPGuide>:public GOperator<T, GuidePack<SHG>, GuidePack<OGRPGui
                 auto indices_o=gout.mindices();
                 auto indices_i=gin.mindices();
 
-                //typename GArrayDyn<T,ndim_i+1>::arr::index_gen indices_i;
+                //typename GArrayBase<T,ndim_i+1>::arr::index_gen indices_i;
 
                 //loop over input points
-                for(auto & pnt:geog ){
+                for(auto & pnt:*geog ){
                         Ynm_c.setlat(pnt->getY()).setlon(pnt->getX());
 
                         auto irow=gin.mat()[indices_i[pidx++][allinrange]];
                         size_t idx=0;
-                        for(auto & nmt:shg){
+                        for(auto & nmt:*shg){
                                 auto orow=gout.mat()[indices_o[idx++][allinrange]];
                                 auto orow_it=orow.begin();
                                 ynm=Ynm_c[nmt];
@@ -91,17 +110,78 @@ class Ynm<T,SHG,OGRPGuide>:public GOperator<T, GuidePack<SHG>, GuidePack<OGRPGui
                         }
                 }
 
-        }
-
-
-
-
-
-
-    private:
-
+                //success
+                return 0;
+    }
 
 };
+
+
+//template<class T,class SHG>
+//class Ynm<T,SHG,OGRPGuide>:public GOperator<T, GuidePack<SHG>, GuidePack<OGRPGuide> > {
+    //public:
+
+        //using GOpBase=GOperator<T,GuidePack<SHG>,GuidePack<OGRPGuide>>;
+        //using GOpBase::ndim_o;
+        //using GOpBase::ndim_i;
+        //using GOpBase::gpout_t;
+        //using GOpBase::gpin_t;
+        //using GOpBase::gpo_;
+        //using GOpBase::operator();
+
+        //Ynm(const int nmax):GOpBase(GuidePack<SHG>(SHG(nmax))){
+
+        //}
+
+
+        //void fwdOp(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> &gout){
+                //auto &shg=*(gout.gp().template  as<SHG>(0));
+                //auto &geog=*(gin.gp().template as<OGRPGuide>(0));
+
+                ////initialize associated Legendre functionss
+                //Ynm_cache<T> Ynm_c(shg.nmax());
+
+                //T ynm;
+
+                //gout=0;
+
+                //size_t pidx=0;
+
+                ////denotes all elements in a dimension
+                //auto allinrange=gout.mrange();
+                //auto indices_o=gout.mindices();
+                //auto indices_i=gin.mindices();
+
+                ////typename GArrayBase<T,ndim_i+1>::arr::index_gen indices_i;
+
+                ////loop over input points
+                //for(auto & pnt:geog ){
+                        //Ynm_c.setlat(pnt->getY()).setlon(pnt->getX());
+
+                        //auto irow=gin.mat()[indices_i[pidx++][allinrange]];
+                        //size_t idx=0;
+                        //for(auto & nmt:shg){
+                                //auto orow=gout.mat()[indices_o[idx++][allinrange]];
+                                //auto orow_it=orow.begin();
+                                //ynm=Ynm_c[nmt];
+                                //std::for_each(irow.begin(),irow.end(),[&orow_it, &ynm](const T & in){
+                                    //*orow_it+=in*ynm;
+                                    //++orow_it;
+                                //});
+                        //}
+                //}
+
+        //}
+
+
+
+
+
+
+    //private:
+
+
+//};
 
 
 

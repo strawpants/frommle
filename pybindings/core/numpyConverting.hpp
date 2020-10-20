@@ -22,9 +22,11 @@
 #include <boost/python/numpy.hpp>
 #include <boost/python/slice.hpp>
 #include <boost/multi_array.hpp>
+#include "core/Exceptions.hpp"
 #include "core/Hyperslab.hpp"
 #include "tupleconversion.hpp"
 #include "core/GuideRegistry.hpp"
+#include <eigen3/Eigen/Core>
 
 namespace p = boost::python;
 namespace np = boost::python::numpy;
@@ -35,10 +37,10 @@ using namespace frommle;
 namespace frommle{
 
     namespace py{
-        template<class T>
-        void nullDeleter(T* p) {
-            LOGINFO << "Deleting" <<  std::endl;
-        };
+        //template<class T>
+        //void nullDeleter(T* p) {
+            //LOGINFO << "Deleting" <<  std::endl;
+        //};
 
         ///@brief convert an element to a numpy dtype (specialize for each non built in type)
         
@@ -148,12 +150,17 @@ namespace frommle{
         template<typename T, size_t ndim>
         struct marrayref_to_ndarray{
             using bma=boost::multi_array_ref<T,ndim>;
+            using cbma=boost::const_multi_array_ref<T,ndim>;
             using szt=typename bma::size_type;
             using strt=typename bma::index;
             static PyObject* convert (const bma & marr){
                 return p::incref(get(marr).ptr());
             }
-            static np::ndarray get(const bma & marr){
+            static PyObject* convert (const cbma & marr){
+                return p::incref(get(marr).ptr());
+            }
+            template<class BMAT>
+            static np::ndarray get(const BMAT & marr){
                 p::tuple shape = arr_to_ptuple<ndim,const szt*>::make(marr.shape());
                 np::dtype dtype = np_dtype<T>::get();
                 int itemsize=dtype.get_itemsize();
@@ -171,6 +178,25 @@ namespace frommle{
                 return np::from_data(const_cast<T *>(marr.data()),dtype,shape,strides,p::object());
             }
         };
+
+
+        //template<typename T>
+        //struct eig1_to_ndarray{
+            //using eiga=Eigen::Array<T,-1,1>;
+            //static PyObject* convert (const eiga & eig){
+                //return p::incref(get(eig).ptr());
+            //}
+            //static np::ndarray get(const eiga & eig){
+                //p::tuple shape = p::make_tuple(eig.rows());
+                //np::dtype dtype = np_dtype<T>::get();
+                //int itemsize=dtype.get_itemsize();
+                
+                //p::tuple strides = p::make_tuple(eig.inner());
+                 
+                ////note: that we're removing the constness of the data because we want to allow modifications from python
+                //return np::from_data(const_cast<T *>(eig.data()),dtype,shape,strides,p::object());
+            //}
+        //};
 
 
         template<class T>
@@ -197,6 +223,7 @@ namespace frommle{
         struct register_mar{
             register_mar(){
                 p::to_python_converter<boost::multi_array_ref<T,n>, marrayref_to_ndarray<T,n> >();
+                p::to_python_converter<boost::const_multi_array_ref<T,n>, marrayref_to_ndarray<T,n> >();
                 register_mar<T,n-1>();
             }
         };

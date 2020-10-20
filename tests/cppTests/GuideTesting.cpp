@@ -23,25 +23,60 @@
 
 #define BOOST_TEST_MODULE GuideTesting
 #include <boost/test/unit_test.hpp>
-#include "core/GuidePack.hpp"
+#include "core/IndexedGuide.hpp"
+#include "core/Logging.hpp"
+//#include "core/GuidePack.hpp"
 
-BOOST_AUTO_TEST_CASE(GuideBase){
+using namespace frommle::guides;
+
+    struct TestElement{
+        TestElement(size_t i):id(i){}
+        size_t id;    };
+
+BOOST_AUTO_TEST_CASE(Indexed){
 
 
-    BOOST_TEST(1 == 1);
 
+    IndexedGuide<TestElement> IGuide;
 
+    for(int i=20;i>3;i-=2){
+        IGuide.push_back(TestElement(i));
+    }
 
+    //mask the guide
+    IGuide.mask([](const TestElement & el)->bool{
+            return (el.id >10)?true:false;
+            });
+    
+    for(auto & it:IGuide){
+        LOGINFO << "entry "<< it.i <<" " <<it.el.id <<  std::endl;
+    }
+    
+    IGuide.unmask();
+
+    for(auto & it:IGuide){
+        LOGINFO << "unmasked entry "<< it.i <<" revin" << IGuide.memindx()[it.i].i <<" "<<it.el.id <<  std::endl;
+    }
 }
 
 
-
-BOOST_AUTO_TEST_CASE(GuidePack){
-
-
-    BOOST_TEST(1 == 1);
+//BOOST_AUTO_TEST_CASE(GuideBase){
 
 
+    //BOOST_TEST(1 == 1);
 
-}
+
+
+//}
+
+
+
+//BOOST_AUTO_TEST_CASE(GuidePack){
+
+
+    //BOOST_TEST(1 == 1);
+
+
+
+//}
 

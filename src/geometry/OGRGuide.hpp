@@ -47,10 +47,9 @@ namespace frommle{
             using ElementContainer=std::vector<Element>;
             //structors
             OGRGuide(){}
-            OGRGuide(const std::string & name):GuideBase(name,typehash(name)){}
-            OGRGuide(const std::string & name, const typehash & hash):GuideBase(name,hash){}
+            OGRGuide(const std::string & name):GuideBase(name){}
             OGRGuide(const OGRGuide & in)=default;
-
+            core::typehash hash()const override {return core::typehash("OGRGuide_t");}
             ///@brief push_back family
             void push_back(T &&geometry);
             void push_back(const T &geometry);

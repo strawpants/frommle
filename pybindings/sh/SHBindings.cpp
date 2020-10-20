@@ -1,52 +1,16 @@
 #include <iostream>
 #include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
-#include "../core/coreBindings.hpp"
-#include "core/GuideBase.hpp"
-#include "../core/numpyConverting.hpp"
 #include "sh/SHisoOperator.hpp"
+#include "sh/Legendre_nm.hpp"
+#include "sh/Ynm.hpp"
+#include "../core/coreGuides.hpp"
+#include "../core/tupleconversion.hpp"
+#include <boost/python/return_value_policy.hpp>
+#include <boost/python/copy_non_const_reference.hpp>
+
+
 namespace p = boost::python;
 namespace np = boost::python::numpy;
-
-#include "sh/SHGuide.hpp"
-#include "sh/Legendre_nm.hpp"
-#include "sh/SHGuide.hpp"
-#include "core/GuideBase.hpp"
-#include "../core/coreBindings.hpp"
-#include "../core/tupleconversion.hpp"
-#include <boost/python/copy_non_const_reference.hpp>
-#include <boost/python/return_value_policy.hpp>
-
-namespace frommle{
-    namespace guides{
-
-//Wrapper class is needed to cope with pure virtual functions of SHGuideBase
-        struct SHGuideBaseWrapper : SHGuideBase, p::wrapper<SHGuideBase> {
-        public:
-            using SHGuideBase::idx;
-            using Element=SHGuideBase::Element;
-            using trig=SHGuideBase::trig;
-
-//            frommle::core::index   (SHGuideBaseWrapper::*idxfromEl)(const Element) const = &SHGuideBaseWrapper::idx;
-//            frommle::core::index   (sh::SHGuideBase::*idxfromnmt)(const int,const int, const trig ) const = &sh::SHGuideBase::idx;
-//            inline frommle::core::index   idxfromEl(const sh::SHGuideBase::Element El)const{ return this->idx(El);}
-            inline size_t idxfromnmt(const int n, const int m, const SHGuideBase::trig t) const { return this->idx(n, m, t); }
-
-            inline size_t idx(const int n, const int m, const SHGuideBase::trig t) const {
-                return this->get_override("idx")(n, m, t);
-            }
-
-            inline size_t idx(const Element el) const {
-                return this->SHGuideBase::idx(el);
-            }
-
-            Element operator[](const size_t idx) const {
-                return this->get_override("operator[]")(idx);
-            }
-        };
-    }
-}
-
 
 using namespace frommle::guides;
 
@@ -56,9 +20,11 @@ using namespace frommle;
 template<class T>
 struct register_shisooperator{
     register_shisooperator(std::string basename){
-        p::class_<SHisoOperator<T>,p::bases<core::GOperatorDiag<T>>>(basename.c_str())
-                .def(p::init<int>())
-                .def(p::init<std::vector<T>>());
+        p::class_<SHisoOperator<T>,p::bases<core::GOperatorDiag<T>>>(basename.c_str(),p::init<std::vector<T>,p::optional<std::string>>())
+            .def("nmax",&SHisoOperator<T>::nmax);
+
+        //.def(p::init<int>())
+                //.def(p::init<std::vector<T>>());
 
 
     }
@@ -69,57 +35,49 @@ void pyexport_sh()
 {
 
 
-    p::enum_<SHGuideBase::trig>("trig")
-            .value("c",SHGuideBase::trig::C)
-            .value("s",SHGuideBase::trig::S);
+    p::enum_<trigenum>("trig")
+            .value("c",trigenum::C)
+            .value("s",trigenum::S);
 
-    frommle::py::register_tuple<SHGuideBase::Element >();
+    frommle::py::register_tuple<nmtEl>();
+    //not needed as std:tuple<int,int> has laready been registered in tupleconversion.hpp
+    //frommle::py::register_tuple<nmEl>();
 
-    //export SHHalfguide
-    size_t (SHnmHalfGuide::*idxfromel)(const SHnmHalfGuide::Element &)const=&SHnmHalfGuide::idx;
-    size_t (SHnmHalfGuide::*idxfromnm)(const int, const int)const=&SHnmHalfGuide::idx;
-    p::class_<SHnmHalfGuide,p::bases<GuideBase>>("SHnmHalfGuide",p::init<int>())
-    .add_property("nmax",&SHnmHalfGuide::nmax)
-    .add_property("nmin",&SHnmHalfGuide::nmin)
-    .def("idx",idxfromel)
-    .def("idx",idxfromnm)
-    .def("__getitem__",&SHnmHalfGuide::operator[])
-    ;
-
-
-    //the SHGuideBase
-    p::class_<SHGuideBaseWrapper,p::bases<GuideBase>,boost::noncopyable>("SHGuideBase")
-            .add_property("nmax",&SHGuideBase::nmax)
-            .add_property("nmin",&SHGuideBase::nmin)
-            .def("idx",&SHGuideBase::idxfromEl)
-            .def("__getitem__",p::pure_virtual(&SHGuideBase::operator[]))
-//            .def("__iter__",p::range<p::return_value_policy<p::copy_const_reference>>(&SHGuideBase::begin,&SHGuideBase::end))
-            .def("__iter__",p::iterator<const SHGuideBase>())
-//            .def("__iter__",p::iterator<const SHGuideBase>())
-            .def("__array__",&py::guide_to_ndarray<SHGuideBase>);
-
-    //export subclass SHtmnGuide
-    p::class_<SHtmnGuide,p::bases<SHGuideBase> >("SHtmnGuide").def(p::init<int,p::optional<std::string>>());
-            //.def("i_from_mn",&sh::SHtmnGuide::i_from_mn).staticmethod("i_from_mn")
-            //.def("mn_from_i",&sh::SHtmnGuide::mn_from_i).staticmethod("mn_from_i");
-
-    //export subclass SHnmtGuide
-    p::class_<SHnmtGuide,p::bases<SHGuideBase> >("SHnmtGuide")
+    //export SHGuide
+    pyIndexedGuide<SHGuide>::reg("SHGuide")
             .def(p::init<int,p::optional<std::string>>())
-            .def("i_from_nmt",&SHnmtGuide::i_from_nmt).staticmethod("i_from_nmt");
+            .add_property("nmax",&SHGuide::nmax)
+            .add_property("nmin",&SHGuide::nmin);
+
+    pyNoIndexedGuide<SHnmGuide>::reg("SHnmGuide")
+        .def(p::init<int>())
+        .add_property("nmax",&SHnmGuide::nmax)
+        .add_property("nmin",&SHnmGuide::nmin);
+
+    pyNoIndexedGuide<SHtmnGuide>::reg("SHtmnGuide")
+        .def(p::init<int>())
+        .add_property("nmax",&SHtmnGuide::nmax)
+        .add_property("nmin",&SHtmnGuide::nmin);
+    
+    pyNoIndexedGuide<SHnmtGuide>::reg("SHnmtGuide")
+        .def(p::init<int>())
+        .add_property("nmax",&SHnmtGuide::nmax)
+        .add_property("nmin",&SHnmtGuide::nmin);
 
 
+    p::register_ptr_to_python< std::shared_ptr<SHnmGuide> >();
+    p::register_ptr_to_python< std::shared_ptr<SHGuide> >();
+    p::register_ptr_to_python< std::shared_ptr<SHtmnGuide> >();
     p::register_ptr_to_python< std::shared_ptr<SHnmtGuide> >();
-
-    p::def("nmax_from_sz",&nmax_from_sz);
-
-    p::class_<Legendre_nm<double>,p::bases<core::GArrayDense<double,1>>>("Legendre_nm",p::init<int>())
-            .def("set",&sh::Legendre_nm_d::set,p::return_value_policy<p::copy_non_const_reference>());
-//            .def("indxnm", &sh::Legendre_nm_d::indxnm);
 
     //register SHisoperator
     register_shisooperator<double>("shisoperator_float64");
 
 
+    p::class_<Legendre_nm<double>,p::bases<core::GArrayDense<double,1>>>("Legendre_nm",p::init<int>())
+            .def("set",&sh::Legendre_nm_d::set,p::return_value_policy<p::copy_non_const_reference>());
+    
+
+    p::class_<Ynm<double>,p::bases<core::GOperatorDyn<double,1,1>>>("Ynm_float64",p::init<int>())
 
 }

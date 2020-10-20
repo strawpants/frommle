@@ -19,8 +19,6 @@
  */
 #include "core/TimeGuide.hpp"
 
-#ifndef SRC_CORE_TIMEGUIDE_HPP_
-#define SRC_CORE_TIMEGUIDE_HPP_
 namespace frommle{
 	namespace guides{
         DateGuide monthlyRange(const int yearstart, const int monthstart,const int yearend,const int monthend){
@@ -45,4 +43,3 @@ namespace frommle{
         }
 	}
 }
-#endif 

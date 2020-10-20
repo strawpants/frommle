@@ -30,11 +30,11 @@ namespace frommle {
              possibly snap the max values of the bounding box to appropriate values
              */
             if (east < west) {
-                throw frommle::core::InputException(HERE + "Erronous input bounding box east < west");
+                THROWINPUTEXCEPTION("Erronous input bounding box east < west");
             }
 
             if (north < south) {
-                throw frommle::core::InputException(HERE + "Erronous input bounding box north < south");
+                THROWINPUTEXCEPTION("Erronous input bounding box north < south");
             }
 
 
@@ -62,7 +62,7 @@ namespace frommle {
 
         std::tuple<double, double> GeoGrid::lonlat(const lint ilon, const lint ilat) const {
             if ( ilon >= nlon_ || ilat >= nlat_){
-                throw frommle::core::InputException(HERE+ "invalid longitude and latitude index");
+                THROWINPUTEXCEPTION("invalid longitude and latitude index");
             }
             return std::make_tuple(bbox_.MinX+dx_*(ilon+0.5*(1-reg_)),bbox_.MinY+dy_*(ilat+0.5*(1-reg_)));
         }

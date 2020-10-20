@@ -20,44 +20,42 @@
 
 #include "core/IndexGuide.hpp"
 #include "core/TimeGuide.hpp"
+#include "core/StringGuide.hpp"
+#include "../core/coreGuides.hpp"
 #include <boost/python.hpp>
 #include <boost/python/copy_const_reference.hpp>
 
 namespace p = boost::python;
 
-namespace frommle{
+   
+//using namespace frommle::guides;
 
+//using namespace frommle::core;
+//using namespace frommle;
+
+namespace frommle{
     namespace guides{
         void register_coreGuides(){
-
+        
     //IndexGuide
     p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>())
     .def("append",&IndexGuide::append);
     
-    //TimeGuides
-    //TO pinpoint boost python to the correct overload we need to define specific function pointers
-    void (DateGuide::*pbdg)(const gregdate )=&DateGuide::push_back;
-    const gregdate & (DateGuide::*igetdt)(const size_t)const=&DateGuide::operator[];
-
+//TimeGuides
+    pyIndexedGuide<DateGuide>::reg("DateGuide")
+        .def(p::init<std::string>());
     
-    p::class_<DateGuide,p::bases<GuideBase>>("DateGuide")
-    .def(p::init<std::string>())
-    .def("append",pbdg)
-    .def("__getitem__",igetdt,p::return_value_policy<p::copy_const_reference>())
-    .def("__iter__",p::iterator<const DateGuide>());
+    pyIndexedGuide<PTimeGuide>::reg("TimeGuide")
+        .def(p::init<std::string>());
+  
 
-    void (PTimeGuide::*pbpt)(const ptime )=&PTimeGuide::push_back;
-    const ptime & (PTimeGuide::*igetpt)(const size_t)const=&PTimeGuide::operator[];
-    p::class_<PTimeGuide,p::bases<GuideBase>>("PTimeGuide")
-    .def(p::init<std::string>())
-    .def("append",pbpt)
-    .def("__getitem__",igetpt,p::return_value_policy<p::copy_const_reference>())
-    .def("__iter__",p::iterator<const PTimeGuide>());
+    pyIndexedGuide<StringGuide>::reg("StringGuide")
+        .def(p::init<std::string>())
+        .def("regexmask",&StringGuide::regexmask);
 
     p::def("monthlyRange",&monthlyRange);
         }
 
     }
-
 }
 

@@ -25,10 +25,17 @@ class LoadLove:
             nmax=maxsize
 
         commentreg = re.compile('^#')
-        if filename.endswith('.gz'):
-            fid=gzip.open(filename,'rt')
+        
+        if type(filename) == str:
+            #assume it's a filename
+            if filename.endswith('.gz'):
+                fid=gzip.open(filename,'rt')
+            else:
+                fid = open(filename, 'r')
         else:
-            fid = open(filename, 'r')
+            #assume it's some kind of file buffer
+            fid=filename
+
         self.hdat = []
         self.ldat = []
         self.kdat = []

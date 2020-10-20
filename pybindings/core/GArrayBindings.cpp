@@ -23,6 +23,7 @@
 
 #include <boost/python.hpp>
 #include "core/GArrayDense.hpp"
+#include "core/GArrayDiag.hpp"
 #include <boost/core/noncopyable.hpp>
 #include <boost/python/copy_non_const_reference.hpp>
 #include <boost/python/return_internal_reference.hpp>
@@ -72,8 +73,6 @@ namespace frommle{
                 p::class_<gbase,p::bases<Frommle>,boost::noncopyable>(
                         std::string("GArrayBase_").append(tname).append("_").append(std::to_string(n)).c_str(), p::no_init)
                         .add_property("gp",p::make_function(gpfc,p::return_value_policy<p::copy_const_reference>()));
-//                        .def("gp",gpfc,p::return_value_policy<p::copy_const_reference>());
-//                        .def< const typename gbase::g_ptr_t & (gbase*::)()const>("gp",&gbase::gpp,p::return_value_policy<p::copy_const_reference>());
 
                 //register densearray
                 p::class_<gdense,p::bases<gbase>>(std::string("GArray_").append(tname).append("_").append(std::to_string(n)).c_str())
@@ -81,11 +80,13 @@ namespace frommle{
                         .add_property("mat",&register_dyngar::getndarray)
                         .def("DataArray",&garr_to_xarDataArray<T,n>::convert);
 
-            //also register a shared_ptr
-            p::register_ptr_to_python< std::shared_ptr<GArrayDense<T,n>>>();
-            
-            p::def(std::string("makeGArray_").append(tname).c_str(),&register_dyngar<T,n>::makedense);
-            register_dyngar<T,n-1>::reg(tname);
+                //also register a shared_ptr
+                p::register_ptr_to_python< std::shared_ptr<GArrayDense<T,n>>>();
+
+                p::def(std::string("makeGArray_").append(tname).c_str(),&register_dyngar<T,n>::makedense);
+                
+                //call this function for the variant with 1 dimension less
+                register_dyngar<T,n-1>::reg(tname);
             }
 
         static  std::shared_ptr<GArrayDense<T,n>> makedense(const guides::GuidePackDyn<n> & gpin,const std::string name){
@@ -125,9 +126,22 @@ namespace frommle{
 
         template<class T>
         struct register_dyngar<T,-1>{
+            using gdiag=GArrayDiag<T>;
             static void reg(const std::string & tname){
-                //does nothing (stops recursion)
+                //registers specialized garray in a last step (with predetermineddimensions and stops recursion
+                
+                typename gdiag::const_arr (gdiag::*cdiag)()const=&gdiag::diagonal;
+                //register diagonal Array
+                p::class_<gdiag,p::bases<GArrayBase<T,2>>>(std::string("GArrayDiag_").append(tname).c_str())
+                    .def(p::init<guides::GuidePackDyn<1>>())
+                    .def("diagonal",cdiag);
+                //also register a shared_ptr
+                p::register_ptr_to_python< std::shared_ptr<gdiag>>();
             }
+        //static np::ndarray getdiagndarray(const gdiag & garr){
+                //return py::marrayref_to_ndarray<T,1>::get(garr.diag());
+        //}
+       
         };
 
 

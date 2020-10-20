@@ -22,6 +22,7 @@ from frommle.io.numpyVariable import np_float64Var
 from frommle.sh import SHnmtGuide
 import gzip as gz
 from enum import Enum
+import tarfile
 
 class formats(Enum):
     standard=1
@@ -36,8 +37,15 @@ class SHArchive(Group):
     vars={"shg":Variable,"cnm":np_float64Var,"sigcnm":np_float64Var}
     shg_c=SHnmtGuide
     def __init__(self,filename,mode='r',nmax=-1):
-        #important: initialize Group class as well
-        Group.__init__(self,filename)
+        if type(filename) == str:
+            #important: initialize Group class as well
+            Group.__init__(self,filename)
+            self.openfid=None
+        else:
+            #we consider filename as an open fid
+            Group.__init__(self,"sharchive")
+            self.openfid=filename
+        
         self.setAmode(mode)
         if nmax == -1:
             nmax=0
@@ -67,6 +75,10 @@ class SHArchive(Group):
 
     def fid(self):
         """Opens the text file (and possibly pass through a gzip filter) and returns a file descriptor"""
+        if self.openfid:
+            #quickly return if an openfid has been provided
+            return self.openfid
+
         if self.readable():
             mod="rt"
         elif self.writable():

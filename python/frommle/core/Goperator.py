@@ -18,21 +18,21 @@
 
 from frommle.core import GOperatorBase
 
-class Goperator(GOperatorBase):
-    coords={}
-    """A class which converts data from one dimension to the other"""
-    def __init__(self,coords=None, dims=None, name="GOperator"):
-        super().__init__(name)
+# class Goperator(GOperatorBase):
+    # coords={}
+    # """A class which converts data from one dimension to the other"""
+    # def __init__(self,coords=None, dims=None, name="GOperator"):
+        # super().__init__(name)
 
 
-        if coords:
-            #assign coordinate dimensions
-            if isinstance(coords,dict):
-                #directly
-                self.coords=coords
-            else:
-                for dname,coord in zip(dims,coords):
-                    self.coords[dname]=coord
+        # if coords:
+            # #assign coordinate dimensions
+            # if isinstance(coords,dict):
+                # #directly
+                # self.coords=coords
+            # else:
+                # for dname,coord in zip(dims,coords):
+                    # self.coords[dname]=coord
 
-            if len(self.coords) != self.ndim:
-                raise RuntimeError("Amount of coordinate values for GOperator must be %d"%self.ndim)
+            # if len(self.coords) != self.ndim:
+                # raise RuntimeError("Amount of coordinate values for GOperator must be %d"%self.ndim)

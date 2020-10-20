@@ -262,17 +262,9 @@ namespace frommle{
                     );
             p::register_ptr_to_python< std::shared_ptr<GuidePackBase> >();
 
-            //register all dynamic guidepacks up to dimension 10
-            register_dyngpack<10>();
+            //register all dynamic guidepacks up to dimension MAXGUIDES (see src/core/GuidePack.*pp, for changing this)
+            register_dyngpack<MAXGUIDES>();
 
-
-//            p::class_<GuidePackDyn<0>,p::bases<GuidePackBase>>("GuidePack0");
-//            p::class_<GuidePackDyn<1>,p::bases<GuidePackBase>>("GuidePack1");
-//            p::class_<GuidePackDyn<2>,p::bases<GuidePackBase>>("GuidePack2");
-//            p::class_<GuidePackDyn<3>,p::bases<GuidePackBase>>("GuidePack3");
-//            p::class_<GuidePackDyn<4>,p::bases<GuidePackBase>>("GuidePack4");
-//            p::class_<GuidePackDyn<5>,p::bases<GuidePackBase>>("GuidePack5");
-//            p::class_<GuidePackDyn<6>,p::bases<GuidePackBase>>("GuidePack6");
         }
     }
 }

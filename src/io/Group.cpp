@@ -22,14 +22,24 @@
 #include "io/Variable.hpp"
 namespace frommle{
     namespace io{
-        Group &Group::getGroup(const std::string &name) {
+        std::shared_ptr<Group> Group::getGroup(const std::string &name)const {
             auto idx=findidx(name);
             if (idx == -1){
                 //create a new group
-                this->operator[](name)=Group();
+                THROWINPUTEXCEPTION("Group not found in archive group"+name);
             }
-            return this->operator[](name).as<Group>();
+            return std::static_pointer_cast<Group>(this->operator[](name).ptr());
         }
+       
+        std::shared_ptr<Group> Group::createGroup(const std::string &name){
+           auto idx=findidx(name);
+           if (idx == -1){
+               //create a new empty Group
+                this->operator[](name)=Group(name);
+           }//else return existing variable
+           return std::static_pointer_cast<Group>(this->operator[](name).ptr());
+
+       }
 
         std::shared_ptr<VariableBase> Group::getVariable(const std::string &name)const {
             auto idx=findidx(name);

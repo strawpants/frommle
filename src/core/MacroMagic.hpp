@@ -23,11 +23,14 @@
 
 
 //some ugly preproccessor magic to insert source file and linenumbers as strings in the code
-#define Q(x) #x
-#define QUOTE(x) Q(x)
+#define QTE(x) #x
+#define QUOTE(x) QTE(x)
 //#define HERE __FILE__ QUOTE(:__LINE__)
 
-#define HERE std::string(__FILE__ ":" QUOTE(__LINE__) "\n\tin ")+ std::string(__PRETTY_FUNCTION__)+" "
+//#define HERE __FILE__ ":" QUOTE( __LINE__ ) 
+#define FUNCINFO __PRETTY_FUNCTION__
+#define HERE  __FILE__ ":" QUOTE(__LINE__) " " 
+//"in " __PRETTY_FUNCTION__ " "
 
 //first assume all compilers support get_time
 #define WITH_STD_GET_TIME

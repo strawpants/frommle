@@ -37,7 +37,7 @@ namespace frommle {
                         getptuple(tin, typename frommle::core::seqGenerator<std::tuple_size<T>::value>::type()).ptr());
 
             }
-
+            
             template<int ...S>
             static p::tuple getptuple(T const &tin, frommle::core::sequence<S...>) {
                 return p::make_tuple(std::get<S>(tin)...);
@@ -120,7 +120,6 @@ namespace frommle {
  */
         template<class T>
         void register_tuple() {
-
             p::to_python_converter<T, stdtuple_to_ptuple<T>>();
             p::converter::registry::push_back(&ptuple_to_stdtuple<T>::convertible, &ptuple_to_stdtuple<T>::construct,
                                               p::type_id<T>());

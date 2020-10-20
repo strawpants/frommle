@@ -16,7 +16,7 @@ endforeach(tester ${ALLTESTS})
 
 if (PYTHON)
     
-    list(APPEND ALLPYTESTS PyTests/shio_n_conversion.py )
+    list(APPEND ALLPYTESTS PyTests/shio_n_conversion.py  PyTests/TestGravFunctionals.py )
 
     foreach(pytest ${ALLPYTESTS})
         get_filename_component(PYTESTNAME ${pytest} NAME_WE)
@@ -30,7 +30,7 @@ endif()
 
 
 #copy test datasets
-list(APPEND TESTDATA testpolygonswkt.txt)
+list(APPEND TESTDATA testpolygonswkt.txt itsg2018_sample.db  itsg2018_sample_files.tgz )
 foreach(dset ${TESTDATA})
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/${dset}  DESTINATION ${CMAKE_BINARY_DIR}/testing/data)
 endforeach(dset ${TESTDATA})

@@ -46,13 +46,27 @@ namespace frommle{
             return {{start,stop,step}};
         }
 
+
+    template<class T>
+    struct pyvec{
+
+        static void reg(const char * name){
+        p::class_<std::vector<T> >(name).def(p::vector_indexing_suite<std::vector<T> >())
+            .def("reserve",&pyvec::reserve);
+    
+        }
+        static void reserve(std::vector<T> & vin,size_t n){
+            //LOGINFO << "reserving " << n <<std::endl;
+            vin.reserve(n);
+        }
+    };
+
+
     void register_numpy_converters(){
         
         //register vector <-> ndarray converters
-//        register_vector<double>();
-        p::class_<std::vector<double> >("V_dbl").def(p::vector_indexing_suite<std::vector<size_t> >());
-        p::class_<std::vector<size_t> >("V_size_t").def(p::vector_indexing_suite<std::vector<size_t> >());
-//        register_vector<size_t>();
+        pyvec<double>::reg("V_float64");
+        pyvec<size_t>::reg("V_size_t");
 
         register_mar<double,6>();
         register_mar<size_t,6>();
