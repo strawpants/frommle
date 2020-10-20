@@ -46,5 +46,5 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
         "Development Status :: 1 - Planning"],
     ext_modules=yieldExtensions(),
-    install_requires=["GDAL"],
+    install_requires=["GDAL>=3"],
 )

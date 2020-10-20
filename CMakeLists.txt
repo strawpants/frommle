@@ -78,6 +78,11 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 #find prerequisites (BLAS & LAPACK)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
+
+
+#Try to find eigen3 (headeronly library)
+find_package (Eigen3 REQUIRED NO_MODULE)
+
 #try finding an optimizedBLAS library
 #find_package(OPTBLAS REQUIRED)
 
@@ -121,6 +126,9 @@ find_library(YAML_CPP_LIBRARY NAMES yaml-cpp )
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
 include_directories(${LIBSECRET_INCLUDE_DIRS})
+
+
+
 
 
 #where to copy public library header files
