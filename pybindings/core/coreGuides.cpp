@@ -28,15 +28,17 @@
 namespace p = boost::python;
 
    
-//using namespace frommle::guides;
-
-//using namespace frommle::core;
-//using namespace frommle;
-
 namespace frommle{
     namespace guides{
         void register_coreGuides(){
         
+    //GuideBase
+    p::class_<GuideBase,p::bases<core::Frommle>,boost::noncopyable>("GuideBase",p::no_init)
+            .def("size",&GuideBase::size);
+    
+    p::register_ptr_to_python< std::shared_ptr<const GuideBase>>();
+    p::register_ptr_to_python< std::shared_ptr<GuideBase>>();
+
     //IndexGuide
     p::class_<IndexGuide,p::bases<GuideBase>>("IndexGuide").def(p::init<size_t>())
     .def("append",&IndexGuide::append);

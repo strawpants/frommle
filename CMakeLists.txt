@@ -27,10 +27,10 @@ set(FROMMLELIBMINORVERSION 1)
 set(FROMMLEVERSION "Alpha V${FROMMLELIBMAJORVERSION}.${FROMMLELIBMINORVERSION}")
 add_definitions(-DFRVERSION="${FROMMLEVERSION}" -DBOOST_LOG_DYN_LINK -DBOOST_TEST_DYN_LINK)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++11 ")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -std=c++14 ")
 #set(CMAKE_CXX_FLAGS_DEBUG "-pg  -g -O3") #to use when the gprof profiler is used for performance testing
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Winline -ansi -pedantic -Wextra -Weffc++ -Wno-long-long -std=c++11 ")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11 ")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++14 ")
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++11")
 
 #add make info

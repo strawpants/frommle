@@ -26,6 +26,11 @@
 namespace frommle{
 
     namespace guides{
+ 
+    //forward declare indexed variant
+    template<class ELEM>
+    class IndexedGuide;
+
     //tags for indexing by id or element
 
     template<class ELEM>
@@ -42,8 +47,9 @@ namespace frommle{
         virtual size_t  ifromel(const ELEM & elem)const=0;
         
         size_t size()const override{ return fullsize()-nmask_;}
-        
-        
+       
+        //cnvert this non-indexed guide to a indexed variant
+        IndexedGuide<ELEM> getIndexed();     
 
         inline bool isMasked(const Element &el)const{
            if (maskf_){

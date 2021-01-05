@@ -53,6 +53,17 @@ namespace frommle {
 
 			static std::string getAuth(const std::string service, const std::string username);
 			static void setAuth(const std::string service,const std::string username,const std::string secret);
+			//static std::string getUser(){return UserSettings::getStr("User");}
+			//static void setUser(const std::string user){UserSettings::setStr("User",user);
+			//static std::string getContact();
+			//static void setContact(const std::string contact);
+
+			static std::string getStr(const std::string key);
+			//static std::string getStr(const std::string db, const std::string key);
+			
+			static void setStr(const std::string key, const std::string value);
+			//static void setStr(const std::string db, const std::string key, const std::string value);
+
 			void setDefaults();
 		private:
 			friend Singleton<UserSettings>;

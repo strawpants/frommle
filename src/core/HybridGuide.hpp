@@ -1,6 +1,6 @@
 /*! \file
- \brief 
- \copyright Roelof Rietbroek 2019
+ \brief  A Guide which groups and wraps other guides
+ \copyright Roelof Rietbroek 2020
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -19,36 +19,30 @@
  */
 
 
-
 #include "core/GuideBase.hpp"
-#include <boost/python.hpp>
+#include <boost/any.hpp>
 
-using namespace frommle::guides;
-using namespace frommle::core;
-
-namespace p = boost::python;
-
+#ifndef SRC_CORE_HYBRID_GUIDE_HPP_
+#define SRC_CORE_HYVRID_GUIDE_HPP_
 namespace frommle{
-
     namespace guides{
-    
-    void register_GuideBase(){
-    ///registration of Guides defined in frommle::core
 
+    class HybridGuide: public GuideBase{
+        public:
+            using Element=boost::any;
+            struct range{
+                size_t start=0;
+                size_t end=0;
+            }
+            const std::vector<range> & range()const {return ranges_;}
+        
 
-    //GuideBase
-    p::class_<GuideBase,p::bases<Frommle>,boost::noncopyable>("GuideBase",p::no_init)
-            .def("size",&GuideBase::size);
-            //.add_static_property("ndim",p::make_getter(&GuideBase::ndim))
-//            .def_readonly("ndim",make_getter(&GuideBase::ndim, p::return_value_policy<p::reference_existing_object>()));
+        protected:
 
-    //we also want to be able to pass shared_pointers to and fromm python
-    p::register_ptr_to_python< std::shared_ptr<const GuideBase>>();
-    p::register_ptr_to_python< std::shared_ptr<GuideBase>>();
-
-    }
-
-    }
-
-
+        private:
+               std::vector<range> ranges_{};
+               std::vector<std::shared_ptr<GuideBase>> guides_{};
+    };
 }
+
+#endif /* #SRC_CORE_HYBRID_GUIDE_HPP_ */

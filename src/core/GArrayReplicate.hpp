@@ -1,6 +1,6 @@
-/*! \file coreBindings.cpp
- \brief
- \copyright Roelof Rietbroek 2019
+/*! \file
+ \brief 
+ \copyright Roelof Rietbroek 2020
  \license
  This file is part of Frommle.
  frommle is free software; you can redistribute it and/or
@@ -16,49 +16,26 @@
  You should have received a copy of the GNU Lesser General Public
  License along with Frommle; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-
- Created by Roelof Rietbroek,  2019
-
  */
 
-#include "coreBindings.hpp"
-using namespace frommle::py;
-using namespace frommle::core;
-using namespace frommle::guides;
+//#include "core/GuidePacktemplated.hpp"
+#include "core/GArrayBase.hpp"
 
-void pyexport_core(){
+#ifndef SRC_CORE_GARRAY_REPLICATE_HPP_
+#define SRC_CORE_GARRAY_REPLICATE_HPP_
+namespace frommle{
 
-    //Register c++ to python conversions
+    namespace core{
+    template<class MT,int nr, int nc>
+        class GArrayReplicate {
+            public:
+                using nsub=MT::ndim;
+            private:
+            MT data_{}; 
+        };
 
-    register_tuple_converters();
-    
-    register_numpy_converters();
-
-    registerExceptions();
-    //register to/from date converters
-    register_datetime();
-
-    registerFrommle();
-
-//    registerHyperSlab();
-
-    registerTreeNodes();
-
-    register_coreGuides();
-
-    
-    
-    //register the GuidePack
-    registerGuidePack();
-
-
-    //register GArrays
-    registerGArrays();
-
-    
-    registerGOperators();
-
-    register_logger();
-
+    }
 }
 
+
+#endif /* SRC_CORE_GARRAY_REPLICATE_HPP_ */

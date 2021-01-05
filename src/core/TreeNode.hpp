@@ -251,6 +251,7 @@ namespace frommle{
 
             virtual TreeNodeRef & operator[](const std::string & name);
             virtual TreeNodeRef & operator[](size_t  idx);
+            virtual void delitem(std::string name);
 
             bool isCollection()const final{return true;}
 //            virtual std::shared_ptr<TreeNodeBase> getSelf()const;

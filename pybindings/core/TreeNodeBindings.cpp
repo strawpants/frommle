@@ -119,6 +119,13 @@ namespace frommle {
         }
 
 
+        template<class  IX>
+        void delIteminColl(TreeNodeCollection & col, const IX & idx ){
+            col.delitem(idx);
+        }
+
+
+
         void registerTreeNodes() {
             using namespace boost::python;
             //note the order of the types is important (first will be tested first)
@@ -142,6 +149,7 @@ namespace frommle {
             .def("__contains__",&contains)
             .def("__getitem__",&getItemfromColl<std::string>)
             .def("__setitem__",&setIteminColl<std::string>)
+            .def("__delitem__",&delIteminColl<std::string>)
 //            .def("__setitem__",&assignNode<size_t,TreeNodeItem>)
 //            .def("__setitem__",&assignNode<std::string,TreeNodeItem>)
 //            .def("__setitem__",&assignNode<size_t,TreeNodeCollection>)

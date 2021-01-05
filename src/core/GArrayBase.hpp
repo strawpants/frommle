@@ -91,6 +91,7 @@ namespace frommle {
         public:
             using gp_t=guides::GuidePackDyn<n>;
             using gp_ptr_t=std::shared_ptr<guides::GuidePackDyn<n>>;
+            static const int ndim=n;
             ///structors
 
             ///@brief the type traits remove this constructor when the input is not a guidepack

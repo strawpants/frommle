@@ -60,6 +60,8 @@ namespace frommle {
 				config_["geoslurp"]["user"]= username;
 		}
 
+
+
 		void UserSettings::readYaml(const std::string yamlfile) {
 			config_ = YAML::LoadFile(yamlfile);
 		}
@@ -100,6 +102,14 @@ namespace frommle {
 			UserSettings::read(UserSettings::yamlfile());
 		}
 
+		std::string UserSettings::getStr(const std::string key ){
+			return UserSettings::get().at<std::string>(key).as<std::string>();
+		}
+
+		
+		void UserSettings::setStr(const std::string key,const std::string value){
+			UserSettings::get().at<std::string>(key)=value;	
+		}
 		std::string UserSettings::yamlfile() {
 			return UserSettings::get().yamlfile_;
 		}

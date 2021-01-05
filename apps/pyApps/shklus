@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+# shklus is a commandline tools which various operations to spherical harmonic input coefficients
+# This file is part of Frommle
+# Frommle is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+
+# Frommle is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General Public
+# License along with Frommle; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+# Author Roelof Rietbroek (roelof@wobbly.earth), 2020
+
+import sys
+import argparse
+import os
+from frommle.core.usersettings import UserConfig
+from frommle.io.geoslurp import GeoslurpArchive
+from frommle.core.logger import logger,setInfoLevel
+from frommle.core.operators import GarrSub
+import pandas as pd
+
+def main(argv):
+    parser=addCommandLineArgs()
+    args = parser.parse_args(argv[1:])
+    
+    if args.verbose:
+        setInfoLevel()
+
+    #let's load the user settings from the .frommle.yaml file 
+    conf=UserConfig()
+
+    #setup a database connection (as an Archive)
+    geoar=GeoslurpArchive(conf.dbUri(args.db)) 
+    
+    #load data from the uri column into a guided array
+    datastack=initstack(args.input,geoar)
+
+    # Sequentially apply operations 
+    for op in args.ops:
+        logger.info("Applying %s,%s"%op)  
+
+def addCommandLineArgs():
+    """Adds command line arguments to be parsed"""
+    usage="Apply various operations to input spherical harmonic datasets"
+    parser= argparse.ArgumentParser(description=usage)
+    parser.add_argument("-v","--verbose",action='store_true',help="Be more verbose on what is going on")
+    parser.add_argument("--db",type=str,help="Specify a database alias as provided in ~/.frommle.yaml (default takes the Defaultdb entry from the config file)")
+    parser.add_argument("input",nargs="+",help="Specify a SQL query or filelist to apply the operations to.")
+    
+    # add operation group
+    opgroup=parser.add_argument_group("Operations")
+
+    opgroup.add_argument("--op-sub",type=str,metavar="DATASELECTOR", help="Subtract the data from the current stack.",nargs=1,action=AddOperationAction,dest="ops")
+    #add config group
+    # confgroup=parser.add_argument_group("config")
+    # confgroup.add_argument("--config-file",type=str,help="Specify file with settings (default=${HOME}/.frommle.yaml",default=os.path.join(os.environ["HOME"],".frommle.yaml"))
+
+    return parser
+
+class AddOperationAction(argparse.Action):
+    """Add a processing option to the chain"""
+    def __init__(self, option_strings, dest, nargs, **kwargs):
+        super(AddOperationAction, self).__init__(option_strings, dest,nargs, **kwargs)
+    def __call__(self, parser=None, namespace=None, values=None, option_string=None):
+        #append operation
+        if getattr(namespace,self.dest) == None:
+            setattr(namespace,self.dest,[])
+        getattr(namespace, self.dest).append((option_string.lstrip("--op-"),values[0]))
+
+
+
+def initstack(input,archive):
+    """Constructs an input table (either from a file listing or sql query)"""
+    if os.path.exists(input[0]):
+        #so this seems to be a sh file list, let's list these in a pandas dataframe
+        archive["input"]=pd.DataFrame(input,columns=["uri"])
+    else:
+        #we treat the input as a query
+        archive[("input",input[0])]
+
+    #load the data into an array
+    return archive["input"]
+
+def getOperator(opstr):
+    """Prepare the operation to apply"""
+    operation=None
+    if opstr == "sub":
+        return GarrSub()        
+    return operation
+
+if __name__ == "__main__":
+    main(sys.argv)

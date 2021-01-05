@@ -37,6 +37,7 @@ namespace frommle{
         void registerGArrays();
         void registerGOperators();
         void register_logger();
+//        void register_usersettings();
 
     }
 

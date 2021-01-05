@@ -1,7 +1,7 @@
 # source files are to be added here
 
 LIST(APPEND COREHEADERS core/frommle.hpp core/GuideBase.hpp core/TimeGuide.hpp core/GArrayBase.hpp core/GOperatorBase.hpp
-        io/ArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/GuidePacktemplated.hpp core/MarrayEig.hpp core/Logging.hpp )
+        io/ArchiveBase.hpp core/PhysQuantityBase.hpp core/seqGenerator.hpp core/GArrayBase.hpp core/GArrayDense.hpp core/IndexGuide.hpp core/Exceptions.hpp core/GuidePack.hpp core/GuidePacktemplated.hpp core/MarrayEig.hpp core/Logging.hpp )
 
 LIST(APPEND COREHEADERS core/Attributes.hpp)
 LIST(APPEND COREHEADERS core/StringGuide.hpp)
@@ -16,6 +16,10 @@ LIST(APPEND COREHEADERS core/IndexedGuide.hpp)
 
 LIST(APPEND COREHEADERS core/TreeNode.hpp)
 LIST(APPEND COREOBJS core/TreeNode.cpp)
+
+LIST(APPEND COREHEADERS core/HybridGuide.hpp)
+
+
 
 LIST(APPEND SHHEADERS sh/SHGuide.hpp sh/Legendre_nm.hpp sh/Legendre.hpp
         sh/SHanalysis.hpp sh/SHfunctions.hpp sh/Ynm.hpp

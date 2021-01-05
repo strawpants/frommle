@@ -3,13 +3,12 @@
 #core wrappers 
 list(APPEND CXXPYWRAPS core/FrommleBindings.cpp)
 list(APPEND CXXPYWRAPS core/TreeNodeBindings.cpp)
-list(APPEND CXXPYWRAPS core/GuideBaseBindings.cpp
-        core/coreGuides.cpp
-        core/datetimeconversion.cpp)
+list(APPEND CXXPYWRAPS core/coreGuides.cpp core/datetimeconversion.cpp)
 
 list(APPEND CXXPYWRAPS core/coreBindings.cpp 
         core/tupleconversion.cpp
          core/numpyConverting.cpp)
+
 
 list(APPEND CXXPYHEADWRAPS core/coreBindings.hpp
         core/tupleconversion.hpp core/numpyConverting.hpp)
@@ -37,5 +36,7 @@ list(APPEND CXXPYWRAPS io/IOBindings.cpp
         io/ArchiveBindings.cpp)
 
 
+# 21 dec 2020 Temporary fix to stop boost form complaining about deprecated global placeholders
+add_compile_options(-DBOOST_BIND_GLOBAL_PLACEHOLDERS=1)
 
 add_library(${FROMMLEPYLIB} SHARED ${CXXPYWRAPS} )

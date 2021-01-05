@@ -32,7 +32,7 @@ using namespace frommle::core;
 BOOST_AUTO_TEST_CASE(DiagonalGoperator){
     IndexGuide gd(7);
 
-    auto Identity()
+    //auto Identity()
     BOOST_TEST(1==1);
 
 }

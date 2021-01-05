@@ -48,15 +48,15 @@ BOOST_AUTO_TEST_CASE(Indexed){
             return (el.id >10)?true:false;
             });
     
-    for(auto & it:IGuide){
-        LOGINFO << "entry "<< it.i <<" " <<it.el.id <<  std::endl;
-    }
+    //for(auto & it:IGuide){
+        //LOGINFO << "entry "<< it.id <<" " <<it.el.id <<  std::endl;
+    //}
     
     IGuide.unmask();
 
-    for(auto & it:IGuide){
-        LOGINFO << "unmasked entry "<< it.i <<" revin" << IGuide.memindx()[it.i].i <<" "<<it.el.id <<  std::endl;
-    }
+    //for(auto & it:IGuide){
+        //LOGINFO << "unmasked entry "<< it.i <<" revin" << IGuide.memindx()[it.i].i <<" "<<it.el.id <<  std::endl;
+    //}
 }
 
 

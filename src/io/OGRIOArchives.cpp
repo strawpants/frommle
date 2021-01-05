@@ -20,7 +20,6 @@
 #include "io/OGRIOArchives.hpp"
 #include "io/OGRArchive.hpp"
 #include "core/Exceptions.hpp"
-#include "core/VisitorTools.hpp"
 namespace frommle{
     namespace io{
 

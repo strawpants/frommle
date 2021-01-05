@@ -27,7 +27,6 @@
 #include "NetCDFIO.hpp"
 #include "core/UserSettings.hpp"
 #include "boost/multi_array.hpp"
-#include "core/VisitorTools.hpp"
 #include "io/Variable.hpp"
 namespace frommle{
     namespace io{

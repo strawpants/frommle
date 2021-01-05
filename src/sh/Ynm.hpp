@@ -33,23 +33,26 @@ namespace frommle{
 
 
 
+
 template<class T>
-class Ynm<T>:public GOperatorDyn<T,1,1 > {
+class Ynm:public GOperatorDyn<T,1,1 > {
     public:
 
         using GOpBase=GOperatorDyn<T,1,1>;
-        ///@brief constructor which uses the "standard SHGuide"
-        Ynm(const int nmax):GOpBase(GuidePack<SHGuide>(SHGuide(nmax))){
+        Ynm():GOpBase("Ynm"){}
 
-        }
+        /////@brief constructor which uses the "standard SHGuide"
+        //Ynm(const int nmax):GOpBase(GuidePack<SHGuide>(SHGuide(nmax))){
+
+        //}
 
 
-        void fwdOp(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> &gout){
+        void fwdOp(const GArrayBase<T,2> & gin, GArrayBase<T,2> &gout){
             //dynamically tryout guide casts
             int returnCode=fwdOpSpec<SHGuide,OGRPointGuide>(gin,gout);
 
             if( returnCode != 0){
-                THROWNOTINPUTEXCEPTION("Cannot aply forward operator for this combination of guides"); 
+                THROWINPUTEXCEPTION("Cannot aply forward operator for this combination of guides"); 
             }
             
 
@@ -63,52 +66,52 @@ class Ynm<T>:public GOperatorDyn<T,1,1 > {
 
     private:
         ///@brief templated version of the forward operator 
-        template<SHG,OGRG>
-        int fwdOpSpec(const GArrayBase<T,ndim_i+1> & gin, GArrayBase<T,ndim_o+1> & gout){
+        template<class SHG, class OGRG>
+        int fwdOpSpec(const GArrayBase<T,2> & gin, GArrayBase<T,2> & gout){
 
-                auto shg=gout.gp().template  dyn_as<SHG>(0);
-                if(! shg){
-                    //dynamic cast failed for the SHGuide
-                    return 1;
-                }
-                auto geog=gin.gp().template as<OGRG>(0);
+                //auto shg=gout.gp().template  dyn_as<SHG>(0);
+                //if(! shg){
+                    ////dynamic cast failed for the SHGuide
+                    //return 1;
+                //}
+                //auto geog=gin.gp().template as<OGRG>(0);
 
-                if(! geog){
-                    //dynamic cast failed for the geometry guide
-                    return 2;
-                }
-                //initialize associated Legendre functionss
-                Ynm_cache<T> Ynm_c(shg->nmax());
+                //if(! geog){
+                    ////dynamic cast failed for the geometry guide
+                    //return 2;
+                //}
+                ////initialize associated Legendre functionss
+                //Ynm_cache<T> Ynm_c(shg->nmax());
 
-                T ynm;
+                //T ynm;
 
-                gout=0;
+                //gout=0;
 
-                size_t pidx=0;
+                //size_t pidx=0;
 
-                //denotes all elements in a dimension
-                auto allinrange=gout.mrange();
-                auto indices_o=gout.mindices();
-                auto indices_i=gin.mindices();
+                ////denotes all elements in a dimension
+                //auto allinrange=gout.mrange();
+                //auto indices_o=gout.mindices();
+                //auto indices_i=gin.mindices();
 
-                //typename GArrayBase<T,ndim_i+1>::arr::index_gen indices_i;
+                ////typename GArrayBase<T,ndim_i+1>::arr::index_gen indices_i;
 
-                //loop over input points
-                for(auto & pnt:*geog ){
-                        Ynm_c.setlat(pnt->getY()).setlon(pnt->getX());
+                ////loop over input points
+                //for(auto & pnt:*geog ){
+                        //Ynm_c.setlat(pnt->getY()).setlon(pnt->getX());
 
-                        auto irow=gin.mat()[indices_i[pidx++][allinrange]];
-                        size_t idx=0;
-                        for(auto & nmt:*shg){
-                                auto orow=gout.mat()[indices_o[idx++][allinrange]];
-                                auto orow_it=orow.begin();
-                                ynm=Ynm_c[nmt];
-                                std::for_each(irow.begin(),irow.end(),[&orow_it, &ynm](const T & in){
-                                    *orow_it+=in*ynm;
-                                    ++orow_it;
-                                });
-                        }
-                }
+                        //auto irow=gin.mat()[indices_i[pidx++][allinrange]];
+                        //size_t idx=0;
+                        //for(auto & nmt:*shg){
+                                //auto orow=gout.mat()[indices_o[idx++][allinrange]];
+                                //auto orow_it=orow.begin();
+                                //ynm=Ynm_c[nmt];
+                                //std::for_each(irow.begin(),irow.end(),[&orow_it, &ynm](const T & in){
+                                    //*orow_it+=in*ynm;
+                                    //++orow_it;
+                                //});
+                        //}
+                //}
 
                 //success
                 return 0;

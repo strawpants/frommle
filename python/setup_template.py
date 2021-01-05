@@ -39,6 +39,7 @@ setuptools.setup(
     url="https://wobbly.earth/frommle",
     packages=find_packages("."),
     package_dir={"":"."},
+    scripts=['${CMAKE_SOURCE_DIR}/apps/pyApps/shklus'],
     classifiers=["Programming Language :: Python :: 3",
         "Programming Language :: C++",
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",

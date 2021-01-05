@@ -64,10 +64,10 @@ namespace frommle{
             static void reg(const std::string & basename){
                 
 
-                std::shared_ptr<GArrayBase<T,2>>  (Gop::*adjointf)(const guides::GuidePackDyn<1> & )=&Gop::jacobian;
+//                std::shared_ptr<GArrayBase<T,no+ni>>  (Gop::*adjointf)(const guides::GuidePackDyn<ni> & )=&Gop::jacobian;
 
-                p::class_<GOperatorWrapper<T,no,ni>,p::bases<Frommle>,boost::noncopyable>(std::string(basename).append(std::to_string(no)).append("d_to_").append(std::to_string(ni)).append("d").c_str())
-                    .def("jacobian",adjointf);
+                p::class_<GOperatorWrapper<T,no,ni>,p::bases<Frommle>,boost::noncopyable>(std::string(basename).append(std::to_string(no)).append("d_to_").append(std::to_string(ni)).append("d").c_str());
+                    //.def("jacobian",adjointf);
             }
     
     };
@@ -92,6 +92,8 @@ struct register_GoperatorDiag{
         //p::class_<GOperatorBase,p::bases<Frommle>>("GOperatorBase").def(p::init<p::optional<std::string>>());
 
         register_Goperator<double,1,1>::reg("GOperator_float64");
+
+        register_Goperator<double,2,2>::reg("GOperator_float64");
 
         register_GoperatorDiag<double>::reg("GOperatorDiag_float64");
     }

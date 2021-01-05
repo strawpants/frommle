@@ -179,6 +179,7 @@ namespace frommle {
             return collection_[idx];
         }
 
+
         const TreeNodeRef & TreeNodeCollection::operator[](size_t idx) const  {
             if (idx >= collection_.size()) {
                 auto message=std::string("Treenode index not found: ");
@@ -198,6 +199,17 @@ namespace frommle {
             return collection_[idx];
         }
 
+        ///@brief delete an entry form a collection
+        void TreeNodeCollection::delitem(std::string name){
+        
+            auto idx = findidx(name);
+            if (idx != -1){
+                //only erase if the element is actually present
+                collection_.erase(collection_.begin()+idx);
+            }
+
+
+        }
 
         ptrdiff_t TreeNodeCollection::findidx(const std::string name) const {
             for (ptrdiff_t i = 0; i < collection_.size(); ++i) {

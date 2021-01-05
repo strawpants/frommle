@@ -19,12 +19,17 @@
  */
 #include "core/TreeNode.hpp"
 #include "core/Hyperslab.hpp"
-#include "core/VisitorTools.hpp"
 
 #ifndef FROMMLE_ARVARIABLE_HPP
 #define FROMMLE_ARVARIABLE_HPP
 
 namespace frommle{
+    namespace core{
+		template<class ... T>
+		struct typelist{};
+    }
+
+
     namespace io{
 
     class VariableBase:public core::TreeNodeItem{
@@ -47,11 +52,11 @@ namespace frommle{
        virtual std::vector<size_t> shape()const {
            THROWNOTIMPLEMENTED("This Variable type does not provide shape information");
        }
-        constexpr bool readable()const{
+        bool readable()const{
             return static_cast<Group*>(getParent())->readable();
         }
 
-        constexpr bool writable()const {
+        bool writable()const {
             return static_cast<Group *>(getParent())->writable();
         }
 

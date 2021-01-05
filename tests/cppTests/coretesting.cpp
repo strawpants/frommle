@@ -36,7 +36,7 @@
 #include "core/Logging.hpp"
 
 using namespace frommle::core;
-namespace bg=boost::gregorian;
+//namespace bg=boost::gregorian;
 
 
 

@@ -327,9 +327,8 @@ struct createDenseGAr {
     }
 
 
-    template<int n>
-    static GArrayDense<T, n * 2> eye(guides::GuidePackDyn <n> gpin) {
-        auto gout = fromGuidePack<n * 2>::fill(0, *gpin.append(gpin));
+    static GArrayDense<T, 2> eye(guides::GuidePackDyn <1> gpin) {
+        auto gout = fromGuidePack<2>::fill(0, *gpin.append(gpin));
         //fill diagonal using eigen
         gout.eig().diagonal().array() = static_cast<T>(1);
         return gout;

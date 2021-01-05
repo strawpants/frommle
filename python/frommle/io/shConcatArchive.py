@@ -16,7 +16,7 @@
 # Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2020
 
 
-from frommle.io.fileConcatArchive import FileConcatArchive, AttrCoordMapper,CoordMapper
+from frommle.io.ConcatArchive import ConcatArchive, AttrCoordMapper,CoordMapper
 from frommle.io.GSM import SHGSMv6Archive
 from frommle.io.icgem import SHicgemArchive
 from frommle.io.shstandard import SHStandardArchive
@@ -32,7 +32,7 @@ class TcentCoordMapper(CoordMapper):
         self.coord.append(tcent)
 
 
-class SHConcatArchive(FileConcatArchive):
+class SHConcatArchive(ConcatArchive):
     ArClass=None
     coordMapping={"tstart":AttrCoordMapper("tstart",TimeGuide),"time":TcentCoordMapper()}
     extendVars=["cnm"]

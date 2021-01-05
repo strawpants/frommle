@@ -31,10 +31,18 @@ import shapely.wkb
 cache=".geoslurpcache"
 class PandasGroup(Group):
     """Wraps a pandas dataframe in a Group object. Also allows a recursive loading of uri's"""
-    def __init__(self,name,eng,qry):
+    def __init__(self,name,eng=None,qry=None,df=None):
         Group.__init__(self,name)
-        self.eng=eng
-        self.df=pd.read_sql(qry,eng,parse_dates=["time","tstart","tend"])
+
+        if eng:
+            self.eng=eng
+        if qry:
+            #read from the database engine as a query
+            self.df=pd.read_sql(qry,eng,parse_dates=["time","tstart","tend"])
+        elif type(df) != None:
+            #directly assign from a dataframe
+            self.df=df
+
         if not os.path.exists(cache):
             os.mkdir(cache)
         if "uri" in self.df:
@@ -56,7 +64,7 @@ class PandasGroup(Group):
             return super(Group,self).__getitem__(ky)
         else:
             raise KeyError("Variable/Column %s not found in PandasGroup"%ky)
-    
+   
     @staticmethod
     def openfile(fname):
         if fname.endswith(".gz"):
@@ -100,13 +108,21 @@ class GeoslurpArchive(Group):
     """Opens a geoslurp like database, and acts like an archive"""
     def __init__(self,connection,mode='r',scheme="public"):
         self.scheme=scheme
-        if type(connection) == str:
+        if type(connection)  == str:
+
             Group.__init__(self,connection)
-            self.loadsqlite()
-            if scheme == "public":
-                scheme=None
+            
+            if connection.endswith(".sql"):
+                self.loadsqlite()
+                if scheme == "public":
+                    scheme=None
+            else:
+                #try loading this as  database
+                self.eng=create_engine(self.name)
+
 
         else:
+            #use an existing db connection
             Group.__init__(self,"dbconnection")
             self.eng=connection
         self.tnames=self.eng.table_names(schema=scheme)
@@ -138,15 +154,17 @@ class GeoslurpArchive(Group):
         #check if the group already exists
         if ky in self:
             return super(Group,self).__getitem__(ky)
-        elif ky in self.tnames:
-            #create a new group which wraps a panda dataframe
-            self[ky]=PandasGroup(ky,self.eng,qry)
-            return super(Group,self).__getitem__(ky)
         else:
-            raise KeyError("Group %s not found in archive"%ky)
+            #create a new group which wraps a panda dataframe
+            super(Group,self).__setitem__(ky,PandasGroup(ky,self.eng,qry))
+            return super(Group,self).__getitem__(ky)
     
+    def __setitem__(self,ky,df:pd.DataFrame):
+            """Assign a table from a data frame"""
+            super(Group,self).__setitem__(ky,PandasGroup(ky,eng=self.eng,df=df))
+
     def loadsqlite(self):
-        """setups reading from an sqlite file"""
+        """setups reading from an sqlite file and possibly an accompanying file archive"""
         if os.path.exists(self.name):
             #Treat it as a local sqlite file
             self.eng=create_engine("sqlite:///"+self.name)
@@ -158,6 +176,5 @@ class GeoslurpArchive(Group):
                         tid.extractall(cache)
         else:
             raise RuntimeError("Archive is not an existing sqlite database")
-
 
 

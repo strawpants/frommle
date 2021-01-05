@@ -71,13 +71,14 @@ void pyexport_sh()
     p::register_ptr_to_python< std::shared_ptr<SHnmtGuide> >();
 
     //register SHisoperator
-    register_shisooperator<double>("shisoperator_float64");
+    register_shisooperator<double>("shisoperator");
 
 
     p::class_<Legendre_nm<double>,p::bases<core::GArrayDense<double,1>>>("Legendre_nm",p::init<int>())
             .def("set",&sh::Legendre_nm_d::set,p::return_value_policy<p::copy_non_const_reference>());
     
+    //register Spherical harmonics operator
 
-    p::class_<Ynm<double>,p::bases<core::GOperatorDyn<double,1,1>>>("Ynm_float64",p::init<int>())
+//    p::class_<Ynm<double>,p::bases<core::GOperatorDyn<double,1,1>>>("Ynm",p::init<int>())
 
 }

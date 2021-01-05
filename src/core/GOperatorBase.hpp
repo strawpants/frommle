@@ -21,8 +21,8 @@
 #include <string>
 #include <cassert>
 #include <tuple>
-#include "GArrayDense.hpp"
-#include "GArrayDiag.hpp"
+#include "core/GArrayDense.hpp"
+#include "core/GArrayDiag.hpp"
 #ifndef SRC_CPP_OPERATORBASE_HPP_
 #define SRC_CPP_OPERATORBASE_HPP_
 
@@ -58,7 +58,7 @@ namespace core {
         GOperatorDyn(std::string name="gop"):Frommle(name){}
 
         ///@brief constructs an operator and registers the output guides directly
-        GOperatorDyn(guides::GuidePackDyn<ndim_o> && outGP,std::string name="gop"):Frommle(name),gpo_(std::make_shared<guides::GuidePackDyn<ndim_o>>(std::move(outGP))){
+        GOperatorDyn(gpo_t && outGP,std::string name="gop"):Frommle(name),gpo_(std::make_shared<guides::GuidePackDyn<ndim_o>>(std::move(outGP))){
 
         }
 
@@ -113,31 +113,31 @@ namespace core {
             return gout;
         }
 
-        ///@brief explicitly provides the Jacobian matrix of the linear operator
-        void jacobian(const guides::GuidePackDyn<ndim_i> &gpin, GArrayBase<T, ndim_o + ndim_i> &gout){
-            //just call the forward operator with an input of ones
-            if (!isLinear()){
-                THROWMETHODEXCEPTION("Cannot compute linear jacobian from a non-linear operator without reference values");
-            }
+        /////@brief explicitly provides the Jacobian matrix of the linear operator
+        //void jacobian(const guides::GuidePackDyn<ndim_i> &gpin, GArrayBase<T, ndim_o + ndim_i> &gout){
+            ////just call the forward operator with an input of ones
+            //if (!isLinear()){
+                //THROWMETHODEXCEPTION("Cannot compute linear jacobian from a non-linear operator without reference values");
+            //}
 
-            //create a diagonal identity matrix
-            GArrayDense<T,ndim_i+1> gunit=createDenseGAr<T>::eye(gpin);
-            //call the forward operator with the identity matrix
-            fwdOp(gunit,gout);
-        }
+            ////create a diagonal identity matrix
+            //GArrayDense<T,ndim_i+1> gunit=createDenseGAr<T>::eye(gpin);
+            ////call the forward operator with the identity matrix
+            //fwdOp(gunit,gout);
+        //}
         
-        ///@brief explicitly provides the jacobian matrix of a linear operator
-        virtual  std::shared_ptr<GArrayBase<T,ndim_o+ndim_i>> jacobian(const guides::GuidePackDyn<ndim_i> & gpin){
-            //create new GArray and forward call
+        /////@brief explicitly provides the jacobian matrix of a linear operator
+        //virtual  std::shared_ptr<GArrayBase<T,ndim_o+ndim_i>> jacobian(const guides::GuidePackDyn<ndim_i> & gpin){
+            ////create new GArray and forward call
             
-            if (!gpo_){
-                THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
-            }
-            auto tmpgpo=gpo_->append(gpin);
-            auto gout=std::make_shared<GArrayDense<T,ndim_o+ndim_i>>(*tmpgpo);
-            jacobian(gpin, *gout);
-            return gout;
-        }
+            //if (!gpo_){
+                //THROWMETHODEXCEPTION("Operator's output guide is unintialized and must be set upon construction");
+            //}
+            //auto tmpgpo=gpo_->append(gpin);
+            //auto gout=std::make_shared<GArrayDense<T,ndim_o+ndim_i>>(*tmpgpo);
+            //jacobian(gpin, *gout);
+            //return gout;
+        //}
 
 
     const gpo_t &gp() const { return *gpo_; }

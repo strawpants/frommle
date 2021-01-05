@@ -81,16 +81,19 @@ namespace frommle{
         //structs used for taggging indexes
         struct bymem{};//tag reflects insertion order
         struct byi{};//tag reflects by permution/masked order
-       
+        struct byel{};//tag reflects order as sorted by the element content
+           
         using mindx_t= multi_index_container<
             indx_t,
             bmi::indexed_by<
                 bmi::random_access<bmi::tag<bymem>>
                 ,bmi::ordered_unique<bmi::tag<byi>,bmi::member<indx_t,ptrdiff_t,&indx_t::i> >
+                ,bmi::ordered_unique<bmi::tag<byel>,bmi::member<indx_t,ELEM,&indx_t::el>>
                 > > ;
         
         using memindx_t=typename bmi::index<mindx_t,bymem>::type;
         using iindx_t=typename bmi::index<mindx_t,byi>::type;
+        using elindx_t=typename bmi::index<mindx_t,byi>::type;
         
         ///@brief an iterator wrapper which exposes only the element but refers to the iterator of  the underlying multiindex
         class const_iterator{
@@ -138,14 +141,6 @@ namespace frommle{
         const_iterator end()const{
             return const_iterator(bmi::get<byi>(mindx_).end());
         }
-        //typename iindx_t::iterator begin()const{
-            ////only return entries which are not masked
-            //return bmi::get<byi>(mindx_).lower_bound(0);
-        //}
-
-        //typename iindx_t::iterator end()const{
-            //return bmi::get<byi>(mindx_).end();
-        //}
         
         const memindx_t & memindx() const{
             return bmi::get<bymem>(mindx_);
@@ -163,6 +158,13 @@ namespace frommle{
             return bmi::get<byi>(mindx_);
         }
 
+        const elindx_t & elindx() const{
+            return bmi::get<byel>(mindx_);
+        }
+
+        elindx_t & elindx(){
+            return bmi::get<byel>(mindx_);
+        }
 
         void mask (std::function<bool(const ELEM &)> maskf){
             auto & idx=memindx();
