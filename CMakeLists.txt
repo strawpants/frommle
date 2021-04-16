@@ -122,10 +122,15 @@ find_package(Threads REQUIRED)
 find_library(YAML_CPP_LIBRARY NAMES yaml-cpp )
 
 
-#find libsecret using pkg-config
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
-include_directories(${LIBSECRET_INCLUDE_DIRS})
+if( ${WITH_LIBSECRET} )
+   message("searching for LIBSECRET")
+   #find libsecret using pkg-config
+   find_package(PkgConfig REQUIRED)
+   pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
+   include_directories(${LIBSECRET_INCLUDE_DIRS})
+    #set a preprocessor macro to be passed 
+    add_definitions(-DWITH_LIBSECRET)
+ endif( ${WITH_LIBSECRET} )
 
 
 

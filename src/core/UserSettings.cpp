@@ -27,7 +27,10 @@
 #include "core/Exceptions.hpp"
 #include <chrono>
 #include <ctime>
+
+#ifdef WITH_LIBSECRET
 #include <libsecret/secret.h>
+#endif
 
 namespace frommle {
 	namespace core {
@@ -53,7 +56,12 @@ namespace frommle {
 				config_["User"]=username;
 				config_["Contact"]= username + "@unknown";
 
+#ifdef WITH_LIBSECRET
 				config_["Authstore"]="libsecret";
+#else
+
+				config_["Authstore"]="unsecure";
+#endif
 				config_["Defaultdb"]="";
 				config_["geoslurp"]["host"]= std::string("hostname");
 				config_["geoslurp"]["port"]= std::string("5432");
@@ -117,13 +125,16 @@ namespace frommle {
 		std::string UserSettings::getAuth(const  std::string service, const  std::string username) {
 			std::string method=UserSettings::get().config_["Authstore"].as<std::string>();
 
-			if (method == "libsecret") {
+			if (method == "unsecure"){
+				return UserSettings::get().getAuthUnsecure(service,username);
+
+#ifdef WITH_LIBSECRET			
+			}else if (method == "libsecret") {
 				//try to retrieve the authentification credentials from the gnome-keyring
 				return UserSettings::get().getAuthlibsecret(service,username);
-			}else if (method == "unsecure"){
-				return UserSettings::get().getAuthUnsecure(service,username);
+#endif
 			}else{
-				throw InputException("Unknown method to retrieve authentification secrets: "+ method);
+						 throw InputException("Unknown method to retrieve authentification secrets: "+ method);
 			}
 
 		}
@@ -131,11 +142,15 @@ namespace frommle {
 		//@brief stores a secret
 		void UserSettings::setAuth(const std::string service, const std::string username, const std::string secret) {
 			std::string method=UserSettings::at("Authstore").as<std::string>();
-			if (method == "libsecret") {
+		
+			if (method == "unsecure"){
+				UserSettings::get().setAuthUnsecure(service,username, secret);
+			
+#ifdef WITH_LIBSECRET			
+			}else if (method == "libsecret") {
 				//try to retrieve the authentification credentials from the gnome-keyring
 				UserSettings::get().setAuthlibsecret(service,username, secret);
-			}else if (method == "unsecure"){
-				UserSettings::get().setAuthUnsecure(service,username, secret);
+#endif
 			}else{
 				throw InputException("Unknown method to store authentification secrets: "+ method);
 			}
@@ -152,6 +167,7 @@ namespace frommle {
 			return config_["Secrets"][service][username].as<std::string>();
 		}
 
+#ifdef WITH_LIBSECRET
 		const SecretSchema *
 		frommle_get_schema (void)
 		{
@@ -196,11 +212,10 @@ namespace frommle {
 			if (error != NULL) {
 				/* ... handle the failure here */
 				g_error_free (error);
-			} else {
-				/* ... do something now that the password has been stored */
 			}
 
 		}
+#endif
 		std::string currentTimetag() {
 			auto now=std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::string out(30, '\0');

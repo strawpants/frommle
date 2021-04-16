@@ -22,8 +22,9 @@ def yieldExtensions():
             ,getLibraryAlias("${Boost_PYTHON3_LIBRARY}"),getLibraryAlias("${Boost_NUMPY3_LIBRARY}"),getLibraryAlias("${Boost_SYSTEM_LIBRARY}")],
         include_dirs=["${Boost_INCLUDE_DIR}","${CMAKE_SOURCE_DIR}"],
         runtime_library_dirs = ["${PROJECT_BINARY_DIR}/lib"])
-        #insert semincolon separated libraries
-        ext.libraries[2:2]="${LIBSECRET_LIBRARIES}".split(";")
+        # possibly insert semicolon separated libraries
+        if  "${LIBSECRET_LIBRARIES}":
+            ext.libraries[2:2]="${LIBSECRET_LIBRARIES}".split(";")
         exts.append(ext)
     return exts
 
