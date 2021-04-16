@@ -40,6 +40,10 @@ namespace boost {
 namespace frommle {
     namespace core {
 
+
+
+
+
         TreeNodeBase *get_pointer(const frommle::core::TreeNodeRef &treePtr) {
             return const_cast<TreeNodeBase *>(treePtr.get());
         }

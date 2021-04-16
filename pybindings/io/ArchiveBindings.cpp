@@ -43,6 +43,31 @@ namespace frommle{
 
             std::shared_ptr<VariableBase> getVariable(const std::string &name)const override {
 
+                //quick return if a variable with the name already exists
+                auto idx = findidx(name);
+                if (idx == -1) {
+                    THROWINPUTEXCEPTION("Variable not found in python archive group"+name);
+                }
+                
+                return this->operator[](idx).ptr<VariableBase>();
+            }
+            
+            
+            core::TreeNodeRef convertChild(core::TreeNodeRef &&in)override{
+
+                if (p::override f = this->get_override("convVariable")) {
+
+                    //return TreeNodeCollection::convertChild(std::move(in));
+                    return core::TreeNodeRef(p::call<core::TreeNodeBase>(f.ptr(),in.ptr()));
+                } else {
+                    //just tap into the virtual functions from the base class
+                    return TreeNodeCollection::convertChild(std::move(in));
+                }
+            }
+
+
+            std::shared_ptr<VariableBase> createVariable(const std::string &name) override {
+
                 //quyick return if a variable with the name already exists
                 auto idx = findidx(name);
                 if (idx != -1) {
@@ -51,20 +76,15 @@ namespace frommle{
 
 
                 //else try to create a new one using the python overload
-                if (p::override f = this->get_override("getVariable")) {
+                if (p::override f = this->get_override("createVariable")) {
                     return f(name);
                 } else {
                     //just tap into the virtual functions from the base class
-                    return Group::getVariable(name);
+                    return Group::createVariable(name);
                 }
             }
        
             
-            std::shared_ptr<VariableBase> default_getVariable(const std::string & name) {
-                return this->Group::getVariable(name);
-            }
-
-
         private:
         };
 

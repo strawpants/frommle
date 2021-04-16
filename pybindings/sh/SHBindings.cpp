@@ -44,8 +44,10 @@ void pyexport_sh()
     //frommle::py::register_tuple<nmEl>();
 
     //export SHGuide
+    //BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(create_nmt_overloads, create_nmt, 1, 3);
     pyIndexedGuide<SHGuide>::reg("SHGuide")
             .def(p::init<int,p::optional<std::string>>())
+            .def("create_nmt",&SHGuide::create_nmt).staticmethod("create_nmt")
             .add_property("nmax",&SHGuide::nmax)
             .add_property("nmin",&SHGuide::nmin);
 

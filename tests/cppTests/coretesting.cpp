@@ -23,7 +23,7 @@
 
 #define BOOST_TEST_MODULE coretesting
 #include <boost/test/unit_test.hpp>
-#include "core/GArrayBase.hpp"
+#include "core/GArrayDense.hpp"
 #include "core/TimeGuide.hpp"
 #include <boost/date_time.hpp>
 #include "core/IndexGuide.hpp"
@@ -36,24 +36,23 @@
 #include "core/Logging.hpp"
 
 using namespace frommle::core;
-//namespace bg=boost::gregorian;
-
-
+using namespace frommle::guides;
+namespace bgreg= boost::gregorian;
 
 
 BOOST_AUTO_TEST_CASE(Garray1n2n3d){
 
-    auto TGuide=make_trange(bg::date(2002,12,1),bg::date(2003,3,30),bg::days(1));
-    auto garr1d=make_garray(std::move(TGuide));
+    auto TGuide=make_trange(bgreg::date(2002,12,1),bgreg::date(2003,3,30),bgreg::days(1));
+    auto garr1d=createDenseGAr<double>::ones(std::move(TGuide));
     garr1d.setName("Blah");
     garr1d=M_PI;
-    std::cout << garr1d.name()<<" "<<garr1d.mat()[0] << " " << std::string(garr1d.g(0)->hash())<< std::endl;
+    std::cout << garr1d.name()<<" "<<garr1d.mat()[0] << " " << std::string(garr1d.gp()[0]->hash())<< std::endl;
 
     //2D example
     size_t nrows=23;
     size_t ncols=4;
     double value=3.0;
-    auto garr2d=make_garray(IndexGuide(nrows),IndexGuide(ncols));
+    auto garr2d=createDenseGAr<double>::zeros(IndexGuide(nrows),IndexGuide(ncols));
 
     //now try to change the values through an eigen matrix wrapper
     auto eigm=garr2d.eig();

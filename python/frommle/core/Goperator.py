@@ -13,26 +13,28 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2019
+# Author Roelof Rietbroek (roelof@geod.uni-bonn.de), 2020
 
 
-from frommle.core import GOperatorBase
-
-# class Goperator(GOperatorBase):
-    # coords={}
-    # """A class which converts data from one dimension to the other"""
-    # def __init__(self,coords=None, dims=None, name="GOperator"):
-        # super().__init__(name)
+from frommle.core import GOperator_float641d_to_1d 
 
 
-        # if coords:
-            # #assign coordinate dimensions
-            # if isinstance(coords,dict):
-                # #directly
-                # self.coords=coords
-            # else:
-                # for dname,coord in zip(dims,coords):
-                    # self.coords[dname]=coord
 
-            # if len(self.coords) != self.ndim:
-                # raise RuntimeError("Amount of coordinate values for GOperator must be %d"%self.ndim)
+class GOperator1d_to_1d(GOperator_float641d_to_1d):
+    coords={}
+    """An operator class which converts data from one dimension to another"""
+    def __init__(self,coords=None, dims=None, name="GOperator"):
+        super().__init__(name)
+
+
+        if coords:
+            #assign coordinate dimensions
+            if isinstance(coords,dict):
+                #directly
+                self.coords=coords
+            else:
+                for dname,coord in zip(dims,coords):
+                    self.coords[dname]=coord
+
+            if len(self.coords) != self.ndim:
+                raise RuntimeError("Amount of coordinate values for GOperator must be %d"%self.ndim)

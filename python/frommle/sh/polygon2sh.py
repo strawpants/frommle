@@ -13,24 +13,10 @@
 # License along with Frommle; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-# Author Roelof Rietbroek (roelof@wobbly.earth), 2020
-
-
-# an Y=aX+Y operator which updates a vector/matrix by a scaled vector
+# Author Roelof Rietbroek (roelof@wobbly.earth), 2021
 
 
 
-from frommle.core import GOperator_float64
-
-
-class GarrSub():
-    """Binary operator which substracts to garray's from each other while respecting the guides sequence"""
-    def __init__(self):
-        pass
-
-
-    def __call__(self,gar1,gar2):
-        # get common part of the guides
-        gs1,gs2=getCommonGuides(gar1.gp(0),gar2.gp(1))
-
-        return None
+def polygon2sh(geomshape,nmax=200):
+    """Compute a spherical harmonic expansion from a shapely polygon"""
+    pass

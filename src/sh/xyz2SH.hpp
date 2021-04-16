@@ -1,3 +1,4 @@
+
 /*! \file
  \brief 
  \copyright Roelof Rietbroek 2021
@@ -18,7 +19,20 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef SRC_CORE_USER_SETTINGS_HPP_
-#define SRC_CORE_USER_SETTINGS_HPP_
 
-#endif /* #SRC_CORE_USER_SETTINGS_HPP_ */
+#include "core/GArrayDense.hpp"
+
+#ifndef SRC_SH_XYZ2SH_HPP_
+#define  SRC_SH_XYZ2SH_HPP_
+
+namespace frommle{
+   namespace sh{
+    
+    frommle::core::GArrayDense<double,1> xyz2sh();
+
+
+    }
+}
+
+
+#endif 

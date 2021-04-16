@@ -44,39 +44,38 @@ namespace frommle {
                 using IGd::shared_from_this;
                 TimeGuide(std::string name="time"):IGd(name){}
                 core::typehash hash()const override{return core::typehash("TimeGuide_t");}
-                    void load(const std::shared_ptr<core::Frommle> &frptr)override;
-                    void load(io::Group & Ar)override;
-                    void save(io::Group & Ar)const override;
+                //using IndexedGuide<Tp>::load;
+                //void load(const std::shared_ptr<core::Frommle> &frptr)override;
 
         };
 
 
 
-        template <class Tp>
-        void TimeGuide<Tp>::load(io::Group & Ar){
+        //template <class Tp>
+        //void TimeGuide<Tp>::load(io::Group & Ar){
 
-           //retrieve the variable which holds the time info
-            auto &tvar=Ar.template getVariable<Tp>(name());
-            for (auto t:tvar ){
-                this->push_back(*t);
-            }
-        }
+           ////retrieve the variable which holds the time info
+            //auto &tvar=Ar.template createVariable<Tp>(name());
+            //for (auto t:tvar ){
+                //this->push_back(*t);
+            //}
+        //}
 
-        template<class Tp>
-        void TimeGuide<Tp>::load(const std::shared_ptr<core::Frommle> &frptr){
-            core::loadFromFrommlePtr<TimeGuide<Tp>>(frptr,shared_from_this());
-        }
+        //template<class Tp>
+        //void TimeGuide<Tp>::load(const std::shared_ptr<core::Frommle> &frptr){
+            //core::loadFromFrommlePtr<TimeGuide<Tp>>(frptr,shared_from_this());
+        //}
 
-    template <class Tp>
-        void TimeGuide<Tp>::save(io::Group & Ar)const{
-//            //create a new variable holding the geometry
-            Ar[name()]=io::Variable<Tp>();
-            auto tvar= dynamic_cast<io::Variable<Tp>*>(Ar[name()].get());
-            for (auto const & t:*this){
-                tvar->setValue(t,-1);
-            }
+    //template <class Tp>
+        //void TimeGuide<Tp>::save(io::Group & Ar)const{
+////            //create a new variable holding the geometry
+            //Ar[name()]=io::Variable<Tp>();
+            //auto tvar= dynamic_cast<io::Variable<Tp>*>(Ar[name()].get());
+            //for (auto const & t:*this){
+                //tvar->setValue(t,-1);
+            //}
 
-        }
+        //}
 
 
 /*!brief

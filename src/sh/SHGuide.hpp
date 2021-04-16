@@ -28,7 +28,6 @@
 #include <cmath>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <iostream>
-#include "io/Group.hpp"
 #include <string>
 #include <regex>
 #ifndef FROMMLE_SHDIMENSION_HPP

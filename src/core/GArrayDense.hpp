@@ -165,7 +165,7 @@ namespace frommle {
                 GABase::save(ar);
 
                 //save matrix data
-                auto mar = ar.getVariable(name());
+                auto mar = ar.createVariable(name());
                 mar->setValue(HyperSlabConstRef<T>(mat()));
             }
 

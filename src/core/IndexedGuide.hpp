@@ -25,6 +25,8 @@
 //#include <boost/multi_index/sequenced_index.hpp>
 //#include <boost/multi_index/identity.hpp>
 #include <boost/multi_index/member.hpp>
+#include "io/Group.hpp"
+#include "io/Variable.hpp"
 
 #ifndef FROMMLE_CONTAINERGUIDE_HPP
 #define FROMMLE_CONTAINERGUIDE_HPP
@@ -95,7 +97,28 @@ namespace frommle{
         using iindx_t=typename bmi::index<mindx_t,byi>::type;
         using elindx_t=typename bmi::index<mindx_t,byi>::type;
         
-        ///@brief an iterator wrapper which exposes only the element but refers to the iterator of  the underlying multiindex
+        void save(io::Group &ar) const override {
+
+            auto gvar =ar.template createVariable<ELEM>(name());
+            for (auto const & t:*this){
+                gvar.setValue(t,-1);
+            }
+        }
+        
+        void load(io::Group &ar){
+
+//            //retrieve the variable which holds the info
+            auto &gvar=ar.template getVariable<ELEM>(name());
+            for (auto val:gvar ){
+                this->push_back(*val);
+            }
+
+        }
+        
+        void load(const std::shared_ptr<core::Frommle> &frptr){
+            core::loadFromFrommlePtr<IndexedGuide<ELEM>>(frptr,shared_from_this());
+        }
+    ///@brief an iterator wrapper which exposes only the element but refers to the iterator of  the underlying multiindex
         class const_iterator{
             public:
             using iterator_category = std::forward_iterator_tag;
@@ -127,6 +150,7 @@ namespace frommle{
 
 
             const ELEM & operator*()const {return it_->el;};
+
 
             private:
                 typename iindx_t::iterator it_;

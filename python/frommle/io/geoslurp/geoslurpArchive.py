@@ -25,8 +25,8 @@ import re
 from io import BytesIO,TextIOWrapper
 import gzip
 import shapely.wkb
-
-
+from rasterio.io import MemoryFile
+import copy
 
 cache=".geoslurpcache"
 class PandasGroup(Group):
@@ -52,6 +52,10 @@ class PandasGroup(Group):
             #convert normal data frame to geopandas dataframe
             self.df["geom"]=self.df["geom"].apply(PandasGroup.wkb2shapely)
             self.df=gpd.GeoDataFrame(self.df,geometry="geom")
+        
+        if "rast" in self.df:
+            #create an additional column which contains rasterio objects
+            self.df["rast"]=self.df["rast"].apply(PandasGroup.gdal2rasterio)
 
     def __getitem__(self,ky):
         """retrieve a variable"""
@@ -75,6 +79,10 @@ class PandasGroup(Group):
     @staticmethod
     def wkb2shapely(entry):
         return shapely.wkb.loads(str(entry),hex=True)
+
+    @staticmethod
+    def gdal2rasterio(entry):
+        return MemoryFile(entry.tobytes())
 
     def openuris(self):
         """Generator which opens uris as bufferlike objects"""
@@ -147,6 +155,9 @@ class GeoslurpArchive(Group):
         if type(kyqry) == tuple:
             ky=kyqry[0]
             qry=kyqry[1]
+            #also delete the current group when it exists already (will be overwritten with the results of the new query)
+            if ky in self:
+                del self[ky]
         else:
             #select everything
             ky=kyqry

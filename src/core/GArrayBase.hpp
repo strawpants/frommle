@@ -695,22 +695,6 @@ namespace frommle {
 ////
 ////        }
 ////
-////
-////        /*!brief
-////         * Factory function to quickly create garrays from initialized Guides
-////         * @tparam T
-////         * @tparam Guides
-////         * @param inpack
-////         * @return
-////         */
-//
-////template<class T,class... Guides>
-////std::shared_ptr<GArrayDyn<T,sizeof...(Guides)>> make_garray(guides::GuidePackDyn<sizeof ...(Guides)> & inpack){
-////return GArray<T,Guides...>(guides::GuidePack<Guides...>(std::forward<Guides>(std::move(inpack))...));
-////}
-//
-//
-
 
     }
 }

@@ -83,8 +83,10 @@ namespace frommle{
             virtual std::shared_ptr<VariableBase> createVariable(const std::string &name);
 
             template<class T>
-            Variable<T> & getVariable(const std::string & name);
+            Variable<T> & createVariable(const std::string & name);
 
+            template<class T>
+            Variable<T> & getVariable(const std::string & name);
 
             void setAmode(std::string mode){
                 attr().set("mode",mode);

@@ -78,7 +78,7 @@ namespace frommle{
                 p::class_<gdense,p::bases<gbase>>(std::string("GArray_").append(tname).append("_").append(std::to_string(n)).c_str())
                  .def(p::init<const guides::GuidePackDyn<n> &>())
                         .add_property("mat",&register_dyngar::getndarray)
-                        .def("DataArray",&garr_to_xarDataArray<T,n>::convert);
+                        .def("xar",&garr_to_xarDataArray<T,n>::convert);
 
                 //also register a shared_ptr
                 p::register_ptr_to_python< std::shared_ptr<GArrayDense<T,n>>>();

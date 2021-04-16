@@ -43,13 +43,13 @@ def makeGArray(*guides,**kwargs):
 
 
 
-def constructGArray(Archive,name,guides):
-    """Constructs a GArray from an archive, by naming its guides/coordinates"""
-    #extract the guides and allocate the array
-    gp=[ Archive[gname].value for gname in guides]
-    garout=makeGArray(*gp,name=name)
+# def constructGArray(Archive,name,guides):
+    # """Constructs a GArray from an archive, by naming its guides/coordinates"""
+    # #extract the guides and allocate the array
+    # gp=[ Archive[gname].value for gname in guides]
+    # garout=makeGArray(*gp,name=name)
     
-    #load the data into the array
-    garout.load(self)
-    return garout
+    # #load the data into the array
+    # garout.load(self)
+    # return garout
 

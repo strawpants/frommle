@@ -174,25 +174,35 @@ namespace frommle{
                 iterator(const Variable *parent):value_(std::make_shared<single>()),parent_(parent){
                     parent_->getValue(value_,0);
                 }
-            protected:
-                //note the iterator does not own the resource of the pointer!!
+        protected:
+            //note the iterator does not own the resource of the pointer!!
 //            single* value_=nullptr;
-                std::shared_ptr<single> value_{};
-            private:
-                const Variable *parent_{};
-            };
-            iterator begin(){return iterator(this);}
-            iterator end(){return iterator();}
+            std::shared_ptr<single> value_{};
+        private:
+            const Variable *parent_{};
+        };
+        iterator begin(){return iterator(this);}
+        iterator end(){return iterator();}
         private:
 
         };
 
         template<class T>
-        Variable<T> & Group::getVariable(const std::string &name) {
+        Variable<T> & Group::createVariable(const std::string &name){
             auto idx=findidx(name);
             if (idx == -1){
-                //create a new Variable
-                this->operator[](name)=Variable<T>();
+                //
+                this->operator[](name)=Variable<T>(name);
+            }
+            //check if the variable is derived
+            return this->operator[](name).as<Variable<T>>();
+
+        }
+        template<class T>
+        Variable<T> & Group::getVariable(const std::string &name){
+            auto idx=findidx(name);
+            if (idx == -1){
+                THROWINPUTEXCEPTION("Variable not found in archive group"+name);
             }
             //check if the variable is derived
             return this->operator[](name).as<Variable<T>>();
@@ -242,7 +252,7 @@ void VariableBase::setValue(const core::HyperSlabBase<T> & hslab){
     if(varptr){
         varptr->setValue(hslab);
     }else{
-        THROWINPUTEXCEPTION("Cannot dynamically downcast VariableDyn to requeste type");
+        THROWINPUTEXCEPTION("Cannot dynamically downcast VariableDyn to requested type");
     }
 
 
