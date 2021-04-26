@@ -71,7 +71,7 @@ if (PYTHON)
     #also store the include path in the cache
     set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} CACHE PATH "Include path for python headers")
     #get the  python version without decimal point
-
+    execute_process (COMMAND ${PYTHON} -c "import sys;print('%d%d'%(sys.version_info.major,sys.version_info.minor),end='');" OUTPUT_VARIABLE PYTHON_MAJMIN )
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -87,9 +87,12 @@ find_package (Eigen3 REQUIRED NO_MODULE)
 #find_package(OPTBLAS REQUIRED)
 
 #In order to be compatible with boost 1.66 versus later version we don't want to search for a boost cmake config file
-set( Boost_NO_BOOST_CMAKE ON)
+#set( Boost_NO_BOOST_CMAKE ON)
+
 #We need the boost library for various things (e.g. timing and dates)
-find_package(Boost REQUIRED COMPONENTS system python3 numpy3 unit_test_framework date_time log program_options filesystem iostreams ${WITH_BOOST_MPI} )
+
+find_package(Boost REQUIRED COMPONENTS system python numpy unit_test_framework date_time log log_setup program_options filesystem iostreams ${WITH_BOOST_MPI} )
+#find_package(Boost REQUIRED COMPONENTS system python${PYTHON_MAJMIN} numpy${PYTHON_MAJMIN} unit_test_framework date_time log program_options filesystem iostreams ${WITH_BOOST_MPI} )
 
 #add Boost include path
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
