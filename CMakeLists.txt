@@ -5,6 +5,7 @@ project(Frommle)
 
 #set some options
 option(USE_MPI "Build with MPI enabled" OFF)
+option(WITH_LIBSECRET "Don't try to link with libsecret (disable secure storing of passwords)" ON)
 
 #Export the compile commands to a json file (works nicely with vim' plugin youcompleteme)
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
